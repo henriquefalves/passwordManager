@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.meic.sec;
+package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
