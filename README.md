@@ -6,9 +6,14 @@ Project for the course of Project done on Highly Dependable Systems/Sistemas de 
 https://www.overleaf.com/8400989mfbfjmbfkzcn
 
 ###Compile
-
-jar cvf testAPI.jar CommonInterfaces\bin\pt\ulisboa\tecnico\meic\sec\commoninterface\ClientAPI.class
-
-javac -cp testAPI.jar Client\src\pt\ulisboa\tecnico\meic\sec\client\Client.java
+cd to folder of the project (Client, CommonInterfaces or PasswordManager)
+mvn compile
 
 ###Run
+cd to folder of the project (Client or PasswordManager)
+mvn exec:java
+
+###Install
+cd to folder of the project (CommonInterfaces)
+mvn install
+
