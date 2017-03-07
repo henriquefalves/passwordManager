@@ -2,9 +2,12 @@ package pt.ulisboa.tecnico.meic.sec.client;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 
-public class Client implements ClientAPI {
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
-public static void main(String[] args) {
-	System.out.println("SUCCESS");
-}
+public class Client extends UnicastRemoteObject implements ClientAPI {
+
+	public Client() throws RemoteException {
+
+	}
 }

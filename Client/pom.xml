@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <mainclass>pt.ulisboa.tecnico.meic.sec.client.Client</mainclass>
+        <mainclass>pt.ulisboa.tecnico.meic.sec.client.ClientApplication</mainclass>
     </properties>
 
     <build>
@@ -54,6 +54,12 @@
             <groupId>PasswordManager</groupId>
             <artifactId>Password-Manager-CommonInterfaces</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

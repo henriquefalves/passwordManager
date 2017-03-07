@@ -7,13 +7,16 @@ https://www.overleaf.com/8400989mfbfjmbfkzcn
 
 ###Compile
 cd to folder of the project (Client, CommonInterfaces or PasswordManager)
+
 mvn compile
 
 ###Run
 cd to folder of the project (Client or PasswordManager)
+
 mvn exec:java
 
 ###Install
 cd to folder of the project (CommonInterfaces)
+
 mvn install
 

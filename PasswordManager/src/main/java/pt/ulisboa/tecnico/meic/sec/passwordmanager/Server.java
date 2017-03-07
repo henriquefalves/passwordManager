@@ -10,7 +10,7 @@ import java.util.Vector;
 public class Server extends UnicastRemoteObject implements ServerAPI {
 	private Vector<User> users;
 
-	protected Server() throws RemoteException {
+	public Server() throws RemoteException {
 		super();
 		users = new Vector<User>();
 	}
