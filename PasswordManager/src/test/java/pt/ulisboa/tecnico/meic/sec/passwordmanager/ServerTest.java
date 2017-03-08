@@ -12,20 +12,20 @@ import pt.ulisboa.tecnico.meic.sec.passwordmanager.exceptions.InvalidUsernameExc
 
 import static org.junit.Assert.*;
 
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import javax.crypto.KeyGenerator;
 
 public class ServerTest {
-	public static byte[] VALID_DOMAIN = "a.b".getBytes();
-	public static byte[] VALID_USERNAME = "name".getBytes();
-	public static byte[] INEXISTENT_DOMAIN = "d.e".getBytes();
-	public static byte[] INEXISTENT_USERNAME = "eman".getBytes();
-	public static byte[] PASSWORD = "password".getBytes();
+	public static byte[] VALID_DOMAIN = "a.b".getBytes(StandardCharsets.UTF_8);
+	public static byte[] VALID_USERNAME = "name".getBytes(StandardCharsets.UTF_8);
+	public static byte[] INEXISTENT_DOMAIN = "d.e".getBytes(StandardCharsets.UTF_8);
+	public static byte[] INEXISTENT_USERNAME = "eman".getBytes(StandardCharsets.UTF_8);
+	public static byte[] PASSWORD = "password".getBytes(StandardCharsets.UTF_8);
 	
 	public Server server = null;
 	public Key key = null;
@@ -48,7 +48,7 @@ public class ServerTest {
 		byte[] pass;
 		try {
 			pass = server.get(key, VALID_DOMAIN, VALID_USERNAME);
-			assertTrue(Arrays.equals(pass,PASSWORD));
+			assertTrue(new String(pass, StandardCharsets.UTF_8).equals(new String(PASSWORD, StandardCharsets.UTF_8)));
 		} catch (Exception e) {
 			fail();
 			e.printStackTrace();
@@ -81,7 +81,6 @@ public class ServerTest {
 		try {
 			server = new Server();
 			server.register(key);
-
 		} catch (Exception e) {
 			fail();
 			e.printStackTrace();
