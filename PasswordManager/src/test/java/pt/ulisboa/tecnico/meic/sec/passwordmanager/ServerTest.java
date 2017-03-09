@@ -78,7 +78,6 @@ public class ServerTest {
 		server.get(key, VALID_DOMAIN, INEXISTENT_USERNAME);
 	}
 
-
 	@Test
 	public void RegisterCorrectExecution() {
 		try {

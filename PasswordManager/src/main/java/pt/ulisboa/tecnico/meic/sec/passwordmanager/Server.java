@@ -60,7 +60,7 @@ public class Server extends UnicastRemoteObject implements ServerAPI {
 		}
 		// TODO exception - unknown user
 		System.out.println("get: Unknown user");
-		return null;
+		throw new InvalidDomainException();
 	}
 
 }
