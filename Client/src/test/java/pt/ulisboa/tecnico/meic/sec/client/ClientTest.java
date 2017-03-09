@@ -3,11 +3,10 @@ package pt.ulisboa.tecnico.meic.sec.client;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
-
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InexistentTupleException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InexistentTupleException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 
 import java.nio.charset.StandardCharsets;
 

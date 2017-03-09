@@ -1,5 +1,10 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.Key;
@@ -9,7 +14,7 @@ public interface ServerAPI extends Remote{
 	
 	//Specification: registers the user in the server. Anomalous or unauthorized
 	//requests should return an appropriate exception or error code
-	public void register(Key publicKey) throws RemoteException;
+	public void register(Key publicKey) throws RemoteException, DuplicatePublicKeyException, InvalidPublicKeyException;
 	
 	//Specification: stores the triple (domain, username, password) on the server.
 	//This corresponds to an insertion if the (domain, username) pair is not already
@@ -20,6 +25,7 @@ public interface ServerAPI extends Remote{
 	//Specification: retrieves the password associated with the given (domain,
 	//username) pair. Anomalous or unauthorized requests should return an
 	//appropriate exception or error code.
-	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException;
+	public byte[] get(Key publicKey, byte[] domain, byte[] username)
+	throws RemoteException, InvalidPublicKeyException, InvalidDomainException, InvalidUsernameException;
 	
 }

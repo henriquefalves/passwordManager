@@ -1,6 +1,10 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -17,10 +21,12 @@ public class Server extends UnicastRemoteObject implements ServerAPI {
 
 	@Override
 	public void register(Key publicKey) throws RemoteException {
+		if (publicKey == null) {
+			throw new InvalidPublicKeyException();
+		}
 		for (User u : users){
 			if (u.isUserKey(publicKey)){
-				System.out.println("register: User already exists");
-				return; 					// // TODO exception, user already exists
+				throw new DuplicatePublicKeyException();
 			}
 		}
 		User newUser = new User(publicKey);
@@ -43,6 +49,9 @@ public class Server extends UnicastRemoteObject implements ServerAPI {
 
 	@Override
 	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
+		if (publicKey == null){ throw new InvalidPublicKeyException(); }
+		if (domain == null) {throw new InvalidDomainException(); }
+		if (username == null) {throw new InvalidUsernameException(); }
 		for (User u : users){
 			if (u.isUserKey(publicKey)){
 				System.out.println("get: Success");

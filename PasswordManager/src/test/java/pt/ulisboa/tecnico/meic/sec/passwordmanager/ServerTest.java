@@ -2,13 +2,10 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import pt.ulisboa.tecnico.meic.sec.passwordmanager.exceptions.DuplicatePublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.passwordmanager.exceptions.InexistentKeyException;
-import pt.ulisboa.tecnico.meic.sec.passwordmanager.exceptions.InexistentTupleException;
-import pt.ulisboa.tecnico.meic.sec.passwordmanager.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.passwordmanager.exceptions.InvalidPublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.passwordmanager.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
 
 import static org.junit.Assert.*;
 
@@ -40,6 +37,7 @@ public class ServerTest {
 	@Before
 	public void setup() throws RemoteException {
 		server = new Server();
+		server.register(key);
 		server.put(key, VALID_DOMAIN, VALID_USERNAME, PASSWORD);
 	}
 	
@@ -65,17 +63,22 @@ public class ServerTest {
 		server.get(key, null, VALID_USERNAME);
 	}
 
+	@Test(expected = InvalidDomainException.class)
+	public void GetInexistentDomain() throws RemoteException {
+		server.get(key, INEXISTENT_DOMAIN, VALID_USERNAME);
+	}
+
 	@Test(expected = InvalidUsernameException.class)
 	public void GetInvalidUsername() throws RemoteException {
 		server.get(key, VALID_DOMAIN, null);
 	}
-	
-	@Test(expected = InexistentTupleException.class)
-	public void GetInvalidTuple() throws RemoteException {
-		server = new Server();
-		server.get(key, INEXISTENT_DOMAIN, INEXISTENT_USERNAME);
+
+	@Test(expected = InvalidUsernameException.class)
+	public void GetInexistentUsername() throws RemoteException {
+		server.get(key, VALID_DOMAIN, INEXISTENT_USERNAME);
 	}
-	
+
+
 	@Test
 	public void RegisterCorrectExecution() {
 		try {
@@ -87,7 +90,7 @@ public class ServerTest {
 		}
 	}
 	
-	@Test(expected = InexistentKeyException.class)
+	@Test(expected = InvalidPublicKeyException.class)
 	public void RegisterInvalidKey() throws RemoteException {
 		server.register(null);
 	}
