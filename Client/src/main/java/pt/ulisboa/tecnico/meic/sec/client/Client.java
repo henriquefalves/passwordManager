@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -21,6 +22,8 @@ import java.security.UnrecoverableKeyException;
 import javax.swing.plaf.basic.BasicSplitPaneUI.KeyboardUpLeftHandler;
 
 public class Client extends UnicastRemoteObject implements ClientAPI {
+	private static final String KEYPAIRPASSWORD = "123456";
+	private static final String USERALIAS = "henrique";
 	private ServerAPI passwordManager;
 	private Key myPrivateKey;
 	private Key myPublicKey;
@@ -36,18 +39,6 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	}
 
 
-	public Key getMyPrivateKey() {
-		return myPrivateKey;
-	}
-
-	public Key getMyPublicKey() {
-		return myPublicKey;
-	}
-
-	public Key getServerPublicKey() {
-		return serverPublicKey;
-	}
-
 	public void init(KeyStore keystore) {
 		//Get the key with the given alias.
 		String serverAlias = "server";
@@ -55,7 +46,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 
 		Key key = null;
 		try {
-			key = keystore.getKey("henrique", "123456".toCharArray());
+			key = keystore.getKey(USERALIAS, KEYPAIRPASSWORD.toCharArray());
 		} catch (UnrecoverableKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -70,9 +61,9 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			// Get certificate of public key
 			java.security.cert.Certificate cert = null;
 			try {
-				cert = keystore.getCertificate("henrique");
+				cert = keystore.getCertificate(USERALIAS);
 			} catch (KeyStoreException e) {
-				// TODO Auto-generated catch block
+				System.out.println("Unable to load public and private key");
 				e.printStackTrace();
 			}
 
@@ -89,14 +80,16 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		try {
 			serverPublicKey= keystore.getCertificate(serverAlias).getPublicKey();
 		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Unable to load Public Key From Server");
 			e.printStackTrace();
 		}
+
 
 	}
 
 	public void register_user() {
-		try {
+			
+			try {
 			passwordManager.register(myPublicKey);
 		} catch (RemoteException e) {
 			System.out.println("Client.register_user Unable to register on server");

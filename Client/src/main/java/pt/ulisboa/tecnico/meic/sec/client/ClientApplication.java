@@ -12,13 +12,50 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Scanner;
+import java.util.concurrent.SynchronousQueue;
 import java.security.*;
 import java.security.cert.CertificateException;
 
 
 public class ClientApplication {
 
-	static public KeyStore getKeyStore(String keyStoreName, char[] passwordKeyStore){
+	public void userInteraction(){
+		Scanner reader = new Scanner(System.in);
+		
+		System.out.println("####### WELCOMME  to Dependable Password Manager #######");
+		System.out.println(""
+				+ "1 - Save Password"
+				+ "2 - Retrive Password"
+				+ "");
+
+		//Opção 1
+		System.out.println("To save the password please complete the following:");
+		System.out.println("Domain: ");
+		String domain = reader.nextLine();
+		System.out.println();
+		System.out.println("Username: ");
+		String username = reader.nextLine();
+		System.out.println();
+		System.out.println("Password: ");
+		String password = reader.nextLine();
+		System.out.println();
+		System.out.println("Password Inserted Successfully");
+		
+		//Opção 2
+		System.out.println("Which Password you want to see");
+		System.out.println("Domain: ");
+		String domainToSearch = reader.nextLine();
+		System.out.println();
+		System.out.println("Username: ");
+		String usernameToSearch = reader.nextLine();
+		System.out.println();		
+		
+		
+		
+		
+	}
+
+	static public KeyStore loadKeystore(String keyStoreName, char[] passwordKeyStore){
 		KeyStore ks = null;
 		try {
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -65,8 +102,11 @@ public class ClientApplication {
 		try {
 			ServerAPI server = (ServerAPI) Naming.lookup("rmi://localhost:8006/password-manager");
 			Client client = new Client(server);
-
-			client.init(getKeyStore("henriqueKeyStore.jks", "henrique123".toCharArray()));
+			args[0] = "henriqueKeyStore.jks";
+			args[1] = "henrique123";
+			String keystoreName = args[0];
+			String keystorePassword = args[1];
+			client.init(loadKeystore(keystoreName,keystorePassword.toCharArray()));
 
 
 			byte[] domain = "domain".getBytes(StandardCharsets.UTF_8);
