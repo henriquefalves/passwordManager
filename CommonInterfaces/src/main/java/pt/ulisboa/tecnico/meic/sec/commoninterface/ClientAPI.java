@@ -4,7 +4,7 @@ import java.security.KeyStore;
 
 public interface ClientAPI {
 
-    public void init(KeyStore ks);
+    public void init(KeyStore ks, String keystoreName, String keystorePassword);
 
     public void register_user();
 
