@@ -49,17 +49,14 @@ public class ClientApplication {
 		System.out.println("Username: ");
 		String usernameToSearch = reader.nextLine();
 		System.out.println();		
-		
-		
-		
-		
+
 	}
 
 	public static void main(String[] args) {
 
 		try {
 			ServerAPI server = (ServerAPI) Naming.lookup("rmi://localhost:8006/password-manager");
-			Client client = new Client(server);
+			Client client = new Client("rmi://localhost:8006/password-manager");
 //			args[0] = "henriqueKeyStore.jks";
 //			args[1] = "henrique123";
 //			String keystoreName = args[0];

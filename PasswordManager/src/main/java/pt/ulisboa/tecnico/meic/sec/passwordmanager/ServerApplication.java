@@ -13,7 +13,7 @@ public class ServerApplication {
 
         int registryPort = 8006;
         try {
-            Server passwordManager = new Server();
+            ServerFrontEnd passwordManager = new ServerFrontEnd();
             System.out.println("Server created");
             Registry reg = LocateRegistry.createRegistry(registryPort);
             System.out.println("Registry created!!");

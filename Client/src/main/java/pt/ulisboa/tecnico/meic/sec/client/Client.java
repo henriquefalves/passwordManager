@@ -11,6 +11,8 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyEx
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.Key;
@@ -33,15 +35,10 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	private Key myPublicKey;
 	private Key serverPublicKey;
 
-	public Client(ServerAPI passwordManager) throws RemoteException {
-		this.passwordManager = passwordManager;
-	}
-
 	//CREATED BY: MATEUS -> COMPILE IN TEST CLASS.
-	public Client() throws RemoteException {
-
+	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
+		this.passwordManager = new ClientCrypto(remoteServerName);
 	}
-
 
 	private KeyStore loadKeystore(String keyStoreName, char[] passwordKeyStore){
 		KeyStore ks = null;

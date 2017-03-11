@@ -22,17 +22,14 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Vector;
 
-public class Server extends UnicastRemoteObject implements ServerAPI {
+public class Server implements ServerAPI {
 	private Vector<User> users;
 	private PrivateKey myPrivateKey;
 	private PublicKey myPublicKey;
 	private static final String KEYSTORENAME= "server.jks";
 	private static final String KEYSTOREPASS= "server123";
 
-
-
 	public Server() throws RemoteException {
-		super();
 		users = new Vector<User>();
 		loadKeys();
 	}
