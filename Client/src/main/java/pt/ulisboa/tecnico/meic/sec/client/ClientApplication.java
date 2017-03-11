@@ -55,58 +55,27 @@ public class ClientApplication {
 		
 	}
 
-	static public KeyStore loadKeystore(String keyStoreName, char[] passwordKeyStore){
-		KeyStore ks = null;
-		try {
-			ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		FileInputStream fis=null;
-
-		try {
-			fis = new FileInputStream(keyStoreName);
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
-			ks.load(fis, passwordKeyStore);
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally{
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		return ks;
-
-	}
-
 	public static void main(String[] args) {
 
 		try {
 			ServerAPI server = (ServerAPI) Naming.lookup("rmi://localhost:8006/password-manager");
 			Client client = new Client(server);
-			args[0] = "henriqueKeyStore.jks";
-			args[1] = "henrique123";
-			String keystoreName = args[0];
-			String keystorePassword = args[1];
-			client.init(loadKeystore(keystoreName,keystorePassword.toCharArray()));
+//			args[0] = "henriqueKeyStore.jks";
+//			args[1] = "henrique123";
+//			String keystoreName = args[0];
+//			String keystorePassword = args[1];
+		    
+			String keystoreName = "henriqueKeyStore.jks";
+			String keystorePassword = "henrique123";
+			
+			KeyStore ks = null;
+			try {
+				ks = KeyStore.getInstance("JKS");
+			} catch (KeyStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			client.init(ks, keystoreName, keystorePassword);
 
 
 			byte[] domain = "domain".getBytes(StandardCharsets.UTF_8);

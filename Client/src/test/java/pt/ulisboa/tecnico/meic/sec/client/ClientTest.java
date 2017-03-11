@@ -26,7 +26,7 @@ public class ClientTest {
 		client = new Client();
 		//TODO: initialize client with valid KeyStore. Will do after implementing init method.
 		//client.init();
-		//client.register_user();
+		client.register_user();
     }
 
     @Test

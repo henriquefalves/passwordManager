@@ -8,6 +8,9 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.Key;
@@ -18,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 import javax.swing.plaf.basic.BasicSplitPaneUI.KeyboardUpLeftHandler;
 
@@ -39,7 +43,51 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	}
 
 
-	public void init(KeyStore keystore) {
+	private KeyStore loadKeystore(String keyStoreName, char[] passwordKeyStore){
+		KeyStore ks = null;
+		try {
+			ks = KeyStore.getInstance(KeyStore.getDefaultType());
+		} catch (KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		FileInputStream fis=null;
+
+		try {
+			fis = new FileInputStream(keyStoreName);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			ks.load(fis, passwordKeyStore);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (CertificateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally{
+			if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		return ks;
+
+	}
+
+	public void init(KeyStore keystore, String keystoreName, String keystorePassword) {
+		
+		keystore = loadKeystore(keystoreName, keystorePassword.toCharArray());
 		//Get the key with the given alias.
 		String serverAlias = "server";
 
