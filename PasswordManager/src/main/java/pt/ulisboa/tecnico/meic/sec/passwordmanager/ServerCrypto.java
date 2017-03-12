@@ -2,9 +2,6 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
 
 import java.rmi.RemoteException;
 import java.security.Key;
@@ -20,7 +17,7 @@ public class ServerCrypto implements ServerAPI {
         server = new Server();
     }
 
-    public void register(Key publicKey) throws RemoteException, DuplicatePublicKeyException, InvalidPublicKeyException {
+    public void register(Key publicKey) throws RemoteException {
 
         //TODO: cenas
 
@@ -34,7 +31,7 @@ public class ServerCrypto implements ServerAPI {
         server.put(publicKey, domain, username, password);
     }
 
-    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException, InvalidPublicKeyException, InvalidDomainException, InvalidUsernameException {
+    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
         //TODO: cenas
 
 

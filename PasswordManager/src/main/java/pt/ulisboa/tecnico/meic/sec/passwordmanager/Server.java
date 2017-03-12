@@ -2,15 +2,12 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -37,7 +34,7 @@ public class Server implements ServerAPI {
 	@Override
 	public void register(Key publicKey) throws RemoteException {
 		if (publicKey == null) {
-			throw new InvalidPublicKeyException();
+			throw new InvalidArgumentsException();
 		}
 		for (User u : users){
 			if (u.isUserKey(publicKey)){
@@ -64,18 +61,17 @@ public class Server implements ServerAPI {
 
 	@Override
 	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-		if (publicKey == null){ throw new InvalidPublicKeyException(); }
-		if (domain == null) {throw new InvalidDomainException(); }
-		if (username == null) {throw new InvalidUsernameException(); }
+		if (publicKey == null || domain == null || username == null){
+			{throw new InvalidArgumentsException(); }
+		}
 		for (User u : users){
 			if (u.isUserKey(publicKey)){
 				System.out.println("get: Success");
 				return u.getPassword(domain, username);
 			}
 		}
-		// TODO exception - unknown user
 		System.out.println("get: Unknown user");
-		throw new InvalidDomainException();
+		throw new InvalidArgumentsException();
 	}
 
 	private void loadKeys(){

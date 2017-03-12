@@ -6,7 +6,6 @@ import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,8 +23,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-
-import javax.swing.plaf.basic.BasicSplitPaneUI.KeyboardUpLeftHandler;
 
 public class Client extends UnicastRemoteObject implements ClientAPI {
 	private static final String KEYPAIRPASSWORD = "123456";

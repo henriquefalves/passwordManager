@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -48,11 +47,11 @@ public class User {
         String usernameString = new String (username, StandardCharsets.UTF_8);
         Hashtable<String, String> usernames = domains.get(domainString);
         if(usernames == null) {
-            throw new InvalidDomainException();
+            throw new InvalidArgumentsException();
         }
         String password = usernames.get(usernameString);
         if (password == null) {
-            throw new InvalidUsernameException();
+            throw new InvalidArgumentsException();
         }
         return password.getBytes(StandardCharsets.UTF_8);
     }

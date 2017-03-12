@@ -23,7 +23,7 @@ public class ClientTest {
 	
     @Before
     public void setUp() throws Exception {
-		client = new Client();
+		client = new Client("rmi://localhost:8006/password-manager");
 		//TODO: initialize client with valid KeyStore. Will do after implementing init method.
 		//client.init();
 		client.register_user();

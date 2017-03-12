@@ -3,9 +3,7 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 import org.junit.Before;
 import org.junit.Test;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import static org.junit.Assert.*;
 
@@ -53,27 +51,27 @@ public class ServerTest {
 		}
 	}
 	
-	@Test(expected = InvalidPublicKeyException.class)
+	@Test(expected = InvalidArgumentsException.class)
 	public void GetInvalidPublicKey() throws RemoteException {
 		server.get(null, VALID_DOMAIN, VALID_USERNAME);
 	}
 	
-	@Test(expected = InvalidDomainException.class)
+	@Test(expected = InvalidArgumentsException.class)
 	public void GetInvalidDomain() throws RemoteException {
 		server.get(key, null, VALID_USERNAME);
 	}
 
-	@Test(expected = InvalidDomainException.class)
+	@Test(expected = InvalidArgumentsException.class)
 	public void GetInexistentDomain() throws RemoteException {
 		server.get(key, INEXISTENT_DOMAIN, VALID_USERNAME);
 	}
 
-	@Test(expected = InvalidUsernameException.class)
+	@Test(expected = InvalidArgumentsException.class)
 	public void GetInvalidUsername() throws RemoteException {
 		server.get(key, VALID_DOMAIN, null);
 	}
 
-	@Test(expected = InvalidUsernameException.class)
+	@Test(expected = InvalidArgumentsException.class)
 	public void GetInexistentUsername() throws RemoteException {
 		server.get(key, VALID_DOMAIN, INEXISTENT_USERNAME);
 	}
@@ -89,7 +87,7 @@ public class ServerTest {
 		}
 	}
 	
-	@Test(expected = InvalidPublicKeyException.class)
+	@Test(expected = InvalidArgumentsException.class)
 	public void RegisterInvalidKey() throws RemoteException {
 		server.register(null);
 	}

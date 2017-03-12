@@ -1,13 +1,9 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
-import com.sun.corba.se.spi.activation.Server;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
 
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
@@ -22,7 +18,7 @@ public class ClientCrypto implements ServerAPI {
         passwordmanager = new ClientFrontEnd(remoteServerName);
     }
 
-    public void register(Key publicKey) throws RemoteException, DuplicatePublicKeyException, InvalidPublicKeyException {
+    public void register(Key publicKey) throws RemoteException {
         //TODO: cenas
 
         passwordmanager.register(new Message());
@@ -35,7 +31,7 @@ public class ClientCrypto implements ServerAPI {
 
     }
 
-    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException, InvalidPublicKeyException, InvalidDomainException, InvalidUsernameException {
+    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
         //TODO: cenas
 
         passwordmanager.get(new Message());
