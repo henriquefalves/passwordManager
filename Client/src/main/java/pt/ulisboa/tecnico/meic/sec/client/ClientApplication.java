@@ -55,8 +55,8 @@ public class ClientApplication {
 	public static void main(String[] args) {
 
 		try {
-			ServerAPI server = (ServerAPI) Naming.lookup("rmi://localhost:8006/password-manager");
-			Client client = new Client("rmi://localhost:8006/password-manager");
+			String name = "rmi://"+args[0]+":"+args[1]+"/"+args[2];
+			Client client = new Client(name);
 //			args[0] = "henriqueKeyStore.jks";
 //			args[1] = "henrique123";
 //			String keystoreName = args[0];

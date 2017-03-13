@@ -25,6 +25,7 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+
                 </configuration>
             </plugin>
             <plugin>
@@ -42,6 +43,9 @@
                     <!-- to prevent deprecation warning: -->
                     <killAfter>-1</killAfter>
                     <mainClass>${mainclass}</mainClass>
+                    <arguments>
+                        <argument>8006</argument>
+                    </arguments>
                     <systemProperties>
                     </systemProperties>
                 </configuration>

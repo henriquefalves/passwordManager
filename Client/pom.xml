@@ -42,6 +42,11 @@
                     <!-- to prevent deprecation warning: -->
                     <killAfter>-1</killAfter>
                     <mainClass>${mainclass}</mainClass>
+                    <arguments>
+                        <argument>localhost</argument>
+                        <argument>8006</argument>
+                        <argument>password-manager</argument>
+                    </arguments>
                     <systemProperties>
                     </systemProperties>
                 </configuration>
