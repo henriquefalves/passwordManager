@@ -55,7 +55,7 @@ public class ClientApplication {
 	public static void main(String[] args) {
 
 		try {
-			ServerAPI server = (ServerAPI) Naming.lookup("rmi://localhost:8006/password-manager");
+//			ServerAPI server = (ServerAPI) Naming.lookup("rmi://localhost:8006/password-manager");
 			Client client = new Client("rmi://localhost:8006/password-manager");
 //			args[0] = "henriqueKeyStore.jks";
 //			args[1] = "henrique123";
@@ -80,7 +80,7 @@ public class ClientApplication {
 			byte[] password = "password".getBytes(StandardCharsets.UTF_8);
 			client.register_user();
 			client.save_password(domain, username, password);
-			String st = new String(client.retrieve_password(domain, username));
+			String st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
 			System.out.println("Result of get: " + st);
 
 

@@ -21,10 +21,12 @@ import java.util.Vector;
 
 public class Server implements ServerAPI {
 	private Vector<User> users;
-	private PrivateKey myPrivateKey;
-	private PublicKey myPublicKey;
+	public PrivateKey myPrivateKey;			// TODO private
+	public PublicKey myPublicKey;			// TODO private
 	private static final String KEYSTORENAME= "server.jks";
 	private static final String KEYSTOREPASS= "server123";
+
+	public Key clientPublicKey;			// TODO private
 
 	public Server() throws RemoteException {
 		users = new Vector<User>();
@@ -142,10 +144,17 @@ public class Server implements ServerAPI {
 			PublicKey publicKey = cert.getPublicKey();
 
 			// Return a key pair
-			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
+			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);		// ???
 			myPrivateKey = keyPair.getPrivate();
 			myPublicKey = keyPair.getPublic();
 
+		}
+
+		try {
+			clientPublicKey = ks.getCertificate("henrique").getPublicKey();
+		} catch (KeyStoreException e) {
+			System.out.println("Unable to load Public Key From Server");
+			e.printStackTrace();
 		}
 
 

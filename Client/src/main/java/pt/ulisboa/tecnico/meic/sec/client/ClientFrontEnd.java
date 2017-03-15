@@ -20,7 +20,7 @@ public class ClientFrontEnd implements CommunicationAPI {
     public void register(Message message) throws RemoteException {
         //TODO: cenas
 
-        server.register(new Message());
+        server.register(message);
     }
 
     public void put(Message message) throws RemoteException {
@@ -32,10 +32,10 @@ public class ClientFrontEnd implements CommunicationAPI {
     public byte[] get(Message message) throws RemoteException {
         //TODO: cenas
 
-        server.get(new Message());
+        byte[] result = server.get(new Message());
 
         //TODO: mais cenas
 
-        return new byte[0];
+        return result;
     }
 }

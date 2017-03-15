@@ -27,10 +27,10 @@ import java.security.cert.CertificateException;
 public class Client extends UnicastRemoteObject implements ClientAPI {
 	private static final String KEYPAIRPASSWORD = "123456";
 	private static final String USERALIAS = "henrique";
-	private ServerAPI passwordManager;
 	private Key myPrivateKey;
 	private Key myPublicKey;
 	private Key serverPublicKey;
+	private ServerAPI passwordManager;
 
 	//CREATED BY: MATEUS -> COMPILE IN TEST CLASS.
 	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
@@ -116,9 +116,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
 			myPrivateKey = keyPair.getPrivate();
 			myPublicKey = keyPair.getPublic();
-
 		}
-
 		try {
 			serverPublicKey= keystore.getCertificate(serverAlias).getPublicKey();
 		} catch (KeyStoreException e) {
@@ -126,7 +124,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			e.printStackTrace();
 		}
 
-
+		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
 	}
 
 	public void register_user() {

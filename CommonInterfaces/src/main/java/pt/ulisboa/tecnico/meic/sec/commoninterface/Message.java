@@ -1,15 +1,41 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
+import java.io.Serializable;
 import java.security.Key;
 
-public class Message {
+public class Message implements Serializable {
 
-    private Key publicKey;
-    private byte[] signature;
-    private byte[] sequenceNumber;
-    private byte[] domain;
-    private byte[] username;
-    private byte[] password;
+    public Key publicKey;
+    public byte[] signature;
+    public byte[] sequenceNumber;
+    public byte[] domain;
+    public byte[] username;
+    public byte[] password;
+    public byte[] secretKey;
+    public byte[] randomIv;
+
+    // constructor to serialize object
+    public Message(Key publicKey, byte[] signature, byte[] seqNum, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv) {
+        this.publicKey = publicKey;
+        this.signature = signature;
+        this.sequenceNumber = seqNum;
+        this.domain = domain;
+        this.username = username;
+        this.password = password;
+        this.secretKey = secretKey;
+        this.randomIv = randomIv;
+    }
+
+    public Message(Key publicKey, byte[] signature, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv) {
+        this.publicKey = publicKey;
+        this.signature = signature;
+     //   this.sequenceNumber = sequenceNumber;  // TODO
+        this.domain = domain;
+        this.username = username;
+        this.password = password;
+        this.secretKey = secretKey;
+        this.randomIv = randomIv;
+    }
 
     public Message(Key publicKey, byte[] signature, byte[] sequenceNumber, byte[] domain, byte[] username) {
         this.publicKey = publicKey;
