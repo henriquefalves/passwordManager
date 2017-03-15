@@ -11,7 +11,7 @@ public class ServerApplication {
 
     public static void main(String[] args) {
 
-        int registryPort = 8006;
+        int registryPort = Integer.parseInt(args[0]);
         try {
             ServerFrontEnd passwordManager = new ServerFrontEnd();
             System.out.println("Server created");

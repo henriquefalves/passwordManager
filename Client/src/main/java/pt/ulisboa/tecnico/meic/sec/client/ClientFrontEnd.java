@@ -4,6 +4,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -37,5 +38,11 @@ public class ClientFrontEnd implements CommunicationAPI {
         //TODO: mais cenas
 
         return result;
+    }
+
+    public int getSequenceNumber(Message message) throws RemoteException {
+        server.getSequenceNumber(new Message());
+
+        return 0;
     }
 }

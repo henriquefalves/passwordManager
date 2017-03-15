@@ -24,7 +24,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     public void register(Message message) throws RemoteException {
     // server.server.clientPublicKey
 
-        byte[] secretKey = Crypto.decrypt(message.secretKey, server.server.myPrivateKey);
+        byte[] secretKey = Crypto.decrypt(message.secretKey, server.server.myPrivateKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
         System.out.println("Server: secret key: " + new String(secretKey, StandardCharsets.UTF_8));
 
         byte[] decipheredDomain = Crypto.decipherSymmetric(secretKey, message.randomIv, message.domain);
@@ -48,7 +48,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             return;
             // TODO exception?
         }
-        server.register(message.publicKey);
+        server.register(message.publicKey, 1);
     }
 
     public void put(Message message) throws RemoteException {
@@ -65,4 +65,12 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         //TODO: mais cenas e retorna isso
         return "string".getBytes(StandardCharsets.UTF_8);    }
+
+
+    // ???
+    @Override
+    public int getSequenceNumber(Message message) throws RemoteException {
+        return 0;
+    }
 }
+

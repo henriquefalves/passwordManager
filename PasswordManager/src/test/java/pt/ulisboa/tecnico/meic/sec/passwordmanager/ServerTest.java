@@ -31,19 +31,20 @@ public class ServerTest {
 		keygen.init(random);
 		key = keygen.generateKey();
 	}
-	
+
+	// TODO REMOVE ALL 1!!!!
 	@Before
 	public void setup() throws RemoteException {
 		server = new Server();
-		server.register(key);
-		server.put(key, VALID_DOMAIN, VALID_USERNAME, PASSWORD);
+		server.register(key, 1);
+		server.put(key, VALID_DOMAIN, VALID_USERNAME, PASSWORD, 1);
 	}
 	
 	@Test
 	public void GetCorrectExecution() {
 		byte[] pass;
 		try {
-			pass = server.get(key, VALID_DOMAIN, VALID_USERNAME);
+			pass = server.get(key, VALID_DOMAIN, VALID_USERNAME, 1);
 			assertTrue(new String(pass, StandardCharsets.UTF_8).equals(new String(PASSWORD, StandardCharsets.UTF_8)));
 		} catch (Exception e) {
 			fail();
@@ -53,34 +54,34 @@ public class ServerTest {
 	
 	@Test(expected = InvalidArgumentsException.class)
 	public void GetInvalidPublicKey() throws RemoteException {
-		server.get(null, VALID_DOMAIN, VALID_USERNAME);
+		server.get(null, VALID_DOMAIN, VALID_USERNAME, 1);
 	}
 	
 	@Test(expected = InvalidArgumentsException.class)
 	public void GetInvalidDomain() throws RemoteException {
-		server.get(key, null, VALID_USERNAME);
+		server.get(key, null, VALID_USERNAME, 1);
 	}
 
 	@Test(expected = InvalidArgumentsException.class)
 	public void GetInexistentDomain() throws RemoteException {
-		server.get(key, INEXISTENT_DOMAIN, VALID_USERNAME);
+		server.get(key, INEXISTENT_DOMAIN, VALID_USERNAME, 1);
 	}
 
 	@Test(expected = InvalidArgumentsException.class)
 	public void GetInvalidUsername() throws RemoteException {
-		server.get(key, VALID_DOMAIN, null);
+		server.get(key, VALID_DOMAIN, null, 1);
 	}
 
 	@Test(expected = InvalidArgumentsException.class)
 	public void GetInexistentUsername() throws RemoteException {
-		server.get(key, VALID_DOMAIN, INEXISTENT_USERNAME);
+		server.get(key, VALID_DOMAIN, INEXISTENT_USERNAME, 1);
 	}
 
 	@Test
 	public void RegisterCorrectExecution() {
 		try {
 			server = new Server();
-			server.register(key);
+			server.register(key, 1);
 		} catch (Exception e) {
 			fail();
 			e.printStackTrace();
@@ -89,11 +90,11 @@ public class ServerTest {
 	
 	@Test(expected = InvalidArgumentsException.class)
 	public void RegisterInvalidKey() throws RemoteException {
-		server.register(null);
+		server.register(null, 1);
 	}
 	
 	@Test(expected = DuplicatePublicKeyException.class)
 	public void RegisterDuplicateKey() throws RemoteException {
-		server.register(key);
+		server.register(key, 1);
 	}
 }

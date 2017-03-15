@@ -10,7 +10,9 @@ import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 
 import java.nio.charset.StandardCharsets;
 
-//public class ClientTest {
+
+public class ClientTest {
+
 //
 //	public static byte[] VALID_DOMAIN = "a.b".getBytes(StandardCharsets.UTF_8);
 //	public static byte[] VALID_USERNAME = "name".getBytes(StandardCharsets.UTF_8);
@@ -93,5 +95,5 @@ import java.nio.charset.StandardCharsets;
 //	public void RetrievePasswordInvalidTuple() {
 //		client.retrieve_password(VALID_DOMAIN, VALID_USERNAME);
 //	}
-//
-//}
+
+}
