@@ -39,4 +39,10 @@ public class ClientFrontEnd implements CommunicationAPI {
 
         return new byte[0];
     }
+
+    public int getSequenceNumber(Message message) throws RemoteException {
+        server.getSequenceNumber(new Message());
+
+        return 0;
+    }
 }

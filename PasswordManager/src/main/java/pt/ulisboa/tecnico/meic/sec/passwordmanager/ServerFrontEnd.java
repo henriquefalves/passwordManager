@@ -37,4 +37,10 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         //TODO: mais cenas e retorna isso
         return new byte[0];    }
+
+    public int getSequenceNumber(Message message) throws RemoteException {
+        //TODO: cenas
+
+        return 0;
+    }
 }

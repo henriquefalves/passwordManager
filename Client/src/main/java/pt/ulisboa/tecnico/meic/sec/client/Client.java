@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,8 +32,8 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	private Key myPrivateKey;
 	private Key myPublicKey;
 	private Key serverPublicKey;
+	private int sequenceNumber = -1;
 
-	//CREATED BY: MATEUS -> COMPILE IN TEST CLASS.
 	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
 		this.passwordManager = new ClientCrypto(remoteServerName);
 	}
@@ -76,7 +77,6 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			}
 		}
 		return ks;
-
 	}
 
 	public void init(KeyStore keystore, String keystoreName, String keystorePassword) {
@@ -126,13 +126,23 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			e.printStackTrace();
 		}
 
-
+        if(sequenceNumber == -1) {
+		    try {
+                sequenceNumber = passwordManager.getSequenceNumber(myPublicKey);
+            } catch (RemoteException r) {
+                r.printStackTrace();
+                System.out.println("Unable to load sequence number from Server");
+            } catch (InvalidArgumentsException i) {
+                i.printStackTrace();
+                System.out.println("Unable to load sequence number from Server");
+            }
+        }
 	}
 
 	public void register_user() {
-			
-			try {
-			passwordManager.register(myPublicKey);
+        try {
+            sequenceNumber++;
+            passwordManager.register(myPublicKey, sequenceNumber);
 		} catch (RemoteException e) {
 			System.out.println("Client.register_user Unable to register on server");
 			e.printStackTrace();
@@ -141,11 +151,13 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	}
 
 	public void save_password(byte[] domain, byte[] username, byte[] password) {
+	    //TODO: throw exceptions assim? Nao e boa pratica
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
 		if(password==null) throw new InvalidPasswordException();
 		try {
-			passwordManager.put(myPublicKey, domain, username, password);
+            sequenceNumber++;
+            passwordManager.put(myPublicKey, domain, username, password, sequenceNumber);
 		} catch (RemoteException e) {
 			System.out.println("Client.save_password Unable to put on server");
 			e.printStackTrace();
@@ -156,13 +168,13 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
 		try {
-			return passwordManager.get(myPublicKey, domain, username);
+		    sequenceNumber++;
+			return passwordManager.get(myPublicKey, domain, username, sequenceNumber);
 		} catch (RemoteException e) {
 			System.out.println("Client.save_password Unable to put on server");
 			e.printStackTrace();
 		}
 		catch (InexistentTupleException e) {
-			
 			//TODO rever como tratar caso o servidor não encontra password paras os dois args
 			System.out.println("YOU DO NOT HAVE PASSWORD WITH GIVEN ARGUMENTS");
 		}

@@ -31,8 +31,6 @@ public class CryptoTest {
 		public1 = generateKeyPairRSA2048.getPublic();
 		private1 = generateKeyPairRSA2048.getPrivate();
 		secretKey = crypto.generateSecretKeyAES128();
-		
-		
 	}
 //TODO: Cannot Test -> Henrique
 /*	@Test

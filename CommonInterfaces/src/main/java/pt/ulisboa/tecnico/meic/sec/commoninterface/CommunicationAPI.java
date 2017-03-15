@@ -14,4 +14,6 @@ public interface CommunicationAPI extends Remote{
     public void put(Message message) throws RemoteException;
 
     public byte[] get(Message message) throws RemoteException, InvalidArgumentsException;
+
+    public int getSequenceNumber(Message message) throws RemoteException;
 }
