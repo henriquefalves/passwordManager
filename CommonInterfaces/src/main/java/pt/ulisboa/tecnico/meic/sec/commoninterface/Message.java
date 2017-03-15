@@ -1,8 +1,9 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
+import java.io.Serializable;
 import java.security.Key;
 
-public class Message {
+public class Message implements Serializable {
 
     private Key publicKey;
     private byte[] signature;

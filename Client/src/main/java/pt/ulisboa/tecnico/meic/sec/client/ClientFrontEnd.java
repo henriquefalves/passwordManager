@@ -4,6 +4,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;

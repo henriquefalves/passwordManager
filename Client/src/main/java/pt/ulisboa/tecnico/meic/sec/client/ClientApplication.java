@@ -19,39 +19,6 @@ import java.security.cert.CertificateException;
 
 public class ClientApplication {
 
-	public void userInteraction(){
-		Scanner reader = new Scanner(System.in);
-		
-		System.out.println("####### WELCOMME  to Dependable Password Manager #######");
-		System.out.println(""
-				+ "1 - Save Password"
-				+ "2 - Retrive Password"
-				+ "");
-
-		//Opção 1
-		System.out.println("To save the password please complete the following:");
-		System.out.println("Domain: ");
-		String domain = reader.nextLine();
-		System.out.println();
-		System.out.println("Username: ");
-		String username = reader.nextLine();
-		System.out.println();
-		System.out.println("Password: ");
-		String password = reader.nextLine();
-		System.out.println();
-		System.out.println("Password Inserted Successfully");
-		
-		//Opção 2
-		System.out.println("Which Password you want to see");
-		System.out.println("Domain: ");
-		String domainToSearch = reader.nextLine();
-		System.out.println();
-		System.out.println("Username: ");
-		String usernameToSearch = reader.nextLine();
-		System.out.println();		
-
-	}
-
 	public static void main(String[] args) {
 
 		try {
@@ -93,6 +60,38 @@ public class ClientApplication {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void userInteraction(){
+		Scanner reader = new Scanner(System.in);
+
+		System.out.println("####### WELCOMME  to Dependable Password Manager #######");
+		System.out.println(""
+				+ "1 - Save Password"
+				+ "2 - Retrive Password"
+				+ "");
+
+		//Opção 1
+		System.out.println("To save the password please complete the following:");
+		System.out.println("Domain: ");
+		String domain = reader.nextLine();
+		System.out.println();
+		System.out.println("Username: ");
+		String username = reader.nextLine();
+		System.out.println();
+		System.out.println("Password: ");
+		String password = reader.nextLine();
+		System.out.println();
+		System.out.println("Password Inserted Successfully");
+
+		//Opção 2
+		System.out.println("Which Password you want to see");
+		System.out.println("Domain: ");
+		String domainToSearch = reader.nextLine();
+		System.out.println();
+		System.out.println("Username: ");
+		String usernameToSearch = reader.nextLine();
+		System.out.println();
 
 	}
 
