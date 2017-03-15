@@ -11,16 +11,16 @@ import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 import java.nio.charset.StandardCharsets;
 
 public class ClientTest {
-	
+
 	public static byte[] VALID_DOMAIN = "a.b".getBytes(StandardCharsets.UTF_8);
 	public static byte[] VALID_USERNAME = "name".getBytes(StandardCharsets.UTF_8);
 	public static byte[] PASSWORD1 = "password1".getBytes(StandardCharsets.UTF_8);
 	public static byte[] PASSWORD2 = "password2".getBytes(StandardCharsets.UTF_8);
-	
+
 	public Client client = null;
-	
+
 	//TODO: TEST WITH MINIMUM CHARACTERS FOR CIPHER AFTER DECIDING HOW WE WILL CIPHER
-	
+
     @Before
     public void setUp() throws Exception {
 		client = new Client("rmi://localhost:8006/password-manager");
@@ -38,7 +38,7 @@ public class ClientTest {
 			e.printStackTrace();
 		}
     }
-	
+
 	@Test
 	public void SavePasswordTwiceSucess() {
 		try {
@@ -49,22 +49,22 @@ public class ClientTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test(expected = InvalidDomainException.class)
 	public void SavePasswordInvalidDomain() {
 		client.save_password(null, VALID_USERNAME, PASSWORD1);
 	}
-	
+
 	@Test(expected = InvalidUsernameException.class)
 	public void SavePasswordInvalidUsername() {
 		client.save_password(VALID_DOMAIN, null, PASSWORD1);
 	}
-	
+
 	@Test(expected = InvalidPasswordException.class)
 	public void SavePasswordInvalidPassword() {
 		client.save_password(VALID_DOMAIN, VALID_USERNAME, null);
 	}
-	
+
 	@Test
 	public void RetrievePasswordSuccess() {
 		try {
@@ -76,19 +76,19 @@ public class ClientTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test(expected = InvalidDomainException.class)
 	public void RetrievePasswordInvalidDomain() {
 		client.save_password(VALID_DOMAIN, VALID_USERNAME, PASSWORD1);
 		client.retrieve_password(null, VALID_USERNAME);
 	}
-	
+
 	@Test(expected = InvalidUsernameException.class)
 	public void RetrievePasswordInvalidUsername()	{
 		client.save_password(VALID_DOMAIN, VALID_USERNAME, PASSWORD1);
 		client.retrieve_password(VALID_DOMAIN, null);
 	}
-	
+
 	@Test(expected = InexistentTupleException.class)
 	public void RetrievePasswordInvalidTuple() {
 		client.retrieve_password(VALID_DOMAIN, VALID_USERNAME);
