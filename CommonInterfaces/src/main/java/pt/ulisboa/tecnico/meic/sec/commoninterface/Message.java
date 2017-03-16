@@ -13,9 +13,10 @@ public class Message implements Serializable {
     public byte[] password;
     public byte[] secretKey;
     public byte[] randomIv;
+    public byte[] passwordIv;
 
     // constructor to serialize object
-    public Message(Key publicKey, byte[] signature, byte[] seqNum, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv) {
+    public Message(Key publicKey, byte[] signature, byte[] seqNum, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
         this.publicKey = publicKey;
         this.signature = signature;
         this.sequenceNumber = seqNum;
@@ -24,9 +25,10 @@ public class Message implements Serializable {
         this.password = password;
         this.secretKey = secretKey;
         this.randomIv = randomIv;
+        this.passwordIv = passwordIv;
     }
 
-    public Message(Key publicKey, byte[] signature, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv) {
+    public Message(Key publicKey, byte[] signature, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
         this.publicKey = publicKey;
         this.signature = signature;
      //   this.sequenceNumber = sequenceNumber;  // TODO
@@ -35,6 +37,7 @@ public class Message implements Serializable {
         this.password = password;
         this.secretKey = secretKey;
         this.randomIv = randomIv;
+        this.passwordIv = passwordIv;
     }
 
     public Message(Key publicKey, byte[] signature, byte[] sequenceNumber, byte[] domain, byte[] username) {

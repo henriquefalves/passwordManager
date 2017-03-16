@@ -65,7 +65,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		}
 	}
 
-	public static Message getSecureMessage(byte[][] data, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
+	public static Message getSecureMessage(byte[][] data, byte[] passwordIv, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
 		if(data.length != 3){
             System.out.println("Crypto-getSecureMessage: invalid length of data");
             return null;
@@ -73,6 +73,9 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	    byte[] randomIv = Crypto.generateIv();
 
         ArrayList<byte[]> argsToHast = new ArrayList<>();
+        if(passwordIv != null){
+			argsToHast.add(passwordIv);
+		}
         argsToHast.add(randomIv);
         argsToHast.add(senderPubKey.getEncoded());
         argsToHast.add(receiverPubKey.getEncoded());
@@ -107,13 +110,13 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		byte[] cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
 		// PublicKey, Signature, Domain, Username, Password, SecretKey, iv
-		Message m = new Message(senderPubKey, cipheredSignedData, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv);
+		Message m = new Message(senderPubKey, cipheredSignedData, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
 		return m;
 	}
 
 
 	public static byte[][] checkMessage(Message receivedMessage, boolean[] argsToGet, byte[] secretKey, Key receiverPriv, Key receiverPub ){
-	    if(argsToGet.length != 3){
+	    if(argsToGet.length != 4){
             System.out.println("Crypto-checkMessage: Invalid argToGet size");
 	        return null;
         }
@@ -126,9 +129,13 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             secretKeyToDecipher = Crypto.decrypt(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
         }
 
-        byte[][] result = new byte[][] {null, null, null};
+        byte[][] result = new byte[][] {null, null, null, null};
 
         ArrayList<byte[]> argsToHast = new ArrayList<>();
+        if(argsToGet[3]){
+			argsToHast.add(receivedMessage.passwordIv);
+			result[3] = receivedMessage.passwordIv;
+		}
         argsToHast.add(receivedMessage.randomIv);
         argsToHast.add(receivedMessage.publicKey.getEncoded());
         argsToHast.add(receiverPub.getEncoded());

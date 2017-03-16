@@ -34,21 +34,23 @@ public class ClientCrypto implements ServerAPI {
 
 
     public void register(Key publicKey, int sequenceNumber) throws RemoteException {
-
         if(this.sessionKey == null){
             this.sessionKey = Crypto.generateSessionKey();      // TODO if in all methods
         }
         byte[][] args = new byte[][] {null, null, null };
-        Message m = Crypto.getSecureMessage(args, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+        Message m = Crypto.getSecureMessage(args, null, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.register(m);
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, int sequenceNumber) throws RemoteException {
+        byte[] passwordIv = Crypto.generateIv();        // TODO Henrique
+        System.out.println("ClientCrypto-put: passwordId = "+ new String(passwordIv, StandardCharsets.UTF_8));
+
         if(this.sessionKey == null){
             this.sessionKey = Crypto.generateSessionKey();
         }
         byte[][] args = new byte[][] {domain, username, password };
-        Message m = Crypto.getSecureMessage(args, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+        Message m = Crypto.getSecureMessage(args, passwordIv, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.put(m);
 
     }
@@ -58,10 +60,10 @@ public class ClientCrypto implements ServerAPI {
             this.sessionKey = Crypto.generateSessionKey();
         }
         byte[][] args = new byte[][] {domain, username, null };
-        Message m = Crypto.getSecureMessage(args, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+        Message m = Crypto.getSecureMessage(args, null, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         Message response=  passwordmanager.get(m);
 
-        boolean[] argsToGet = new boolean[] {false, false, true};
+        boolean[] argsToGet = new boolean[] {false, false, true, false};
         byte[][] result = Crypto.checkMessage(response, argsToGet, null, this.myPrivateKey, this.myPublicKey);
         System.out.println("Client-get: password = " + new String(result[2], StandardCharsets.UTF_8));
 
