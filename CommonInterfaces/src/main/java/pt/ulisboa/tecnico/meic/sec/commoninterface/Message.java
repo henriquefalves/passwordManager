@@ -28,38 +28,6 @@ public class Message implements Serializable {
         this.passwordIv = passwordIv;
     }
 
-    public Message(Key publicKey, byte[] signature, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
-        this.publicKey = publicKey;
-        this.signature = signature;
-     //   this.sequenceNumber = sequenceNumber;  // TODO
-        this.domain = domain;
-        this.username = username;
-        this.password = password;
-        this.secretKey = secretKey;
-        this.randomIv = randomIv;
-        this.passwordIv = passwordIv;
-    }
-
-    public Message(Key publicKey, byte[] signature, byte[] sequenceNumber, byte[] domain, byte[] username) {
-        this.publicKey = publicKey;
-        this.signature = signature;
-        this.sequenceNumber = sequenceNumber;
-        this.domain = domain;
-        this.username = username;
-    }
-
-    public Message(Key publicKey, byte[] signature, byte[] sequenceNumber, byte[] password) {
-        this.publicKey = publicKey;
-        this.signature = signature;
-        this.sequenceNumber = sequenceNumber;
-        this.password = password;
-    }
-
-    public Message(Key publicKey, byte[] signature, byte[] sequenceNumber) {
-        this.publicKey = publicKey;
-        this.signature = signature;
-        this.sequenceNumber = sequenceNumber;
-    }
 
     public Message(){}
 }

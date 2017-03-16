@@ -7,6 +7,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
@@ -18,12 +19,14 @@ public class ClientCrypto implements ServerAPI {
     private Key myPublicKey;
     private Key serverPublicKey;
     private byte[] sessionKey;
+    private BigInteger sequencenumber;
 
     CommunicationAPI passwordmanager;
 
     public ClientCrypto(String remoteServerName) throws RemoteException, NotBoundException, MalformedURLException {
         passwordmanager = new ClientFrontEnd(remoteServerName);
         sessionKey = null;
+        sequencenumber = BigInteger.valueOf(0);     // sequenceNumber = 0
     }
 
     public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey){
@@ -37,7 +40,9 @@ public class ClientCrypto implements ServerAPI {
         if(this.sessionKey == null){
             this.sessionKey = Crypto.generateSessionKey();      // TODO if in all methods
         }
-        byte[][] args = new byte[][] {null, null, null };
+        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
+        System.out.println("REGISTER-seqNum = " + sequencenumber);
+        byte[][] args = new byte[][] {sequencenumber.toByteArray(), null, null, null };
         Message m = Crypto.getSecureMessage(args, null, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.register(m);
     }
@@ -49,23 +54,29 @@ public class ClientCrypto implements ServerAPI {
         if(this.sessionKey == null){
             this.sessionKey = Crypto.generateSessionKey();
         }
-        byte[][] args = new byte[][] {domain, username, password };
+        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
+        System.out.println("PUT-seqNum = " + sequencenumber);
+        byte[][] args = new byte[][] {sequencenumber.toByteArray(), domain, username, password };
         Message m = Crypto.getSecureMessage(args, passwordIv, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.put(m);
-
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username, int sequenceNumber) throws RemoteException {
+
+
         if(this.sessionKey == null){
             this.sessionKey = Crypto.generateSessionKey();
         }
-        byte[][] args = new byte[][] {domain, username, null };
+        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
+        System.out.println("GET-seqNum = " + sequencenumber);
+        byte[][] args = new byte[][] {sequencenumber.toByteArray(), domain, username, null };
         Message m = Crypto.getSecureMessage(args, null, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         Message response=  passwordmanager.get(m);
 
         boolean[] argsToGet = new boolean[] {false, false, true, false};
-        byte[][] result = Crypto.checkMessage(response, argsToGet, null, this.myPrivateKey, this.myPublicKey);
+        byte[][] result = Crypto.checkMessage(response, sequencenumber, argsToGet, null, this.myPrivateKey, this.myPublicKey);
         System.out.println("Client-get: password = " + new String(result[2], StandardCharsets.UTF_8));
+        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
 
         return result[2];
     }

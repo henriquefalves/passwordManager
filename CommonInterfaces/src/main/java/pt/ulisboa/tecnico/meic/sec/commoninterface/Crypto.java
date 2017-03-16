@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -66,7 +67,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	}
 
 	public static Message getSecureMessage(byte[][] data, byte[] passwordIv, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
-		if(data.length != 3){
+		if(data.length != 4){
             System.out.println("Crypto-getSecureMessage: invalid length of data");
             return null;
         }
@@ -80,20 +81,23 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         argsToHast.add(senderPubKey.getEncoded());
         argsToHast.add(receiverPubKey.getEncoded());
 
+		argsToHast.add(data[0]);
+		byte[] cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, data[0]);
+
         byte[] cipheredDomain = null;
-        if(data[0] != null){
-            cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, data[0]);
-            argsToHast.add(data[0]);
-        }
-        byte[] cipheredUsername= null;
         if(data[1] != null){
-            cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, data[1]);
+            cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, data[1]);
             argsToHast.add(data[1]);
         }
-        byte[] cipheredPassword= null;
+        byte[] cipheredUsername= null;
         if(data[2] != null){
-            cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, data[2]);
+            cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, data[2]);
             argsToHast.add(data[2]);
+        }
+        byte[] cipheredPassword= null;
+        if(data[3] != null){
+            cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, data[3]);
+            argsToHast.add(data[3]);
         }
 
         byte[][] arrayToHash = argsToHast.toArray(new byte[0][]);
@@ -109,13 +113,13 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		System.out.println("Crypto: secret key: " + new String(secretKey, StandardCharsets.UTF_8));
 		byte[] cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
-		// PublicKey, Signature, Domain, Username, Password, SecretKey, iv
-		Message m = new Message(senderPubKey, cipheredSignedData, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
+		// PublicKey, Signature, seqNum, Domain, Username, Password, SecretKey, iv, passwordIv
+		Message m = new Message(senderPubKey, cipheredSignedData, cipheredSeqNum, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
 		return m;
 	}
 
 
-	public static byte[][] checkMessage(Message receivedMessage, boolean[] argsToGet, byte[] secretKey, Key receiverPriv, Key receiverPub ){
+	public static byte[][] checkMessage(Message receivedMessage, BigInteger lastSeqNum, boolean[] argsToGet, byte[] secretKey, Key receiverPriv, Key receiverPub ){
 	    if(argsToGet.length != 4){
             System.out.println("Crypto-checkMessage: Invalid argToGet size");
 	        return null;
@@ -139,6 +143,10 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         argsToHast.add(receivedMessage.randomIv);
         argsToHast.add(receivedMessage.publicKey.getEncoded());
         argsToHast.add(receiverPub.getEncoded());
+
+		// add domain
+		byte[] decipheredSeqNum = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.sequenceNumber);
+		argsToHast.add(decipheredSeqNum);
 
         if (argsToGet[0]){
             // add domain
@@ -171,6 +179,17 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             return null;
             // TODO exception?
         }
+
+		BigInteger recSeqNum = new BigInteger(decipheredSeqNum);
+		BigInteger expectedSeqNum = lastSeqNum.add(BigInteger.valueOf(1));
+		if(recSeqNum.equals(expectedSeqNum)){
+			System.out.println("Crypto-checkMessage: correct seqNumber");
+		}
+		else{
+			System.out.println("Crypto-checkMessage: invalid seqNumber");	//TODO
+			return null;
+		}
+
         System.out.println("Crypto-checkMessage: valid message");
         return result;
     }
