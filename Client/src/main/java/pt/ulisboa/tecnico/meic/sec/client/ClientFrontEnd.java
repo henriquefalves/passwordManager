@@ -27,13 +27,13 @@ public class ClientFrontEnd implements CommunicationAPI {
     public void put(Message message) throws RemoteException {
         //TODO: cenas
 
-        server.put(new Message());
+        server.put(message);
     }
 
-    public byte[] get(Message message) throws RemoteException {
+    public Message get(Message message) throws RemoteException {
         //TODO: cenas
 
-        byte[] result = server.get(new Message());
+        Message result = server.get(message);
 
         //TODO: mais cenas
 

@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.meic.sec.commoninterface;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -65,33 +66,42 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	}
 
 	public static Message getSecureMessage(byte[][] data, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
-		byte[] randomIv = Crypto.generateIv();
-		byte[] dataToDigest = null;
-		if(data != null){
-			byte[] dataInByteArray = Crypto.createData(data);
-			dataToDigest = Crypto.createData(new byte[][] {randomIv, dataInByteArray, senderPubKey.getEncoded(), receiverPubKey.getEncoded()});
-		}
-		else{
-			dataToDigest = Crypto.createData(new byte[][] {randomIv, senderPubKey.getEncoded(), receiverPubKey.getEncoded()});
-		}
+		if(data.length != 3){
+            System.out.println("Crypto-getSecureMessage: invalid length of data");
+            return null;
+        }
+	    byte[] randomIv = Crypto.generateIv();
+
+        ArrayList<byte[]> argsToHast = new ArrayList<>();
+        argsToHast.add(randomIv);
+        argsToHast.add(senderPubKey.getEncoded());
+        argsToHast.add(receiverPubKey.getEncoded());
+
+        byte[] cipheredDomain = null;
+        if(data[0] != null){
+            cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, data[0]);
+            argsToHast.add(data[0]);
+        }
+        byte[] cipheredUsername= null;
+        if(data[1] != null){
+            cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, data[1]);
+            argsToHast.add(data[1]);
+        }
+        byte[] cipheredPassword= null;
+        if(data[2] != null){
+            cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, data[2]);
+            argsToHast.add(data[2]);
+        }
+
+        byte[][] arrayToHash = argsToHast.toArray(new byte[0][]);
+        byte[] dataToDigest = Crypto.createData(arrayToHash);
+
 		byte[] digestToSign = Crypto.hashData(dataToDigest);
 		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, digestToSign);
 		System.out.println("Crypto: signedData = " + new String(signedData, StandardCharsets.UTF_8));
 
 		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
 
-		byte[] cipheredDomain = null;
-		if(data.length > 0){
-			cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, data[0]);
-		}
-		byte[] cipheredUsername= null;
-		if(data.length > 1){
-			cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, data[1]);
-		}
-		byte[] cipheredPassword= null;
-		if(data.length == 3){
-			cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, data[2]);
-		}
 
 		System.out.println("Crypto: secret key: " + new String(secretKey, StandardCharsets.UTF_8));
 		byte[] cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
@@ -100,6 +110,65 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		Message m = new Message(senderPubKey, cipheredSignedData, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv);
 		return m;
 	}
+
+
+	public static byte[][] checkMessage(Message receivedMessage, boolean[] argsToGet, byte[] secretKey, Key receiverPriv, Key receiverPub ){
+	    if(argsToGet.length != 3){
+            System.out.println("Crypto-checkMessage: Invalid argToGet size");
+	        return null;
+        }
+	    byte[] secretKeyToDecipher = secretKey;
+	    if (receivedMessage.secretKey == null && secretKey == null){
+            System.out.println("Crypto-checkMessage: No secret key available to decipher");
+            return null;    // TODO EXCEPTION
+        }
+        if (receivedMessage.secretKey != null){
+            secretKeyToDecipher = Crypto.decrypt(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+        }
+
+        byte[][] result = new byte[][] {null, null, null};
+
+        ArrayList<byte[]> argsToHast = new ArrayList<>();
+        argsToHast.add(receivedMessage.randomIv);
+        argsToHast.add(receivedMessage.publicKey.getEncoded());
+        argsToHast.add(receiverPub.getEncoded());
+
+        if (argsToGet[0]){
+            // add domain
+            byte[] decipheredDomain = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.domain);
+            argsToHast.add(decipheredDomain);
+            result[0] = decipheredDomain;
+        }
+        if (argsToGet[1]){
+            // add username
+            byte[] decipheredUsername = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.username);
+            argsToHast.add(decipheredUsername);
+            result[1] = decipheredUsername;
+        }
+        if (argsToGet[2]){
+            // add password
+            byte[] decipheredPassword = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.password);
+            argsToHast.add(decipheredPassword);
+            result[2] = decipheredPassword;
+        }
+
+        byte[][] arrayToHash = argsToHast.toArray(new byte[0][]);
+        byte[] dataToHash = Crypto.createData(arrayToHash);
+        byte[] digestToCheckSign = Crypto.hashData(dataToHash);
+
+        byte[] signedData = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.signature);
+
+        boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKey, digestToCheckSign, signedData);
+        if (!integrity){
+            System.out.println("Crypto-checkMessage: Invalid signature");
+            return null;
+            // TODO exception?
+        }
+        System.out.println("Crypto-checkMessage: valid message");
+        return result;
+    }
+
+
 
 	public static byte[] cipherSymmetric(byte [] key, byte[] iv, byte[] message) {
 		try {

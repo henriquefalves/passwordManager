@@ -22,49 +22,37 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     }
 
     public void register(Message message) throws RemoteException {
-    // server.server.clientPublicKey
+        boolean[] argsToGet = new boolean[] {false, false, false};
+        byte[][] result = Crypto.checkMessage(message, argsToGet, null, server.server.myPrivateKey, server.server.myPublicKey);
 
-        byte[] secretKey = Crypto.decrypt(message.secretKey, server.server.myPrivateKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-        System.out.println("Server: secret key: " + new String(secretKey, StandardCharsets.UTF_8));
-
-        byte[] decipheredDomain = Crypto.decipherSymmetric(secretKey, message.randomIv, message.domain);
-        System.out.println("Server: domain = " + new String(decipheredDomain, StandardCharsets.UTF_8));
-
-        byte[] decipheredUsername = Crypto.decipherSymmetric(secretKey, message.randomIv, message.username);
-        System.out.println("Server: username = " + new String(decipheredUsername, StandardCharsets.UTF_8));
-
-        byte[] decipheredPassword = Crypto.decipherSymmetric(secretKey, message.randomIv, message.password);
-        System.out.println("Server: password = " + new String(decipheredPassword, StandardCharsets.UTF_8));
-
-        byte[] signedData = Crypto.decipherSymmetric(secretKey, message.randomIv, message.signature);
-        System.out.println("Server: signedData = " + new String(signedData, StandardCharsets.UTF_8));
-
-        byte[] dataToHash = Crypto.createData(new byte[][] {message.randomIv, decipheredDomain, decipheredUsername, decipheredPassword, message.publicKey.getEncoded(), server.server.myPublicKey.getEncoded() });
-        byte[] digestToCheckSign = Crypto.hashData(dataToHash);
-
-        boolean integrity = Crypto.verifySign((PublicKey) message.publicKey, digestToCheckSign, signedData);
-        if (!integrity){
-            System.out.println("Server: Invalid signature");
-            return;
-            // TODO exception?
-        }
         server.register(message.publicKey, 1);
     }
 
     public void put(Message message) throws RemoteException {
-        //TODO: cenas
 
-        //server.put(publicKey, domain, username, password);
+        boolean[] argsToGet = new boolean[] {true, true, true};
+        byte[][] result = Crypto.checkMessage(message, argsToGet, null, server.server.myPrivateKey, server.server.myPublicKey);
+        System.out.println("Server-put: domain = " + new String(result[0], StandardCharsets.UTF_8));
+        System.out.println("Server-put: username = " + new String(result[1], StandardCharsets.UTF_8));
+        System.out.println("Server-put: password = " + new String(result[2], StandardCharsets.UTF_8));
+
+        server.put(message.publicKey, result[0], result[1], result[2], 1);
     }
 
-    public byte[] get(Message message) throws RemoteException {
-        //TODO: cenas
+    public Message get(Message message) throws RemoteException {
+        boolean[] argsToGet = new boolean[] {true, true, false};
+        byte[][] result = Crypto.checkMessage(message, argsToGet, null, server.server.myPrivateKey, server.server.myPublicKey);
+        System.out.println("Server-get: domain = " + new String(result[0], StandardCharsets.UTF_8));
+        System.out.println("Server-get: username = " + new String(result[1], StandardCharsets.UTF_8));
+        byte[] password = server.get(message.publicKey, result[0], result[1], 1);
 
 
-        //byte[] password = server.get(publicKey, domain, username);
+        byte[] sessionKey = Crypto.generateSessionKey();            // FIXME sessionsKey management
+        byte[][] args = new byte[][] {null, null, password };
+        Message m = Crypto.getSecureMessage(args, sessionKey, server.server.myPrivateKey, server.server.myPublicKey, message.publicKey);
 
-        //TODO: mais cenas e retorna isso
-        return "string".getBytes(StandardCharsets.UTF_8);    }
+        return m;
+    }
 
 
     // ???

@@ -35,28 +35,37 @@ public class ClientCrypto implements ServerAPI {
 
     public void register(Key publicKey, int sequenceNumber) throws RemoteException {
 
-		this.sessionKey = Crypto.generateSessionKey();      // TODO if in all methods
-		
-        byte[][] args = new byte[][] {"domain".getBytes(StandardCharsets.UTF_8), "username".getBytes(StandardCharsets.UTF_8), "password".getBytes(StandardCharsets.UTF_8) };
+        if(this.sessionKey == null){
+            this.sessionKey = Crypto.generateSessionKey();      // TODO if in all methods
+        }
+        byte[][] args = new byte[][] {null, null, null };
         Message m = Crypto.getSecureMessage(args, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.register(m);
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, int sequenceNumber) throws RemoteException {
-        //TODO: cenas
-
-        passwordmanager.put(new Message());
+        if(this.sessionKey == null){
+            this.sessionKey = Crypto.generateSessionKey();
+        }
+        byte[][] args = new byte[][] {domain, username, password };
+        Message m = Crypto.getSecureMessage(args, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+        passwordmanager.put(m);
 
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username, int sequenceNumber) throws RemoteException {
-        //TODO: cenas
+        if(this.sessionKey == null){
+            this.sessionKey = Crypto.generateSessionKey();
+        }
+        byte[][] args = new byte[][] {domain, username, null };
+        Message m = Crypto.getSecureMessage(args, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+        Message response=  passwordmanager.get(m);
 
-        byte[] result=  passwordmanager.get(new Message());
+        boolean[] argsToGet = new boolean[] {false, false, true};
+        byte[][] result = Crypto.checkMessage(response, argsToGet, null, this.myPrivateKey, this.myPublicKey);
+        System.out.println("Client-get: password = " + new String(result[2], StandardCharsets.UTF_8));
 
-        //TODO: mais cenas
-
-        return result;
+        return result[2];
     }
 
     public int getSequenceNumber(Key publicKey) throws RemoteException, InvalidArgumentsException {
