@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -108,12 +109,9 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 		byte[] digestToSign = Crypto.hashData(dataToDigest);
 		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, digestToSign);
-		System.out.println("Crypto: signedData = " + new String(signedData, StandardCharsets.UTF_8));
 
 		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
 
-
-		System.out.println("Crypto: secret key: " + new String(secretKey, StandardCharsets.UTF_8));
 		byte[] cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
 		// PublicKey, Signature, seqNum, Domain, Username, Password, SecretKey, iv, passwordIv
@@ -130,7 +128,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	    byte[] secretKeyToDecipher = secretKey;
 	    if (receivedMessage.secretKey == null && secretKey == null){
             System.out.println("Crypto-checkMessage: No secret key available to decipher");
-            return null;    // TODO EXCEPTION
+            return null;
         }
         if (receivedMessage.secretKey != null){
             secretKeyToDecipher = Crypto.decrypt(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
@@ -187,21 +185,16 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         if (!integrity){
             System.out.println("Crypto-checkMessage: Invalid signature");
             return null;
-            // TODO exception?
         }
 
         if(lastSeqNum != null){
 			BigInteger recSeqNum = new BigInteger(decipheredSeqNum);
 			BigInteger expectedSeqNum = lastSeqNum.add(BigInteger.valueOf(1));
-			if(recSeqNum.equals(expectedSeqNum)){
-				System.out.println("Crypto-checkMessage: correct seqNumber");
-			}
-			else{
-				System.out.println("Crypto-checkMessage: invalid seqNumber");	//TODO
+			if(!recSeqNum.equals(expectedSeqNum)){
+				System.out.println("Crypto-checkMessage: invalid seqNumber");
 				return null;
 			}
 		}
-
         System.out.println("Crypto-checkMessage: valid message");
         return result;
     }
@@ -215,7 +208,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			Cipher c = Cipher.getInstance("AES/CBC/PKCS5PADDING");
 			c.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
 			byte[] encodedBytes = c.doFinal(message);
-			System.out.println("cipherSymmetric: encoded done");
 			return encodedBytes;
 		} catch (Exception e) {
 			System.out.println("cipherSymmetric: AES encryption error");

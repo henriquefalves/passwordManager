@@ -25,7 +25,7 @@ public class ClientCrypto implements ServerAPI {
 
     public ClientCrypto(String remoteServerName) throws RemoteException, NotBoundException, MalformedURLException {
         passwordmanager = new ClientFrontEnd(remoteServerName);
-        sessionKey = null;
+        sessionKey = Crypto.generateSessionKey();
         sequencenumber = null;
     }
 
@@ -37,9 +37,6 @@ public class ClientCrypto implements ServerAPI {
 
 
     public void register(Key publicKey) throws RemoteException {
-        if(this.sessionKey == null){
-            this.sessionKey = Crypto.generateSessionKey();      // TODO if in all methods
-        }
         if(this.sequencenumber == null){
             this.sequencenumber = this.getCurrentSeqNum(publicKey);
         }
@@ -52,11 +49,7 @@ public class ClientCrypto implements ServerAPI {
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
         byte[] passwordIv = Crypto.generateIv();        // TODO Henrique
-        System.out.println("ClientCrypto-put: passwordId = "+ new String(passwordIv, StandardCharsets.UTF_8));
 
-        if(this.sessionKey == null){
-            this.sessionKey = Crypto.generateSessionKey();
-        }
         if(this.sequencenumber == null){
             this.sequencenumber = this.getCurrentSeqNum(publicKey);
         }
@@ -69,11 +62,6 @@ public class ClientCrypto implements ServerAPI {
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-
-
-        if(this.sessionKey == null){
-            this.sessionKey = Crypto.generateSessionKey();
-        }
         if(this.sequencenumber == null){
             this.sequencenumber = this.getCurrentSeqNum(publicKey);
         }
@@ -86,16 +74,12 @@ public class ClientCrypto implements ServerAPI {
 
         boolean[] argsToGet = new boolean[] {false, false, true, false, false};
         byte[][] result = Crypto.checkMessage(response, sequencenumber, argsToGet, null, this.myPrivateKey, this.myPublicKey);
-        System.out.println("Client-get: password = " + new String(result[2], StandardCharsets.UTF_8));
         sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
 
         return result[2];
     }
 
     private BigInteger getCurrentSeqNum(Key publicKey) throws RemoteException {
-        if(this.sessionKey == null){
-            this.sessionKey = Crypto.generateSessionKey();
-        }
 
         byte[][] args = new byte[][] {null, null, null, null };
         Message m = Crypto.getSecureMessage(args, null, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
