@@ -15,25 +15,21 @@ public class ServerCrypto implements ServerAPI {
         server = new Server();
     }
 
-    public void register(Key publicKey, int sequenceNumber) throws RemoteException {
+    public void register(Key publicKey) throws RemoteException {
 
-        server.register(publicKey, sequenceNumber);
+        server.register(publicKey);
     }
 
-    public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, int sequenceNumber) throws RemoteException {
+    public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
 
-        server.put(publicKey, domain, username, password, sequenceNumber);
+        server.put(publicKey, domain, username, password);
     }
 
-    public byte[] get(Key publicKey, byte[] domain, byte[] username, int sequenceNumber) throws RemoteException {
+    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
 
-        byte[] password = server.get(publicKey, domain, username, sequenceNumber);
+        byte[] password = server.get(publicKey, domain, username);
 
         return password;
     }
 
-    @Override
-    public int getSequenceNumber(Key publicKey) throws RemoteException, InvalidArgumentsException {
-        return 0;
-    }
 }

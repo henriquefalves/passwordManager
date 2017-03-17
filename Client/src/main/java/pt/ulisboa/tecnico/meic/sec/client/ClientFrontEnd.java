@@ -19,30 +19,19 @@ public class ClientFrontEnd implements CommunicationAPI {
     }
 
     public void register(Message message) throws RemoteException {
-        //TODO: cenas
-
         server.register(message);
     }
 
     public void put(Message message) throws RemoteException {
-        //TODO: cenas
-
         server.put(message);
     }
 
     public Message get(Message message) throws RemoteException {
-        //TODO: cenas
-
         Message result = server.get(message);
-
-        //TODO: mais cenas
-
         return result;
     }
 
-    public int getSequenceNumber(Message message) throws RemoteException {
-        server.getSequenceNumber(new Message());
-
-        return 0;
+    public Message getSequenceNumber(Message message) throws RemoteException {
+        return server.getSequenceNumber(message);
     }
 }

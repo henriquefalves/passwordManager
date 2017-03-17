@@ -81,8 +81,11 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         argsToHast.add(senderPubKey.getEncoded());
         argsToHast.add(receiverPubKey.getEncoded());
 
-		argsToHast.add(data[0]);
-		byte[] cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, data[0]);
+		byte[] cipheredSeqNum = null;
+		if(data[0] != null){
+			cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, data[0]);
+			argsToHast.add(data[0]);
+		}
 
         byte[] cipheredDomain = null;
         if(data[1] != null){
@@ -118,9 +121,9 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		return m;
 	}
 
-
+	// argsToGet format: {domain, username, password, passwordIv, seqNum}
 	public static byte[][] checkMessage(Message receivedMessage, BigInteger lastSeqNum, boolean[] argsToGet, byte[] secretKey, Key receiverPriv, Key receiverPub ){
-	    if(argsToGet.length != 4){
+	    if(argsToGet.length != 5){
             System.out.println("Crypto-checkMessage: Invalid argToGet size");
 	        return null;
         }
@@ -133,7 +136,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             secretKeyToDecipher = Crypto.decrypt(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
         }
 
-        byte[][] result = new byte[][] {null, null, null, null};
+        byte[][] result = new byte[][] {null, null, null, null, null};
 
         ArrayList<byte[]> argsToHast = new ArrayList<>();
         if(argsToGet[3]){
@@ -144,9 +147,16 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         argsToHast.add(receivedMessage.publicKey.getEncoded());
         argsToHast.add(receiverPub.getEncoded());
 
-		// add domain
-		byte[] decipheredSeqNum = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.sequenceNumber);
-		argsToHast.add(decipheredSeqNum);
+
+		byte[] decipheredSeqNum = null;
+		if(lastSeqNum != null || argsToGet[4]){
+			// add seqNum
+			decipheredSeqNum = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.sequenceNumber);
+			argsToHast.add(decipheredSeqNum);
+			if(argsToGet[4]){
+				result[4] = decipheredSeqNum;
+			}
+		}
 
         if (argsToGet[0]){
             // add domain
@@ -180,14 +190,16 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             // TODO exception?
         }
 
-		BigInteger recSeqNum = new BigInteger(decipheredSeqNum);
-		BigInteger expectedSeqNum = lastSeqNum.add(BigInteger.valueOf(1));
-		if(recSeqNum.equals(expectedSeqNum)){
-			System.out.println("Crypto-checkMessage: correct seqNumber");
-		}
-		else{
-			System.out.println("Crypto-checkMessage: invalid seqNumber");	//TODO
-			return null;
+        if(lastSeqNum != null){
+			BigInteger recSeqNum = new BigInteger(decipheredSeqNum);
+			BigInteger expectedSeqNum = lastSeqNum.add(BigInteger.valueOf(1));
+			if(recSeqNum.equals(expectedSeqNum)){
+				System.out.println("Crypto-checkMessage: correct seqNumber");
+			}
+			else{
+				System.out.println("Crypto-checkMessage: invalid seqNumber");	//TODO
+				return null;
+			}
 		}
 
         System.out.println("Crypto-checkMessage: valid message");

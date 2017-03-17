@@ -33,7 +33,7 @@ public class Server implements ServerAPI {
 		loadKeys();
 	}
 
-	public void register(Key publicKey, int sequenceNumber) throws RemoteException {
+	public void register(Key publicKey) throws RemoteException {
 		if (publicKey == null) {
 			throw new InvalidArgumentsException();
 		}
@@ -47,7 +47,7 @@ public class Server implements ServerAPI {
 		System.out.println("register: Success");
 	}
 
-	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, int sequenceNumber) throws RemoteException {
+	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
 		for (User u : users){
 			if (u.isUserKey(publicKey)){
 				u.updateInfo(domain, username, password);
@@ -59,7 +59,7 @@ public class Server implements ServerAPI {
 		// TODO exception - unknown user
 	}
 
-	public byte[] get(Key publicKey, byte[] domain, byte[] username, int sequenceNumber) throws RemoteException {
+	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
 		if (publicKey == null || domain == null || username == null){
 			{throw new InvalidArgumentsException(); }
 		}
@@ -71,12 +71,6 @@ public class Server implements ServerAPI {
 		}
 		System.out.println("get: Unknown user");
 		throw new InvalidArgumentsException();
-	}
-
-	@Override
-	public int getSequenceNumber(Key publicKey) throws RemoteException, InvalidArgumentsException {
-		//TODO: retrieve sequence number from client
-		return 0;
 	}
 
 	private void loadKeys(){

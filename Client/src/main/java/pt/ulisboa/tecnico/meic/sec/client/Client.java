@@ -32,7 +32,6 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	private Key myPublicKey;
 	private Key serverPublicKey;
 	private ServerAPI passwordManager;
-	private int sequenceNumber = -1;
 
 
 	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
@@ -127,23 +126,11 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 
 		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
 
-        if(sequenceNumber == -1) {
-		    try {
-                sequenceNumber = passwordManager.getSequenceNumber(myPublicKey);
-            } catch (RemoteException r) {
-                r.printStackTrace();
-                System.out.println("Unable to load sequence number from Server");
-            } catch (InvalidArgumentsException i) {
-                i.printStackTrace();
-                System.out.println("Unable to load sequence number from Server");
-            }
-        }
 	}
 
 	public void register_user() {
         try {
-            sequenceNumber++;
-            passwordManager.register(myPublicKey, sequenceNumber);
+            passwordManager.register(myPublicKey);
 		} catch (RemoteException e) {
 			System.out.println("Client.register_user Unable to register on server");
 			e.printStackTrace();
@@ -157,8 +144,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		if(username==null) throw new InvalidUsernameException();
 		if(password==null) throw new InvalidPasswordException();
 		try {
-            sequenceNumber++;
-            passwordManager.put(myPublicKey, domain, username, password, sequenceNumber);
+            passwordManager.put(myPublicKey, domain, username, password);
 		} catch (RemoteException e) {
 			System.out.println("Client.save_password Unable to put on server");
 			e.printStackTrace();
@@ -169,8 +155,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
 		try {
-		    sequenceNumber++;
-			return passwordManager.get(myPublicKey, domain, username, sequenceNumber);
+			return passwordManager.get(myPublicKey, domain, username);
 		} catch (RemoteException e) {
 			System.out.println("Client.save_password Unable to put on server");
 			e.printStackTrace();
