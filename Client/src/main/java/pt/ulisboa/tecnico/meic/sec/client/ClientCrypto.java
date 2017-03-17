@@ -71,11 +71,10 @@ public class ClientCrypto implements ServerAPI {
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         Message response=  passwordmanager.get(secureMessage);
 
-        boolean[] argsToGet = new boolean[] {false, false, true, false, false};
-        byte[][] result = Crypto.checkMessage(response, sequencenumber, argsToGet, null, this.myPrivateKey, this.myPublicKey);
+        Message result = Crypto.checkMessage(response, sequencenumber, null, this.myPrivateKey, this.myPublicKey);
         sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
 
-        return result[2];
+        return result.password;
     }
 
     private BigInteger getCurrentSeqNum(Key publicKey) throws RemoteException {
@@ -84,9 +83,8 @@ public class ClientCrypto implements ServerAPI {
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         Message response = passwordmanager.getSequenceNumber(secureMessage);
 
-        boolean[] argsToGet = new boolean[] {false, false, false, false, true};
-        byte[][] result = Crypto.checkMessage(response, null, argsToGet, null, this.myPrivateKey, this.myPublicKey);
-        BigInteger currSeqNum = new BigInteger(result[4]);
+        Message result = Crypto.checkMessage(response, null, null, this.myPrivateKey, this.myPublicKey);
+        BigInteger currSeqNum = new BigInteger(result.sequenceNumber);
         System.out.println("ClientCrypto-getCurrentSeqNum = " + currSeqNum);
         return currSeqNum;
     }

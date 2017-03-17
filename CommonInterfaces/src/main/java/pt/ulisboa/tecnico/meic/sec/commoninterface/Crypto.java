@@ -116,12 +116,10 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		return secureMessage;
 	}
 
-	// argsToGet format: {domain, username, password, passwordIv, seqNum}
-	public static byte[][] checkMessage(Message receivedMessage, BigInteger lastSeqNum, boolean[] argsToGet, byte[] secretKey, Key receiverPriv, Key receiverPub ){
-	    if(argsToGet.length != 5){
-            System.out.println("Crypto-checkMessage: Invalid argToGet size");
-	        return null;
-        }
+
+
+
+	public static Message checkMessage(Message receivedMessage, BigInteger lastSeqNum, byte[] secretKey, Key receiverPriv, Key receiverPub ){
 	    byte[] secretKeyToDecipher = secretKey;
 	    if (receivedMessage.secretKey == null && secretKey == null){
             System.out.println("Crypto-checkMessage: No secret key available to decipher");
@@ -131,12 +129,12 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             secretKeyToDecipher = Crypto.decrypt(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
         }
 
-        byte[][] result = new byte[][] {null, null, null, null, null};
+        Message cleanMessage = new Message();
 
         ArrayList<byte[]> argsToHast = new ArrayList<>();
-        if(argsToGet[3]){
+        if(receivedMessage.passwordIv != null){
 			argsToHast.add(receivedMessage.passwordIv);
-			result[3] = receivedMessage.passwordIv;
+			cleanMessage.passwordIv = receivedMessage.passwordIv;
 		}
         argsToHast.add(receivedMessage.randomIv);
         argsToHast.add(receivedMessage.publicKey.getEncoded());
@@ -144,32 +142,32 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 
 		byte[] decipheredSeqNum = null;
-		if(lastSeqNum != null || argsToGet[4]){
+		if(lastSeqNum != null || receivedMessage.sequenceNumber != null){
 			// add seqNum
 			decipheredSeqNum = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.sequenceNumber);
 			argsToHast.add(decipheredSeqNum);
-			if(argsToGet[4]){
-				result[4] = decipheredSeqNum;
+			if(receivedMessage.sequenceNumber != null){
+				cleanMessage.sequenceNumber = decipheredSeqNum;
 			}
 		}
 
-        if (argsToGet[0]){
+        if (receivedMessage.domain != null){
             // add domain
             byte[] decipheredDomain = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.domain);
             argsToHast.add(decipheredDomain);
-            result[0] = decipheredDomain;
+			cleanMessage.domain = decipheredDomain;
         }
-        if (argsToGet[1]){
+        if (receivedMessage.username != null){
             // add username
             byte[] decipheredUsername = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.username);
             argsToHast.add(decipheredUsername);
-            result[1] = decipheredUsername;
+			cleanMessage.username = decipheredUsername;
         }
-        if (argsToGet[2]){
+        if (receivedMessage.password != null){
             // add password
             byte[] decipheredPassword = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.password);
             argsToHast.add(decipheredPassword);
-            result[2] = decipheredPassword;
+			cleanMessage.password = decipheredPassword;
         }
 
         byte[][] arrayToHash = argsToHast.toArray(new byte[0][]);
@@ -192,7 +190,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			}
 		}
         System.out.println("Crypto-checkMessage: valid message");
-        return result;
+        return cleanMessage;
     }
 
 

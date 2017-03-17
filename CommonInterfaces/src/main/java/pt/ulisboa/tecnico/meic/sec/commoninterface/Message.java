@@ -46,4 +46,10 @@ public class Message implements Serializable {
         this.passwordIv = null;
     }
 
+    public Message(){
+        this.publicKey = null;
+        this.signature = this.sequenceNumber = this.domain = this.username = null;
+        this.password = this.secretKey = this.randomIv = this.passwordIv = null;
+    }
+
 }

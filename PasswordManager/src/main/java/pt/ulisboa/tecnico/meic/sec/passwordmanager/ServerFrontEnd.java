@@ -33,8 +33,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
 
         System.out.println("REGISTER-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        boolean[] argsToGet = new boolean[] {false, false, false, false, false};
-        byte[][] result = Crypto.checkMessage(message, sequenceNumber, argsToGet, null, server.server.myPrivateKey, server.server.myPublicKey);
+        Message result = Crypto.checkMessage(message, sequenceNumber, null, server.server.myPrivateKey, server.server.myPublicKey);
         server.register(message.publicKey);
         sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
         sequenceNumbers.put(pubKeyStr, sequenceNumber);           // !!
@@ -49,16 +48,15 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
 
         System.out.println("PUT-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        boolean[] argsToGet = new boolean[] {true, true, true, true, false};
-        byte[][] result = Crypto.checkMessage(message, sequenceNumber, argsToGet, null, server.server.myPrivateKey, server.server.myPublicKey);
+        Message result = Crypto.checkMessage(message, sequenceNumber, null, server.server.myPrivateKey, server.server.myPublicKey);
 //        System.out.println("Server-put: domain = " + new String(result[0], StandardCharsets.UTF_8));
 //        System.out.println("Server-put: username = " + new String(result[1], StandardCharsets.UTF_8));
 //        System.out.println("Server-put: password = " + new String(result[2], StandardCharsets.UTF_8));
 //        System.out.println("Server-put: passwordIV = " + new String(result[3], StandardCharsets.UTF_8));
 
-        // TODO Henrique result[3] is received passwordIv
+        // TODO Henrique result.passwordIv is received passwordIv
 
-        server.put(message.publicKey, result[0], result[1], result[2]);
+        server.put(message.publicKey, result.domain, result.username, result.password);
         sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
         sequenceNumbers.put(pubKeyStr, sequenceNumber);           // !!
     }
@@ -72,9 +70,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
 
         System.out.println("GET-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        boolean[] argsToGet = new boolean[] {true, true, false, false, false};
-        byte[][] result = Crypto.checkMessage(message, sequenceNumber, argsToGet, null, server.server.myPrivateKey, server.server.myPublicKey);
-        byte[] password = server.get(message.publicKey, result[0], result[1]);
+        Message result = Crypto.checkMessage(message, sequenceNumber, null, server.server.myPrivateKey, server.server.myPublicKey);
+        byte[] password = server.get(message.publicKey, result.domain, result.username);
 
         sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
         sequenceNumbers.put(pubKeyStr, sequenceNumber);           // save in map
@@ -93,8 +90,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
     @Override
     public Message getSequenceNumber(Message message) throws RemoteException {
-        boolean[] argsToGet = new boolean[] {false, false, false, false, false};
-        byte[][] result = Crypto.checkMessage(message, null, argsToGet, null, server.server.myPrivateKey, server.server.myPublicKey);
+        Message result = Crypto.checkMessage(message, null, null, server.server.myPrivateKey, server.server.myPublicKey);
 
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKey.getEncoded());
         BigInteger sequenceNumberToPass = sequenceNumbers.get(pubKeyStr);
