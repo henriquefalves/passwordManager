@@ -1,5 +1,8 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidSequenceNumberException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidSignatureException;
+
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -107,8 +110,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         byte[][] arrayToHash = argsToHast.toArray(new byte[0][]);
         byte[] dataToDigest = Crypto.createData(arrayToHash);
 
-		byte[] digestToSign = Crypto.hashData(dataToDigest);
-		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, digestToSign);
+		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, dataToDigest);
 
 		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
 
@@ -177,22 +179,21 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
         byte[][] arrayToHash = argsToHast.toArray(new byte[0][]);
         byte[] dataToHash = Crypto.createData(arrayToHash);
-        byte[] digestToCheckSign = Crypto.hashData(dataToHash);
 
         byte[] signedData = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.signature);
 
-        boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKey, digestToCheckSign, signedData);
+		boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKey, dataToHash, signedData);
         if (!integrity){
             System.out.println("Crypto-checkMessage: Invalid signature");
-            return null;
+            throw new InvalidSignatureException();
         }
 
         if(lastSeqNum != null){
 			BigInteger recSeqNum = new BigInteger(decipheredSeqNum);
 			BigInteger expectedSeqNum = lastSeqNum.add(BigInteger.valueOf(1));
 			if(!recSeqNum.equals(expectedSeqNum)){
-				System.out.println("Crypto-checkMessage: invalid seqNumber");
-				return null;
+				System.out.println("Crypto-checkMessage: Invalid seqNumber");
+				throw new InvalidSequenceNumberException();
 			}
 		}
         System.out.println("Crypto-checkMessage: valid message");

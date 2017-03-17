@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -9,25 +10,37 @@ import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 
 
 public class ClientTest {
-
+//
 //
 //	public static byte[] VALID_DOMAIN = "a.b".getBytes(StandardCharsets.UTF_8);
 //	public static byte[] VALID_USERNAME = "name".getBytes(StandardCharsets.UTF_8);
 //	public static byte[] PASSWORD1 = "password1".getBytes(StandardCharsets.UTF_8);
 //	public static byte[] PASSWORD2 = "password2".getBytes(StandardCharsets.UTF_8);
 //
-//	public Client client = null;
+//	public static Client client = null;
 //
 //	//TODO: TEST WITH MINIMUM CHARACTERS FOR CIPHER AFTER DECIDING HOW WE WILL CIPHER
 //
-//    @Before
-//    public void setUp() throws Exception {
+//    @BeforeClass
+//    public static void setUp() throws Exception {
 //		client = new Client("rmi://localhost:8006/password-manager");
 //		//TODO: initialize client with valid KeyStore. Will do after implementing init method.
-//		//client.init();
+//
+//        KeyStore ks = null;
+//        try {
+//            ks = KeyStore.getInstance("JCEKS");
+//        } catch (KeyStoreException e) {
+//            System.out.println("Unable to create Keystore");
+//        }
+//
+//        String keystoreName = "henriqueKeyStore.jks";
+//        String keystorePassword = "henrique123";
+//        client.init(ks, keystoreName, keystorePassword);
 //		client.register_user();
 //    }
 //
