@@ -26,11 +26,9 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 public class Client extends UnicastRemoteObject implements ClientAPI {
-	private static final String KEYPAIRPASSWORD = "123456";
-	private static final String USERALIAS = "henrique";
-	private Key myPrivateKey;
+	private static final String SERVER_ALIAS = "server";
+	private static final String USERALIAS = "user";
 	private Key myPublicKey;
-	private Key serverPublicKey;
 	private ServerAPI passwordManager;
 
 
@@ -38,14 +36,9 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		this.passwordManager = new ClientCrypto(remoteServerName);
 	}
 
-	private KeyStore loadKeystore(String keyStoreName, char[] passwordKeyStore){
-		KeyStore ks = null;
-		try {
-			ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore){
+		KeyStore ks = keystore;
+		
 		FileInputStream fis=null;
 
 		try {
@@ -81,14 +74,13 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 
 	public void init(KeyStore keystore, String keystoreName, String keystorePassword) {
 		
-		keystore = loadKeystore(keystoreName, keystorePassword.toCharArray());
+		keystore = loadKeystore( keystore , keystoreName, keystorePassword.toCharArray());
 		//Get the key with the given alias.
-		String serverAlias = "server";
 
 
 		Key key = null;
 		try {
-			key = keystore.getKey(USERALIAS, KEYPAIRPASSWORD.toCharArray());
+			key = keystore.getKey(USERALIAS,  "".toCharArray());
 		} catch (UnrecoverableKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -99,6 +91,8 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		PrivateKey myPrivateKey = null;
+
 		if (key instanceof PrivateKey) {
 			// Get certificate of public key
 			java.security.cert.Certificate cert = null;
@@ -117,13 +111,16 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			myPrivateKey = keyPair.getPrivate();
 			myPublicKey = keyPair.getPublic();
 		}
+		PublicKey serverPublicKey = null;
+
 		try {
-			serverPublicKey= keystore.getCertificate(serverAlias).getPublicKey();
+			serverPublicKey= keystore.getCertificate(SERVER_ALIAS).getPublicKey();
 		} catch (KeyStoreException e) {
 			System.out.println("Unable to load Public Key From Server");
 			e.printStackTrace();
 		}
 
+		//TODO 		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey, secretKey);
 		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
 
 	}
@@ -168,8 +165,6 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	}
 
 	public void close() {
-		myPrivateKey =null;
 		myPublicKey= null;
-		serverPublicKey=null;
 	}
 }
