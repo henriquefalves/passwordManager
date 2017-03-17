@@ -70,7 +70,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		}
 	}
 
-	public static Message getSecureMessage(Message insecureMessage, byte[] passwordIv, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
+	public static Message getSecureMessage(Message insecureMessage, byte[] passwordIv, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
 	    byte[] randomIv = Crypto.generateIv();
 
         ArrayList<byte[]> argsToHast = new ArrayList<>();		// order of adds is important
@@ -109,7 +109,10 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
 
-		byte[] cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
+		byte[] cipheredSecretKey = null;
+		if (sendSecretKey){
+			cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
+		}
 
 		// PublicKey, Signature, seqNum, Domain, Username, Password, SecretKey, iv, passwordIv
 		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredSeqNum, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
@@ -120,16 +123,17 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 
 	public static Message checkMessage(Message receivedMessage, BigInteger lastSeqNum, byte[] secretKey, Key receiverPriv, Key receiverPub ){
-	    byte[] secretKeyToDecipher = secretKey;
+		Message cleanMessage = new Message();
+
+		byte[] secretKeyToDecipher = secretKey;
 	    if (receivedMessage.secretKey == null && secretKey == null){
             System.out.println("Crypto-checkMessage: No secret key available to decipher");
             return null;
         }
         if (receivedMessage.secretKey != null){
             secretKeyToDecipher = Crypto.decrypt(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-        }
-
-        Message cleanMessage = new Message();
+			cleanMessage.secretKey = secretKeyToDecipher;
+	    }
 
         ArrayList<byte[]> argsToHast = new ArrayList<>();
         if(receivedMessage.passwordIv != null){
