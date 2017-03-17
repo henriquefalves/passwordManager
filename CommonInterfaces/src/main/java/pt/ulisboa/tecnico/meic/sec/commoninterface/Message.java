@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.Key;
 
 public class Message implements Serializable {
@@ -28,6 +29,21 @@ public class Message implements Serializable {
         this.passwordIv = passwordIv;
     }
 
+    public Message(BigInteger seqNum, byte[] domain, byte[] username, byte[] password){
+        if(seqNum != null){
+            this.sequenceNumber = seqNum.toByteArray();
+        }
+        else{
+            this.sequenceNumber = null;
+        }
+        this.domain = domain;
+        this.username = username;
+        this.password = password;
+        this.publicKey = null;
+        this.signature = null;
+        this.secretKey = null;
+        this.randomIv = null;
+        this.passwordIv = null;
+    }
 
-    public Message(){}
 }

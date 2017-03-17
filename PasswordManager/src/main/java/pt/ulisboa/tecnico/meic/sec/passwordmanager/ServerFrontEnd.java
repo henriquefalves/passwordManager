@@ -77,17 +77,17 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         byte[] password = server.get(message.publicKey, result[0], result[1]);
 
         sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
-        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // !!
+        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // save in map
 
 
         sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
-        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // !!
+        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // save in map
 
         byte[] sessionKey = Crypto.generateSessionKey();            // FIXME sessionsKey management
-        byte[][] args = new byte[][] {sequenceNumber.toByteArray(), null, null, password };
+        Message insecureMessage = new Message(sequenceNumber, null, null, password);
         // TODO pass passwordIv and check in ClientCrypto
-        Message m = Crypto.getSecureMessage(args, null, sessionKey, server.server.myPrivateKey, server.server.myPublicKey, message.publicKey);
-        return m;
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, sessionKey, server.server.myPrivateKey, server.server.myPublicKey, message.publicKey);
+        return secureMessage;
     }
 
 
@@ -105,9 +105,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
         System.out.println("ServerFE-getSeqNum: seqNum to send = " + sequenceNumberToPass);
         byte[] sessionKey = Crypto.generateSessionKey();            // FIXME sessionsKey management
-        byte[][] args = new byte[][] {sequenceNumberToPass.toByteArray(), null, null, null };
-        Message m = Crypto.getSecureMessage(args, null, sessionKey, server.server.myPrivateKey, server.server.myPublicKey, message.publicKey);
-        return m;
+        Message insecureMessage = new Message(sequenceNumberToPass, null, null, null);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, sessionKey, server.server.myPrivateKey, server.server.myPublicKey, message.publicKey);
+        return secureMessage;
     }
 }
 

@@ -70,14 +70,10 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		}
 	}
 
-	public static Message getSecureMessage(byte[][] data, byte[] passwordIv, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
-		if(data.length != 4){
-            System.out.println("Crypto-getSecureMessage: invalid length of data");
-            return null;
-        }
+	public static Message getSecureMessage(Message insecureMessage, byte[] passwordIv, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
 	    byte[] randomIv = Crypto.generateIv();
 
-        ArrayList<byte[]> argsToHast = new ArrayList<>();
+        ArrayList<byte[]> argsToHast = new ArrayList<>();		// order of adds is important
         if(passwordIv != null){
 			argsToHast.add(passwordIv);
 		}
@@ -86,39 +82,38 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         argsToHast.add(receiverPubKey.getEncoded());
 
 		byte[] cipheredSeqNum = null;
-		if(data[0] != null){
-			cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, data[0]);
-			argsToHast.add(data[0]);
+		if(insecureMessage.sequenceNumber != null){
+			cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.sequenceNumber);
+			argsToHast.add(insecureMessage.sequenceNumber);
 		}
 
         byte[] cipheredDomain = null;
-        if(data[1] != null){
-            cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, data[1]);
-            argsToHast.add(data[1]);
+        if(insecureMessage.domain != null){
+            cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.domain);
+            argsToHast.add(insecureMessage.domain);
         }
         byte[] cipheredUsername= null;
-        if(data[2] != null){
-            cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, data[2]);
-            argsToHast.add(data[2]);
+        if(insecureMessage.username != null){
+            cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.username);
+            argsToHast.add(insecureMessage.username);
         }
         byte[] cipheredPassword= null;
-        if(data[3] != null){
-            cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, data[3]);
-            argsToHast.add(data[3]);
+        if(insecureMessage.password != null){
+            cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.password);
+            argsToHast.add(insecureMessage.password);
         }
 
         byte[][] arrayToHash = argsToHast.toArray(new byte[0][]);
-        byte[] dataToDigest = Crypto.createData(arrayToHash);
-
-		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, dataToDigest);
+        byte[] dataToSign = Crypto.createData(arrayToHash);
+		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, dataToSign);
 
 		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
 
 		byte[] cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
 		// PublicKey, Signature, seqNum, Domain, Username, Password, SecretKey, iv, passwordIv
-		Message m = new Message(senderPubKey, cipheredSignedData, cipheredSeqNum, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
-		return m;
+		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredSeqNum, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
+		return secureMessage;
 	}
 
 	// argsToGet format: {domain, username, password, passwordIv, seqNum}
