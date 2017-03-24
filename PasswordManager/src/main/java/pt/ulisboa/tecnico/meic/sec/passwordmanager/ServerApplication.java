@@ -13,17 +13,13 @@ import java.util.Scanner;
 
 
 public class ServerApplication {
-    private static final String KEYSTORENAME= "server.jks";
-    private static final String KEYSTOREPASS= "server123";
-
-    private static PrivateKey myPrivateKey;
-    private static PublicKey myPublicKey;
-
     public static void main(String[] args) {
 
         int registryPort = Integer.parseInt(args[0]);
         try {
-            loadKeys();
+            KeyPair keyPair = loadKeys("server.jks", "server123", "server", "123456");
+            PrivateKey myPrivateKey = keyPair.getPrivate();
+            PublicKey myPublicKey = keyPair.getPublic();
             ServerFrontEnd passwordManager = new ServerFrontEnd(myPrivateKey, myPublicKey);
             System.out.println("Server created");
             Registry reg = LocateRegistry.createRegistry(registryPort);
@@ -42,33 +38,29 @@ public class ServerApplication {
 
     }
 
-    private static void loadKeys(){
 
+    private static KeyPair loadKeys(String keystoreName, String keystorePass, String alias, String privatePassword){
+        KeyPair keyPair = null;
         KeyStore ks = null;
         try {
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
         } catch (KeyStoreException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         FileInputStream fis=null;
 
         try {
-            fis = new FileInputStream(KEYSTORENAME);
+            fis = new FileInputStream(keystoreName);
         } catch (FileNotFoundException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
         try {
-            ks.load(fis, KEYSTOREPASS.toCharArray());
+            ks.load(fis, keystorePass.toCharArray());
         } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (CertificateException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         finally{
@@ -76,52 +68,32 @@ public class ServerApplication {
                 try {
                     fis.close();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
         }
-
-
         Key key = null;
         try {
-            key = ks.getKey("server", "123456".toCharArray());
+            key = ks.getKey(alias, privatePassword.toCharArray());
         } catch (UnrecoverableKeyException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (KeyStoreException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         if (key instanceof PrivateKey) {
             // Get certificate of public key
             java.security.cert.Certificate cert = null;
             try {
-                cert = ks.getCertificate("server");
+                cert = ks.getCertificate(alias);
             } catch (KeyStoreException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
-            // Get public key
             PublicKey publicKey = cert.getPublicKey();
-
-            // Return a key pair
-            KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);		// ???
-            myPrivateKey = keyPair.getPrivate();
-            myPublicKey = keyPair.getPublic();
-
+            keyPair = new KeyPair(publicKey, (PrivateKey) key);
         }
-
-//        try {
-//            clientPublicKey = ks.getCertificate("henrique").getPublicKey();
-//        } catch (KeyStoreException e) {
-//            System.out.println("Unable to load Public Key From Server");
-//            e.printStackTrace();
-//        }
-
+        return keyPair;
     }
+
 }
