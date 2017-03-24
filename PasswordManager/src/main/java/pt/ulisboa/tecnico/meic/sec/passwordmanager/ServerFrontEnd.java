@@ -8,6 +8,8 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashMap;
@@ -15,11 +17,16 @@ import java.util.Map;
 
 public class ServerFrontEnd extends UnicastRemoteObject implements CommunicationAPI{
 
+    private PrivateKey myPrivateKey;
+    private PublicKey myPublicKey;
+
     public ServerCrypto server;
     private Map<String, BigInteger> sequenceNumbers;
     private Map<String, String> sessionKeys;
 
-    protected ServerFrontEnd() throws RemoteException {
+    protected ServerFrontEnd(PrivateKey privateKey, PublicKey publicKey) throws RemoteException {
+        this.myPrivateKey = privateKey;
+        this.myPublicKey = publicKey;
         server = new ServerCrypto();
         sequenceNumbers = new HashMap<>();
         sessionKeys = new HashMap<>();
@@ -40,7 +47,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
 
         System.out.println("REGISTER-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, server.server.myPrivateKey, server.server.myPublicKey);
+        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, myPrivateKey, myPublicKey);
         server.register(message.publicKey);
         sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
         sequenceNumbers.put(pubKeyStr, sequenceNumber);           // !!
@@ -64,7 +71,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
 
         System.out.println("PUT-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, server.server.myPrivateKey, server.server.myPublicKey);
+        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, myPrivateKey, myPublicKey);
 
         // TODO Henrique result.passwordIv is received passwordIv
 
@@ -92,7 +99,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
 
         System.out.println("GET-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, server.server.myPrivateKey, server.server.myPublicKey);
+        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, myPrivateKey, myPublicKey);
         byte[] password = server.get(message.publicKey, result.domain, result.username);
 
         sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
@@ -108,7 +115,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message insecureMessage = new Message(sequenceNumber, null, null, password);
         // TODO pass passwordIv and check in ClientCrypto
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, existingSessionKey, false, server.server.myPrivateKey, server.server.myPublicKey, message.publicKey);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, existingSessionKey, false, myPrivateKey, myPublicKey, message.publicKey);
         return secureMessage;
     }
 
@@ -122,7 +129,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
         }
 
-        Message result = Crypto.checkMessage(message, null, existingSessionKey, server.server.myPrivateKey, server.server.myPublicKey);
+        Message result = Crypto.checkMessage(message, null, existingSessionKey, myPrivateKey, myPublicKey);
         if(result.secretKey != null){
             String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
             sessionKeys.put(pubKeyStr, newSessionKey);
@@ -137,7 +144,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
         System.out.println("ServerFE-getSeqNum: seqNum to send = " + sequenceNumberToPass);
         Message insecureMessage = new Message(sequenceNumberToPass, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, existingSessionKey, false, server.server.myPrivateKey, server.server.myPublicKey, message.publicKey);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, existingSessionKey, false, myPrivateKey, myPublicKey, message.publicKey);
         return secureMessage;
     }
 }

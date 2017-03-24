@@ -21,16 +21,10 @@ import java.util.Vector;
 
 public class Server implements ServerAPI {
 	private Vector<User> users;
-	public PrivateKey myPrivateKey;			// TODO private
-	public PublicKey myPublicKey;			// TODO private
-	private static final String KEYSTORENAME= "server.jks";
-	private static final String KEYSTOREPASS= "server123";
 
-	public Key clientPublicKey;			// TODO private
 
 	public Server() throws RemoteException {
 		users = new Vector<User>();
-		loadKeys();
 	}
 
 	public void register(Key publicKey) throws RemoteException {
@@ -73,86 +67,5 @@ public class Server implements ServerAPI {
 		throw new InvalidArgumentsException();
 	}
 
-	private void loadKeys(){
 
-		KeyStore ks = null;
-		try {
-			ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		FileInputStream fis=null;
-
-		try {
-			fis = new FileInputStream(KEYSTORENAME);
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
-			ks.load(fis, KEYSTOREPASS.toCharArray());
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally{
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-
-		Key key = null;
-		try {
-			key = ks.getKey("server", "123456".toCharArray());
-		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (key instanceof PrivateKey) {
-			// Get certificate of public key
-			java.security.cert.Certificate cert = null;
-			try {
-				cert = ks.getCertificate("server");
-			} catch (KeyStoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// Get public key
-			PublicKey publicKey = cert.getPublicKey();
-
-			// Return a key pair
-			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);		// ???
-			myPrivateKey = keyPair.getPrivate();
-			myPublicKey = keyPair.getPublic();
-
-		}
-
-		try {
-			clientPublicKey = ks.getCertificate("henrique").getPublicKey();
-		} catch (KeyStoreException e) {
-			System.out.println("Unable to load Public Key From Server");
-			e.printStackTrace();
-		}
-
-	}
 }
