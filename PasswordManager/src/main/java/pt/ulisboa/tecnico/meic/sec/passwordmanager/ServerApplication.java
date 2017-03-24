@@ -6,7 +6,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
-
 public class ServerApplication {
 
     public static void main(String[] args) {
@@ -28,6 +27,5 @@ public class ServerApplication {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
     }
 }

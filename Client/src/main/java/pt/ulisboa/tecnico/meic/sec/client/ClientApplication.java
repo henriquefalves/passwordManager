@@ -1,5 +1,11 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InexistentTupleException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
@@ -8,7 +14,6 @@ import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.util.Scanner;
-
 
 public class ClientApplication {
 
@@ -39,7 +44,7 @@ public class ClientApplication {
 		}
 	}
 
-	private static void automated(Client client, KeyStore ks) {
+	private static void automated(Client client, KeyStore ks) throws RemoteException {
 		String keystoreName = "henriqueKeyStore.jks";
 		String keystorePassword = "henrique123";
 		client.init(ks, keystoreName, keystorePassword);
@@ -73,6 +78,7 @@ public class ClientApplication {
 	private static void userInteraction(Client client, KeyStore ks){
 		Scanner reader = new Scanner(System.in);
 		boolean logIn=true;
+		boolean presentationmode = false;
 		System.out.println("####### WELCOMME  to Dependable Password Manager #######");
 		System.out.println("Please provide the file name of the Keystore:");
 		String keystoreFileName = reader.nextLine();
@@ -84,47 +90,114 @@ public class ClientApplication {
 		String domain;
 		while(logIn){
 			System.out.println(""
-					+ "1 - Save Password\n"
-					+ "2 - Retrive Password\n"
-					+ "3 - Log Out\n");
+					+ "1 - Register\n"
+					+ "2 - Save Password\n"
+					+ "3 - Retrive Password\n"
+					+ "4 - Log Out\n");
 			String choice = reader.nextLine();
 
 			switch (Integer.parseInt(choice)) {
-			case 1:
-				System.out.println("To save the password please complete the following:");
-				System.out.println("Domain: ");
-				domain = reader.nextLine();
-				System.out.println("Username: ");
-				String username = reader.nextLine();
-				System.out.println("Password: ");
-				String password = reader.nextLine();
-				System.out.println();
-				client.save_password(domain.getBytes(StandardCharsets.UTF_8), username.getBytes(StandardCharsets.UTF_8), password.getBytes(StandardCharsets.UTF_8));
-				System.out.println("Password Inserted/Updated Successfully");
-				
-				break;
-			case 2:
-				System.out.println("Which Password you want to see?");
-				System.out.println("Domain: ");
-				String domainToSearch = reader.nextLine();
-				System.out.println("Username: ");
-				String usernameToSearch = reader.nextLine();
-				System.out.println();
-				client.retrieve_password(domainToSearch.getBytes(StandardCharsets.UTF_8), usernameToSearch.getBytes(StandardCharsets.UTF_8));
-				break;
-				
-			case 3:
-				client.close();
-				logIn=false;
-				break;
-			default:
-				System.out.println("No options with that command");
-				break;
+				case 1:
+					try {
+						client.register_user();
+						System.out.println("You have been registered");
+					} catch(RemoteException r) {
+						System.out.println("There was an issue with the remote connection");
+						if(!presentationmode)
+							r.printStackTrace();
+					} catch(DuplicatePublicKeyException d) {
+						System.out.println("You are already registered in the password manager");
+						if(!presentationmode)
+							d.printStackTrace();
+					} catch(Exception e) {
+						System.out.println("Unidentified error");
+						if(!presentationmode)
+							e.printStackTrace();
+					}
+					break;
+
+				case 2:
+					System.out.println("To save the password please complete the following:");
+					System.out.println("Domain: ");
+					domain = reader.nextLine();
+					System.out.println("Username: ");
+					String username = reader.nextLine();
+					System.out.println("Password: ");
+					String password = reader.nextLine();
+					System.out.println();
+					try {
+						client.save_password(domain.getBytes(StandardCharsets.UTF_8), username.getBytes(StandardCharsets.UTF_8), password.getBytes(StandardCharsets.UTF_8));
+						System.out.println("Password Inserted/Updated Successfully");
+					} catch(RemoteException r) {
+						System.out.println("There was an issue with the remote connection");
+						if(!presentationmode)
+							r.printStackTrace();
+					} catch (InvalidDomainException id) {
+						System.out.print("Invalid Domain");
+						if(!presentationmode)
+							id.printStackTrace();
+					} catch (InvalidUsernameException iu) {
+						System.out.print("Invalid Username");
+						if(!presentationmode)
+							iu.printStackTrace();
+					} catch (InvalidPasswordException ip) {
+						System.out.print("Invalid Password");
+						if(!presentationmode)
+							ip.printStackTrace();
+					} catch (InvalidArgumentsException ia) {
+						System.out.print("Invalid Password and/or Username");
+						if(!presentationmode)
+							ia.printStackTrace();
+					} catch(Exception e) {
+						System.out.println("Unidentified error");
+						if(!presentationmode)
+							e.printStackTrace();
+					}
+					break;
+
+				case 3:
+					System.out.println("Which Password you want to see?");
+					System.out.println("Domain: ");
+					String domainToSearch = reader.nextLine();
+					System.out.println("Username: ");
+					String usernameToSearch = reader.nextLine();
+					System.out.println();
+					try {
+						byte[] response = client.retrieve_password(domainToSearch.getBytes(StandardCharsets.UTF_8), usernameToSearch.getBytes(StandardCharsets.UTF_8));
+						System.out.println("Your password is " + new String(response, StandardCharsets.UTF_8));
+					} catch(RemoteException r) {
+						System.out.println("There was an issue with the remote connection");
+						if (!presentationmode)
+							r.printStackTrace();
+					} catch (InvalidDomainException id) {
+						System.out.print("Invalid Domain");
+						if(!presentationmode)
+							id.printStackTrace();
+					} catch (InvalidUsernameException iu) {
+						System.out.print("Invalid Username");
+						if(!presentationmode)
+							iu.printStackTrace();
+					} catch (InexistentTupleException it) {
+						System.out.println("Incorrect username/domain.");
+					} catch(Exception e) {
+						System.out.println("Unidentified error");
+						if(!presentationmode)
+							e.printStackTrace();
+					}
+					break;
+
+				case 4:
+					client.close();
+					logIn=false;
+					System.out.println("You are now logged off");
+					break;
+
+				default:
+					System.out.println("No options with that command");
+					break;
 			}
 		}
-
 		reader.close();
 	}
-
 }
 

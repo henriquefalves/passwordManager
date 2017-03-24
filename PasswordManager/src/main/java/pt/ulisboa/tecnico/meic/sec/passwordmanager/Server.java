@@ -113,7 +113,6 @@ public class Server implements ServerAPI {
 			}
 		}
 
-
 		Key key = null;
 		try {
 			key = ks.getKey("server", "123456".toCharArray());
@@ -141,10 +140,9 @@ public class Server implements ServerAPI {
 			PublicKey publicKey = cert.getPublicKey();
 
 			// Return a key pair
-			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);		// ???
+			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
 			myPrivateKey = keyPair.getPrivate();
 			myPublicKey = keyPair.getPublic();
-
 		}
 
 		try {
@@ -153,6 +151,5 @@ public class Server implements ServerAPI {
 			System.out.println("Unable to load Public Key From Server");
 			e.printStackTrace();
 		}
-
 	}
 }

@@ -1,9 +1,9 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InexistentTupleException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InexistentTupleException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
@@ -31,12 +31,11 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	private Key myPublicKey;
 	private ServerAPI passwordManager;
 
-
 	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
 		this.passwordManager = new ClientCrypto(remoteServerName);
 	}
 
-	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore){
+	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) {
 		KeyStore ks = keystore;
 		
 		FileInputStream fis=null;
@@ -73,10 +72,9 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	}
 
 	public void init(KeyStore keystore, String keystoreName, String keystorePassword) {
-		
-		keystore = loadKeystore( keystore , keystoreName, keystorePassword.toCharArray());
-		//Get the key with the given alias.
 
+		//Get the key with the given alias.
+		keystore = loadKeystore( keystore , keystoreName, keystorePassword.toCharArray());
 
 		Key key = null;
 		try {
@@ -120,26 +118,20 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			e.printStackTrace();
 		}
 
-		//TODO 		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey, secretKey);
+		//TODO: ((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey, secretKey);
 		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
 
 	}
 
-	public void register_user() {
-        try {
-            passwordManager.register(myPublicKey);
-		} catch (RemoteException e) {
-			System.out.println("Client.register_user Unable to register on server");
-			e.printStackTrace();
-		}
-
+	public void register_user() throws RemoteException, InvalidArgumentsException {
+	    passwordManager.register(myPublicKey);
 	}
 
-	public void save_password(byte[] domain, byte[] username, byte[] password) {
-	    //TODO: throw exceptions assim? Nao e boa pratica
+	public void save_password(byte[] domain, byte[] username, byte[] password) throws RemoteException, InvalidDomainException, InvalidUsernameException,  InvalidPasswordException {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
 		if(password==null) throw new InvalidPasswordException();
+
 		try {
             passwordManager.put(myPublicKey, domain, username, password);
 		} catch (RemoteException e) {
@@ -148,20 +140,10 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		}
 	}
 
-	public byte[] retrieve_password(byte[] domain, byte[] username) {
+	public byte[] retrieve_password(byte[] domain, byte[] username) throws RemoteException, InvalidDomainException, InvalidUsernameException, InexistentTupleException {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
-		try {
-			return passwordManager.get(myPublicKey, domain, username);
-		} catch (RemoteException e) {
-			System.out.println("Client.save_password Unable to put on server");
-			e.printStackTrace();
-		}
-		catch (InexistentTupleException e) {
-			//TODO rever como tratar caso o servidor não encontra password paras os dois args
-			System.out.println("YOU DO NOT HAVE PASSWORD WITH GIVEN ARGUMENTS");
-		}
-		return null;
+		return passwordManager.get(myPublicKey, domain, username);
 	}
 
 	public void close() {

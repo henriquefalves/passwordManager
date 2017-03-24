@@ -26,7 +26,6 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     }
 
     public void register(Message message) throws RemoteException {
-
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKey.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -112,8 +111,6 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         return secureMessage;
     }
 
-
-    @Override
     public Message getSequenceNumber(Message message) throws RemoteException {
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKey.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);

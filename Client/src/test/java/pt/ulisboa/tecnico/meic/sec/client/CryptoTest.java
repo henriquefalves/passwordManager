@@ -8,13 +8,11 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
 
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 
 public class CryptoTest {

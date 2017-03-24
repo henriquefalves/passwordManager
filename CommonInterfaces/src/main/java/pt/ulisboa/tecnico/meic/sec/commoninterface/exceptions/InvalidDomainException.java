@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.meic.sec.client.exceptions;
+package pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions;
 
 /**
  * Created by constantin on 3/9/17.
