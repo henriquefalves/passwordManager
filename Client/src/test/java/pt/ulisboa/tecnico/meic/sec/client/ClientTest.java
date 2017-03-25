@@ -1,18 +1,5 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InexistentTupleException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
-
-import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-
 
 public class ClientTest {
 //

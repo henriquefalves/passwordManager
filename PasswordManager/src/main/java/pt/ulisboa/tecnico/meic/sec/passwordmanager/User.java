@@ -10,8 +10,6 @@ import java.util.Hashtable;
 public class User {
     private Key publicKey;
     private Hashtable<String, Hashtable<String, String>> domains;
-    //TODO: falar com o constantin para perceber como isto esta estruturado e
-    // poder adicionar o sequence number ao tuplo domain/username
 
     public User(Key publicKey){
         this.publicKey = publicKey;

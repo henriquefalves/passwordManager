@@ -11,7 +11,6 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Scanner;
 
-
 public class ServerApplication {
     public static void main(String[] args) {
 
@@ -35,7 +34,6 @@ public class ServerApplication {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
     }
 
 

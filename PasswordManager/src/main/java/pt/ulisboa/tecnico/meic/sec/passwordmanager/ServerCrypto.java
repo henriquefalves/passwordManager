@@ -16,19 +16,15 @@ public class ServerCrypto implements ServerAPI {
     }
 
     public void register(Key publicKey) throws RemoteException {
-
         server.register(publicKey);
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
-
         server.put(publicKey, domain, username, password);
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-
         byte[] password = server.get(publicKey, domain, username);
-
         return password;
     }
 

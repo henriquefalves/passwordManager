@@ -5,11 +5,8 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidSignatureEx
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.MissingSequenceNumException;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -17,22 +14,14 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class Crypto {
 
-
 public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	public static final String DEFAULT_SIGN_ALGORITHM = "SHA256withRSA";
 	public static final String ASYMETRIC_CIPHER_ALGORITHM1= "RSA/ECB/PKCS1Padding";
-	public static final String ASYMETRIC_CIPHER_ALGORITHM2="RSA/ECB/OAEPWithSHA-1AndMGF1Padding";
-	public static final String ASYMETRIC_CIPHER_ALGORITHM3="RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
-	public static final String SYMETRIC_CIPHER_ALGORITHM="AES/CBC/PKCS5Padding";
-	public static final String SYMETRIC_CIPHER_ALGORITHM2="AES/CTR/NoPadding";	
-
 
 	private static SecureRandom secureRandom = new SecureRandom();
 
@@ -70,7 +59,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			return null;
 		}
 	}
-
 
 	// receives Message in plain text, perform cryptographic operations, and return cryptographically secure Message
 	public static Message getSecureMessage(Message insecureMessage, byte[] passwordIv, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
@@ -200,8 +188,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         return messageInPlainText;
     }
 
-
-
 	public static byte[] cipherSymmetric(byte [] key, byte[] iv, byte[] message) {
 		try {
 			SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
@@ -231,8 +217,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			return  null;
 		}
 	}
-
-
 
 	public static byte[] hashData(byte[] data) {
 		MessageDigest md = null;
@@ -296,7 +280,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 	}
 
-
 	public static byte[] encrypt(byte[] data, Key key,String algorithm) {
 		Cipher rsa = null;
 			try {
@@ -326,7 +309,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		
 		return null;
 	}
-	
 
 	public static byte[] decrypt(byte[] ciphertext, Key key, String algorithm) {
 			Cipher rsa = null;
@@ -356,95 +338,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 				e.printStackTrace();
 			}
 		return null;
-	}
-	
-	public byte[] encryptSymetrickey(byte[] data, Key key,String algorithm, IvParameterSpec iv) {
-		Cipher rsa = null;
-			try {
-				rsa = Cipher.getInstance(algorithm);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				rsa.init(Cipher.ENCRYPT_MODE, key, iv);
-			} catch (InvalidKeyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvalidAlgorithmParameterException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				return rsa.doFinal(data);
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
-		return null;
-	}
-	
-	public byte[] decryptSymetricKey(byte[] ciphertext, Key key, String algorithm,IvParameterSpec iv) {
-			Cipher rsa = null;
-			try {
-				rsa = Cipher.getInstance(algorithm);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				rsa.init(Cipher.DECRYPT_MODE, key);
-			} catch (InvalidKeyException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			try {
-				return rsa.doFinal(ciphertext);
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		return null;
-	}
-	
-	
-	public  byte[] keyDerivationFunction( final char[] password, final byte[] salt ) {
-
-			SecretKeyFactory skf = null;
-			try {
-				skf = SecretKeyFactory.getInstance( "PBKDF2WithHmacSHA512" );
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			int keyLength = 256;
-			int iterations=1000;
-			int saltLength=32;
-			PBEKeySpec spec = new PBEKeySpec( password, salt, iterations, keyLength  );
-			SecretKey key = null;
-			try {
-				key = skf.generateSecret( spec );
-			} catch (InvalidKeySpecException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			byte[] res = key.getEncoded( );
-			return res;
-
-	
 	}
 
 	public static KeyPair generateKeyPairRSA2048(){
