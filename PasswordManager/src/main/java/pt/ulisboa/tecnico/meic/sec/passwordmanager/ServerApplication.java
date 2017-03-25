@@ -39,7 +39,7 @@ public class ServerApplication {
     }
 
 
-    private static KeyPair loadKeys(String keystoreName, String keystorePass, String alias, String privatePassword){
+    public static KeyPair loadKeys(String keystoreName, String keystorePass, String alias, String privatePassword){
         KeyPair keyPair = null;
         KeyStore ks = null;
         try {
