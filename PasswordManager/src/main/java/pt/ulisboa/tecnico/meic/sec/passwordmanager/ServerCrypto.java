@@ -28,4 +28,11 @@ public class ServerCrypto implements ServerAPI {
         return password;
     }
 
+	public void put(Key publicKeySender, byte[] domain, byte[] username, byte[] password,
+			SignatureAutentication signatureAutentication) {
+
+        server.put(publicKeySender,domain, username, password , signatureAutentication);
+
+	}
+
 }

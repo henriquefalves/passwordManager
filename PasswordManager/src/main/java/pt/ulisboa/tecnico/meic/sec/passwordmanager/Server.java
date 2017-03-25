@@ -67,5 +67,19 @@ public class Server implements ServerAPI {
 		throw new InvalidArgumentsException();
 	}
 
+	public void put(Key publicKeySender, byte[] domain, byte[] username, byte[] password,
+			SignatureAutentication signatureAutentication) {
+		for (User u : users){
+			if (u.isUserKey(publicKeySender)){
+				u.updateInfo(domain, username, password,signatureAutentication);
+				System.out.println("put: Success");
+				return;
+			}
+		}
+		System.out.println("put: Unknown user");
+		// TODO exception - unknown user
+		
+	}
+
 
 }

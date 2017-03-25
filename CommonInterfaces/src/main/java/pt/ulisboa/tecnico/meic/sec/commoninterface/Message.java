@@ -6,7 +6,7 @@ import java.security.Key;
 
 public class Message implements Serializable {
 
-    public Key publicKey;
+    public Key publicKeySender;
     public byte[] signature;
     public byte[] sequenceNumber;
     public byte[] domain;
@@ -17,8 +17,8 @@ public class Message implements Serializable {
     public byte[] passwordIv;
 
     // constructor to serialize object
-    public Message(Key publicKey, byte[] signature, byte[] seqNum, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
-        this.publicKey = publicKey;
+    public Message(Key publicKeySender, byte[] signature, byte[] seqNum, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
+        this.publicKeySender = publicKeySender;
         this.signature = signature;
         this.sequenceNumber = seqNum;
         this.domain = domain;
@@ -39,7 +39,7 @@ public class Message implements Serializable {
         this.domain = domain;
         this.username = username;
         this.password = password;
-        this.publicKey = null;
+        this.publicKeySender = null;
         this.signature = null;
         this.secretKey = null;
         this.randomIv = null;
@@ -47,7 +47,7 @@ public class Message implements Serializable {
     }
 
     public Message(){
-        this.publicKey = null;
+        this.publicKeySender = null;
         this.signature = this.sequenceNumber = this.domain = this.username = null;
         this.password = this.secretKey = this.randomIv = this.passwordIv = null;
     }

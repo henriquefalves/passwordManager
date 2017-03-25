@@ -25,7 +25,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 	private static SecureRandom secureRandom = new SecureRandom();
 
-	public static byte[] createData(byte[][] args){
+	public static byte[] concatenateData(byte[][] args){
 		int size = 0;
 		byte[] result;
 		for (byte[] b : args){
@@ -42,12 +42,18 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		return result;
 	}
 
-	public static byte[] generateIv(){
+	/**
+	 * @return secure random 16 bytes Initialization Vector 
+	 */
+	public static byte[] generateIV(){
 		byte[] iv = new byte[16];
 		secureRandom.nextBytes(iv);
 		return iv;
 	}
 
+	/**
+	 * @return AES Key with 128 bytes
+	 */
 	public static byte[] generateSessionKey(){
 		try {
 			KeyGenerator kg = KeyGenerator.getInstance("AES");
@@ -60,9 +66,12 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		}
 	}
 
-	// receives Message in plain text, perform cryptographic operations, and return cryptographically secure Message
+	/**
+	 * @param insecureMessage Message in plain text
+	 * @return cryptographically secure Message
+	 */
 	public static Message getSecureMessage(Message insecureMessage, byte[] passwordIv, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
-	    byte[] randomIv = Crypto.generateIv();
+	    byte[] randomIv = Crypto.generateIV();
 
 	    // argsToSign contains parameters what will be signed with senderPrivKey
         ArrayList<byte[]> argsToSign = new ArrayList<>();		// order of elements is important
@@ -96,14 +105,14 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         }
 
         byte[][] arrayToSign = argsToSign.toArray(new byte[0][]);	// transform array to byte array
-        byte[] dataToSign = Crypto.createData(arrayToSign);			// merge all data that will be sign
+        byte[] dataToSign = Crypto.concatenateData(arrayToSign);			// merge all data that will be sign
 		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, dataToSign);
 
 		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
 
 		byte[] cipheredSecretKey = null;
 		if (sendSecretKey){		// if need to send the session Key
-			cipheredSecretKey = Crypto.encrypt(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
+			cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 		}
 		// create cryptographically secure Message
 		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredSeqNum, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
@@ -122,7 +131,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             return null;
         }
         if (receivedMessage.secretKey != null){		// check if received Message contains the session key
-            secretKeyToDecipher = Crypto.decrypt(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+            secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 			messageInPlainText.secretKey = secretKeyToDecipher;
 	    }
 
@@ -133,7 +142,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			messageInPlainText.passwordIv = receivedMessage.passwordIv;
 		}
 		argsToCheckSign.add(receivedMessage.randomIv);
-		argsToCheckSign.add(receivedMessage.publicKey.getEncoded());
+		argsToCheckSign.add(receivedMessage.publicKeySender.getEncoded());
 		argsToCheckSign.add(receiverPub.getEncoded());
 
 
@@ -162,12 +171,12 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         }
 
         byte[][] arrayToCheckSign = argsToCheckSign.toArray(new byte[0][]); // transform Array to byte array
-        byte[] dataToCheckSignature = Crypto.createData(arrayToCheckSign);
+        byte[] dataToCheckSignature = Crypto.concatenateData(arrayToCheckSign);
 
         byte[] signedData = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.signature);
 
         // check validity of signature
-		boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKey, dataToCheckSignature, signedData);
+		boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKeySender, dataToCheckSignature, signedData);
         if (!integrity){
             System.out.println("Crypto-checkMessage: Invalid signature");
             throw new InvalidSignatureException();
@@ -280,7 +289,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 	}
 
-	public static byte[] encrypt(byte[] data, Key key,String algorithm) {
+	public static byte[] encryptAsymmetric(byte[] data, Key key,String algorithm) {
 		Cipher rsa = null;
 			try {
 				rsa = Cipher.getInstance(algorithm);
@@ -310,7 +319,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		return null;
 	}
 
-	public static byte[] decrypt(byte[] ciphertext, Key key, String algorithm) {
+	public static byte[] decryptAsymmetric(byte[] ciphertext, Key key, String algorithm) {
 			Cipher rsa = null;
 			try {
 				rsa = Cipher.getInstance(algorithm);

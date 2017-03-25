@@ -51,7 +51,7 @@ public class ClientCrypto implements ServerAPI {
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
-        byte[] passwordIv = Crypto.generateIv();        // TODO Henrique
+        byte[] passwordIv = Crypto.generateIV();        // TODO Henrique
 
         if(this.sequencenumber == null){
             this.sequencenumber = this.getCurrentSeqNum(publicKey);

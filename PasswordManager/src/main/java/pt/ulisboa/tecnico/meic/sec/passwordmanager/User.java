@@ -56,4 +56,27 @@ public class User {
         }
         return Base64.getDecoder().decode(password);
     }
+
+	public void updateInfo(byte[] domain, byte[] username, byte[] password,
+			SignatureAutentication signatureAutentication) {
+		String domainString = Base64.getEncoder().encodeToString(domain);
+        String usernameString = Base64.getEncoder().encodeToString(username);
+        String passwordString = Base64.getEncoder().encodeToString(password);
+
+        Hashtable<String, String> usernames = domains.get(domainString);
+        if (usernames == null){					// unknown domain
+            usernames = new Hashtable<String, String>();
+            usernames.put(usernameString, passwordString);
+            domains.put(domainString, usernames);
+        }
+        else{									// known domain
+            String pass = usernames.get(usernameString);
+            if (pass == null){						// unknown username
+                usernames.put(usernameString, passwordString);
+            }
+            else{									// known username
+                usernames.replace(usernameString, passwordString);
+            }
+        }		
+	}
 }
