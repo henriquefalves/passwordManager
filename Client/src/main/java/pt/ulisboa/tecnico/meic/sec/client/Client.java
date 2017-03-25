@@ -5,6 +5,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainExcep
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
@@ -29,6 +30,8 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	private static final String SERVER_ALIAS = "server";
 	private static final String USERALIAS = "user";
 	private Key myPublicKey;
+	private Key myPrivateKey;
+
 	private ServerAPI passwordManager;
 
 	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
@@ -37,7 +40,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 
 	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) {
 		KeyStore ks = keystore;
-		
+
 		FileInputStream fis=null;
 
 		try {
@@ -80,16 +83,13 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		try {
 			key = keystore.getKey(USERALIAS,  "".toCharArray());
 		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable get KeyPair");
 		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable get KeyPair");
+
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable get KeyPair");
 		}
-		PrivateKey myPrivateKey = null;
 
 		if (key instanceof PrivateKey) {
 			// Get certificate of public key
@@ -97,8 +97,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			try {
 				cert = keystore.getCertificate(USERALIAS);
 			} catch (KeyStoreException e) {
-				System.out.println("Unable to load public and private key");
-				e.printStackTrace();
+				System.out.println("Unable to load public and private key - Hint: look at entry name");
 			}
 
 			// Get public key
@@ -114,36 +113,44 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		try {
 			serverPublicKey= keystore.getCertificate(SERVER_ALIAS).getPublicKey();
 		} catch (KeyStoreException e) {
-			System.out.println("Unable to load Public Key From Server");
-			e.printStackTrace();
+			System.out.println("Unable to load Public Key Server from KeyStore - Hint: see if the entry is present ");
 		}
-
-		//TODO: ((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey, secretKey);
 		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
 
 	}
 
 	public void register_user() throws RemoteException, InvalidArgumentsException {
-	    passwordManager.register(myPublicKey);
+		passwordManager.register(myPublicKey);
 	}
 
+	/* 
+	 * Before storing the password is encrypted with publicKey of client
+	 */
 	public void save_password(byte[] domain, byte[] username, byte[] password) throws RemoteException, InvalidDomainException, InvalidUsernameException,  InvalidPasswordException {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
 		if(password==null) throw new InvalidPasswordException();
 
-		try {
-            passwordManager.put(myPublicKey, domain, username, password);
-		} catch (RemoteException e) {
-			System.out.println("Client.save_password Unable to put on server");
-			e.printStackTrace();
-		}
+		byte[] hashDomain = Crypto.hashData(domain);
+		byte[] hashUsername = Crypto.hashData(domain);
+		byte[] encryptedPassword = Crypto.encrypt(password, myPublicKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		passwordManager.put(myPublicKey, hashDomain, hashUsername, encryptedPassword);
 	}
 
+	/* 
+	 * Before retrived the password is decrypted with privateKey
+	 */
 	public byte[] retrieve_password(byte[] domain, byte[] username) throws RemoteException, InvalidDomainException, InvalidUsernameException, InexistentTupleException {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
-		return passwordManager.get(myPublicKey, domain, username);
+		
+		byte[] hashDomain = Crypto.hashData(domain);
+		byte[] hashUsername = Crypto.hashData(domain);
+		byte[] encryptedPassword = passwordManager.get(myPublicKey, hashDomain, hashUsername);
+		byte[] decryptedPassword = Crypto.decrypt(encryptedPassword, myPrivateKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		
+		
+		return decryptedPassword;
 	}
 
 	public void close() {

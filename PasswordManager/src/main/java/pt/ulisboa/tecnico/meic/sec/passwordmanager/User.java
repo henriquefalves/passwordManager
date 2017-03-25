@@ -4,6 +4,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsEx
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Hashtable;
 
 
@@ -21,9 +22,9 @@ public class User {
     }
 
     public void updateInfo(byte[] domain, byte[] username, byte[] password){
-        String domainString = new String (domain, StandardCharsets.UTF_8);
-        String usernameString = new String (username, StandardCharsets.UTF_8);
-        String passwordString = new String (password, StandardCharsets.UTF_8);
+        String domainString = Base64.getEncoder().encodeToString(domain);
+        String usernameString = Base64.getEncoder().encodeToString(username);
+        String passwordString = Base64.getEncoder().encodeToString(password);
 
         Hashtable<String, String> usernames = domains.get(domainString);
         if (usernames == null){					// unknown domain
@@ -43,8 +44,8 @@ public class User {
     }
 
     public byte[] getPassword(byte[] domain, byte[] username) {
-        String domainString = new String (domain, StandardCharsets.UTF_8);
-        String usernameString = new String (username, StandardCharsets.UTF_8);
+    	String domainString = Base64.getEncoder().encodeToString(domain);
+        String usernameString = Base64.getEncoder().encodeToString(username);
         Hashtable<String, String> usernames = domains.get(domainString);
         if(usernames == null) {
             throw new InvalidArgumentsException();
@@ -53,6 +54,6 @@ public class User {
         if (password == null) {
             throw new InvalidArgumentsException();
         }
-        return password.getBytes(StandardCharsets.UTF_8);
+        return Base64.getDecoder().decode(password);
     }
 }
