@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.PrivateKey;
@@ -19,16 +20,16 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
     private PrivateKey myPrivateKey;
     private PublicKey myPublicKey;
-
-    public ServerCrypto server;
-    private Map<String, BigInteger> sequenceNumbers;
+    private Map<String, byte[]> challengesMap;
     private Map<String, String> sessionKeys;
+    public Server server;
 
     protected ServerFrontEnd(PrivateKey privateKey, PublicKey publicKey) throws RemoteException {
         this.myPrivateKey = privateKey;
         this.myPublicKey = publicKey;
-        server = new ServerCrypto();
-        sequenceNumbers = new HashMap<>();
+        server = new Server();
+
+        challengesMap = new HashMap<>();
         sessionKeys = new HashMap<>();
     }
 
@@ -39,17 +40,13 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(existingSKstring != null){
             existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
         }
-        BigInteger sequenceNumber = sequenceNumbers.get(pubKeyStr);
-        if(sequenceNumber == null){
+        byte[] challengeToCompare = challengesMap.get(pubKeyStr);
+        if(challengeToCompare == null){
             System.out.println("ServerFE-register: Inexistent publicKey");
             return;
         }
-
-        System.out.println("REGISTER-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, myPrivateKey, myPublicKey);
+        Message result = Crypto.checkMessage(message, challengeToCompare, existingSessionKey, myPrivateKey, myPublicKey);
         server.register(message.publicKeySender);
-        sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
-        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // !!
         if(result.secretKey != null){
             String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
             sessionKeys.put(pubKeyStr, newSessionKey);
@@ -63,20 +60,18 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(existingSKstring != null){
             existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
         }
-        BigInteger sequenceNumber = sequenceNumbers.get(pubKeyStr);
-        if(sequenceNumber == null){
-            System.out.println("ServerFE-register: Inexistent publicKey");
+        byte[] challenge = challengesMap.get(pubKeyStr);
+        if(challenge == null){
+            System.out.println("ServerFE-register: Inexistent publicKey, must generate Challege");
             return;
         }
 
-        System.out.println("PUT-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, myPrivateKey, myPublicKey);
+        System.out.println("PUT-seqNumToCompare = " + new String(challenge, StandardCharsets.UTF_8));
+        Message result = Crypto.checkMessage(message, challenge, existingSessionKey, myPrivateKey, myPublicKey);
 
-        SignatureAutentication signatureAutentication = new SignatureAutentication(message.randomIv, message.publicKeySender, myPublicKey, message.sequenceNumber, message.domain, message.username,message.password, message.signature);
+        SignatureAutentication signatureAutentication = new SignatureAutentication(message.randomIv, message.publicKeySender, myPublicKey, message.challenge, message.domain, message.username,message.password, message.signature);
         server.put(message.publicKeySender, result.domain, result.username, result.password , signatureAutentication);
 
-        sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
-        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // !!
         if(result.secretKey != null){
             String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
             sessionKeys.put(pubKeyStr, newSessionKey);
@@ -90,34 +85,29 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(existingSKstring != null){
             existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
         }
-        BigInteger sequenceNumber = sequenceNumbers.get(pubKeyStr);
-        if(sequenceNumber == null){
-            System.out.println("ServerFE-register: Inexistent publicKey");
+        byte[] challenge = challengesMap.get(pubKeyStr);
+        if(challenge == null){
+            System.out.println("ServerFE-register: Inexistent publicKey, , must generate Challege");
             return null;
         }
 
-        System.out.println("GET-seqNumToCompare = " + sequenceNumber.add(BigInteger.ONE));
-        Message result = Crypto.checkMessage(message, sequenceNumber, existingSessionKey, myPrivateKey, myPublicKey);
+        System.out.println("GET-seqNumToCompare = " +  new String(challenge, StandardCharsets.UTF_8));
+        Message result = Crypto.checkMessage(message, challenge, existingSessionKey, myPrivateKey, myPublicKey);
         byte[] password = server.get(message.publicKeySender, result.domain, result.username);
 
-        sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
-        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // save in map
         if(result.secretKey != null){
             String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
             sessionKeys.put(pubKeyStr, newSessionKey);
             existingSessionKey = result.secretKey;
         }
 
-        sequenceNumber = sequenceNumber.add(BigInteger.ONE);     // seqNum++
-        sequenceNumbers.put(pubKeyStr, sequenceNumber);           // save in map
-
-        Message insecureMessage = new Message(sequenceNumber, null, null, password);
-        // TODO pass passwordIv and check in ClientCrypto
+        Message insecureMessage = new Message(challenge, null, null, password);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, existingSessionKey, false, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
 
-    public Message getSequenceNumber(Message message) throws RemoteException {
+    public Message getChallenge(Message message) throws RemoteException {
+
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -132,14 +122,14 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             existingSessionKey = result.secretKey;
         }
 
-        BigInteger sequenceNumberToPass = sequenceNumbers.get(pubKeyStr);
-        if(sequenceNumberToPass == null){
-            BigInteger newSeqNum = BigInteger.valueOf(new SecureRandom().nextLong());
-            sequenceNumbers.put(pubKeyStr, newSeqNum);
-            sequenceNumberToPass = newSeqNum;
-        }
-        System.out.println("ServerFE-getSeqNum: seqNum to send = " + sequenceNumberToPass);
-        Message insecureMessage = new Message(sequenceNumberToPass, null, null, null);
+        SecureRandom random = new SecureRandom();
+        byte[] challenge= random.generateSeed(128);
+
+        challengesMap.put(pubKeyStr, challenge);
+
+
+        System.out.println("ServerFE-getChallenge: challenge to send = " + new String(challenge, StandardCharsets.UTF_8));
+        Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, existingSessionKey, false, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }

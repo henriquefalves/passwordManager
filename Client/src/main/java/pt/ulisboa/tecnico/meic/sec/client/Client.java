@@ -4,7 +4,6 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InexistentTupleExc
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
@@ -35,7 +34,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	private ServerAPI passwordManager;
 
 	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
-		this.passwordManager = new ClientCrypto(remoteServerName);
+		this.passwordManager = new ClientFrontEnd(remoteServerName);
 	}
 
 	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) {
@@ -115,7 +114,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		} catch (KeyStoreException e) {
 			System.out.println("Unable to load Public Key Server from KeyStore - Hint: see if the entry is present ");
 		}
-		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
+		((ClientFrontEnd)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
 
 	}
 

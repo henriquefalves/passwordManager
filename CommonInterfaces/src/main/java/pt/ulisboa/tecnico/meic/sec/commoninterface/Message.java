@@ -8,7 +8,7 @@ public class Message implements Serializable {
 
     public Key publicKeySender;
     public byte[] signature;
-    public byte[] sequenceNumber;
+    public byte[] challenge;
     public byte[] domain;
     public byte[] username;
     public byte[] password;
@@ -17,10 +17,10 @@ public class Message implements Serializable {
     public byte[] passwordIv;
 
     // constructor to serialize object
-    public Message(Key publicKeySender, byte[] signature, byte[] seqNum, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
+    public Message(Key publicKeySender, byte[] signature, byte[] challenge, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
         this.publicKeySender = publicKeySender;
         this.signature = signature;
-        this.sequenceNumber = seqNum;
+        this.challenge = challenge;
         this.domain = domain;
         this.username = username;
         this.password = password;
@@ -29,12 +29,12 @@ public class Message implements Serializable {
         this.passwordIv = passwordIv;
     }
 
-    public Message(BigInteger seqNum, byte[] domain, byte[] username, byte[] password){
-        if(seqNum != null){
-            this.sequenceNumber = seqNum.toByteArray();
+    public Message(byte[] challenge, byte[] domain, byte[] username, byte[] password){
+        if(challenge != null){
+            this.challenge = challenge;
         }
         else{
-            this.sequenceNumber = null;
+            this.challenge = null;
         }
         this.domain = domain;
         this.username = username;
@@ -48,7 +48,7 @@ public class Message implements Serializable {
 
     public Message(){
         this.publicKeySender = null;
-        this.signature = this.sequenceNumber = this.domain = this.username = null;
+        this.signature = this.challenge = this.domain = this.username = null;
         this.password = this.secretKey = this.randomIv = this.passwordIv = null;
     }
 

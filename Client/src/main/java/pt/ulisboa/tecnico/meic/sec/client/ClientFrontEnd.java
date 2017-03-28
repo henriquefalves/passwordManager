@@ -21,7 +21,6 @@ public class ClientFrontEnd implements ServerAPI {
     private Key serverPublicKey;
     private byte[] sessionKey;
     private boolean sendSessionKey;
-    private BigInteger sequencenumber;
 
     CommunicationAPI passwordmanager;
 
@@ -29,7 +28,6 @@ public class ClientFrontEnd implements ServerAPI {
         passwordmanager = (CommunicationAPI) Naming.lookup(remoteServerName);
         sessionKey = Crypto.generateSessionKey();
         sendSessionKey = true;
-        sequencenumber = null;
     }
 
     public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey){
@@ -40,60 +38,48 @@ public class ClientFrontEnd implements ServerAPI {
 
 
     public void register(Key publicKey) throws RemoteException {
-        if(this.sequencenumber == null){
-            this.sequencenumber = this.getCurrentSeqNum(publicKey);
-        }
-        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
-        System.out.println("REGISTER-seqNum = " + sequencenumber);
-        Message insecureMessage = new Message(sequencenumber, null, null, null);
+        byte[] challenge = this.getChallenge(publicKey);
+        System.out.println("REGISTER-challenge = " + new String(challenge, StandardCharsets.UTF_8));
+
+        Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.register(secureMessage);
         this.sendSessionKey = false;
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
-        byte[] passwordIv = Crypto.generateIV();        // TODO Henrique
-
-        if(this.sequencenumber == null){
-            this.sequencenumber = this.getCurrentSeqNum(publicKey);
-        }
-        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
-        System.out.println("PUT-seqNum = " + sequencenumber);
-        Message insecureMessage = new Message(sequencenumber, domain, username, password);
+        byte[] passwordIv = Crypto.generateIV();
+        byte[] challenge = this.getChallenge(publicKey);
+        System.out.println("PUT-challenge = " + new String(challenge, StandardCharsets.UTF_8));
+        Message insecureMessage = new Message(challenge, domain, username, password);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, passwordIv, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.put(secureMessage);
         this.sendSessionKey = false;
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-        if(this.sequencenumber == null){
-            this.sequencenumber = this.getCurrentSeqNum(publicKey);
-        }
 
-        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
-        System.out.println("GET-seqNum = " + sequencenumber);
-        Message insecureMessage = new Message(sequencenumber, domain, username, null);
+        byte[] challenge = this.getChallenge(publicKey);
+        System.out.println("GET-challenge = " + new String(challenge, StandardCharsets.UTF_8));
+        Message insecureMessage = new Message(challenge, domain, username, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         Message response =  passwordmanager.get(secureMessage);
         this.sendSessionKey = false;
 
-        Message result = Crypto.checkMessage(response, sequencenumber, sessionKey, this.myPrivateKey, this.myPublicKey);
-        sequencenumber = sequencenumber.add(BigInteger.ONE);     // seqNum++
-
+        Message result = Crypto.checkMessage(response, challenge, sessionKey, this.myPrivateKey, this.myPublicKey);
         return result.password;
     }
 
-    private BigInteger getCurrentSeqNum(Key publicKey) throws RemoteException {
+    private byte[] getChallenge(Key publicKey) throws RemoteException {
 
         Message insecureMessage = new Message(null, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        Message response = passwordmanager.getSequenceNumber(secureMessage);
+        Message response = passwordmanager.getChallenge(secureMessage);
         this.sendSessionKey = false;
 
         Message result = Crypto.checkMessage(response, null, sessionKey, this.myPrivateKey, this.myPublicKey);
-        BigInteger currSeqNum = new BigInteger(result.sequenceNumber);
-        System.out.println("ClientCrypto-getCurrentSeqNum = " + currSeqNum);
-        return currSeqNum;
+        System.out.println("ClientCrypto-getChallenge = " +new String(result.challenge, StandardCharsets.UTF_8));
+        return result.challenge;
     }
 
 }
