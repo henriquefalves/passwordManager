@@ -20,14 +20,14 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     private PrivateKey myPrivateKey;
     private PublicKey myPublicKey;
 
-    public ServerCrypto server;
+    public Server server;
     private Map<String, BigInteger> sequenceNumbers;
     private Map<String, String> sessionKeys;
 
     protected ServerFrontEnd(PrivateKey privateKey, PublicKey publicKey) throws RemoteException {
         this.myPrivateKey = privateKey;
         this.myPublicKey = publicKey;
-        server = new ServerCrypto();
+        server = new Server();
         sequenceNumbers = new HashMap<>();
         sessionKeys = new HashMap<>();
     }

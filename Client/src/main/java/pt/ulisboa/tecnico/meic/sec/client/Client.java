@@ -4,7 +4,6 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InexistentTupleExc
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.ClientAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
@@ -35,70 +34,32 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	private ServerAPI passwordManager;
 
 	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
-		this.passwordManager = new ClientCrypto(remoteServerName);
+		this.passwordManager = new ClientFrontEnd(remoteServerName);
 	}
 
-	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) {
+	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) throws FileNotFoundException, NoSuchAlgorithmException, CertificateException, IOException {
 		KeyStore ks = keystore;
 
 		FileInputStream fis=null;
-
-		try {
-			fis = new FileInputStream(keyStoreName);
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
-			ks.load(fis, passwordKeyStore);
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally{
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+        fis = new FileInputStream(keyStoreName);
+        ks.load(fis, passwordKeyStore);
+        if(fis != null )
+            fis.close();
 		return ks;
 	}
 
-	public void init(KeyStore keystore, String keystoreName, String keystorePassword) {
+	public void init(KeyStore keystore, String keystoreName, String keystorePassword) throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException, IOException {
 
 		//Get the key with the given alias.
 		keystore = loadKeystore( keystore , keystoreName, keystorePassword.toCharArray());
 
 		Key key = null;
-		try {
-			key = keystore.getKey(USERALIAS,  "".toCharArray());
-		} catch (UnrecoverableKeyException e) {
-			System.out.println("Unable get KeyPair");
-		} catch (KeyStoreException e) {
-			System.out.println("Unable get KeyPair");
-
-		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Unable get KeyPair");
-		}
+		key = keystore.getKey(USERALIAS,  "".toCharArray());
 
 		if (key instanceof PrivateKey) {
 			// Get certificate of public key
 			java.security.cert.Certificate cert = null;
-			try {
-				cert = keystore.getCertificate(USERALIAS);
-			} catch (KeyStoreException e) {
-				System.out.println("Unable to load public and private key - Hint: look at entry name");
-			}
+			cert = keystore.getCertificate(USERALIAS);
 
 			// Get public key
 			PublicKey publicKey = cert.getPublicKey();
@@ -109,14 +70,8 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			myPublicKey = keyPair.getPublic();
 		}
 		PublicKey serverPublicKey = null;
-
-		try {
-			serverPublicKey= keystore.getCertificate(SERVER_ALIAS).getPublicKey();
-		} catch (KeyStoreException e) {
-			System.out.println("Unable to load Public Key Server from KeyStore - Hint: see if the entry is present ");
-		}
-		((ClientCrypto)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
-
+		serverPublicKey= keystore.getCertificate(SERVER_ALIAS).getPublicKey();
+		((ClientFrontEnd)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
 	}
 
 	public void register_user() throws RemoteException, InvalidArgumentsException {

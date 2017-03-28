@@ -7,12 +7,16 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameExc
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.Scanner;
 
 public class ClientApplication {
@@ -20,7 +24,7 @@ public class ClientApplication {
 	/**
 	 * Defines user interaction or automatic
 	 */
-	private static boolean debug = false;
+	private static boolean debug = true;
 	/**
 	 * Defines if the program should printStackTrace of Execeptions
 	 */
@@ -60,9 +64,23 @@ public class ClientApplication {
 	private static void automated(Client client, KeyStore ks) throws RemoteException {
 		String keystoreName = "henriqueKeyStore.jks";
 		String keystorePassword = "henrique123";
-		client.init(ks, keystoreName, keystorePassword);
 
-		client.register_user();
+        try {
+            client.init(ks, keystoreName, keystorePassword);
+        } catch (UnrecoverableKeyException uke) {
+            System.out.println("Unable get KeyPair");
+        } catch (KeyStoreException kse) {
+            System.out.println("Unable get KeyPair");
+        } catch (NoSuchAlgorithmException nsae) {
+            System.out.println("Unable get KeyPair");
+        } catch (CertificateException e) {
+            System.out.println("Unable get KeyPair");
+        } catch (IOException e) {
+            System.out.println("Unable get KeyPair");
+        }
+
+
+        client.register_user();
 
 		byte[] domain = "facebook.com".getBytes(StandardCharsets.UTF_8);
 		byte[] username = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
@@ -92,12 +110,30 @@ public class ClientApplication {
 		Scanner reader = new Scanner(System.in);
 		boolean logIn=true;
 		System.out.println("####### WELCOMME  to Dependable Password Manager #######");
-		System.out.println("Please provide the file name of the Keystore:");
-		String keystoreFileName = reader.nextLine();
-		System.out.println("Password to access Keystore:");
-		String keystorePassword = reader.nextLine();
 
-		client.init(ks, keystoreFileName, keystorePassword);
+		while(true) {
+            try {
+                System.out.println("Please provide the file name of the Keystore:");
+                String keystoreFileName = reader.nextLine();
+                System.out.println("Password to access Keystore:");
+                String keystorePassword = reader.nextLine();
+
+                keystoreFileName += ".jks";
+                client.init(ks, keystoreFileName, keystorePassword);
+                break;
+
+            } catch (UnrecoverableKeyException uke) {
+                System.out.println("Unable get KeyPair");
+            } catch (KeyStoreException kse) {
+                System.out.println("Unable get KeyPair");
+            } catch (NoSuchAlgorithmException nsae) {
+                System.out.println("Unable get KeyPair");
+            } catch (CertificateException e) {
+                System.out.println("Unable get KeyPair");
+            } catch (IOException e) {
+                System.out.println("Unable get KeyPair");
+            }
+        }
 
 		String domain;
 		while(logIn){

@@ -2,12 +2,17 @@ package pt.ulisboa.tecnico.meic.sec.client;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.*;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 public interface ClientAPI {
 
-    public void init(KeyStore ks, String keystoreName, String keystorePassword);
+    public void init(KeyStore ks, String keystoreName, String keystorePassword) throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException, IOException;
 
     public void register_user() throws RemoteException, InvalidArgumentsException;
 
