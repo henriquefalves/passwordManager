@@ -24,7 +24,7 @@ public class ClientApplication {
 	/**
 	 * Defines user interaction or automatic
 	 */
-	private static boolean debug = true;
+	private static boolean debug = false;
 	/**
 	 * Defines if the program should printStackTrace of Execeptions
 	 */
@@ -79,28 +79,21 @@ public class ClientApplication {
             System.out.println("Unable get KeyPair");
         }
 
-
         client.register_user();
 
 		byte[] domain = "facebook.com".getBytes(StandardCharsets.UTF_8);
 		byte[] username = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
 		byte[] password = "123456".getBytes(StandardCharsets.UTF_8);
-		System.out.println("Will Put pass: 123456");
 		client.save_password(domain, username, password);
 		String st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
-		System.out.println("Result of First Get: " + st);
+		System.out.println("PUT: "+password+ " Result Get: " + st);
 
-
-		domain = "twitter.com".getBytes(StandardCharsets.UTF_8);
-		username = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
-		password = "654321".getBytes(StandardCharsets.UTF_8);
-		System.out.println("Will Put pass: 654321");
-
-		client.save_password(domain, username, password);
-
+		byte[]domain2 = "twitter.com".getBytes(StandardCharsets.UTF_8);
+		byte[]username2 = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
+		byte[]password2 = "654321".getBytes(StandardCharsets.UTF_8);
+		client.save_password(domain2, username2, password2);
 		st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
-		System.out.println("Result of Second Get: " + st);
-
+		System.out.println("PUT: "+password+ " Result Get: " + st);
 
 		System.out.println("Press Enter to exit");
 		String button = (new Scanner(System.in)).nextLine();
@@ -120,19 +113,30 @@ public class ClientApplication {
 
                 keystoreFileName += ".jks";
                 client.init(ks, keystoreFileName, keystorePassword);
+                System.out.println("KeyPair obtained");
                 break;
 
             } catch (UnrecoverableKeyException uke) {
                 System.out.println("Unable get KeyPair");
-            } catch (KeyStoreException kse) {
+				if(!presentationmode)
+					uke.printStackTrace();
+			} catch (KeyStoreException kse) {
                 System.out.println("Unable get KeyPair");
-            } catch (NoSuchAlgorithmException nsae) {
+				if(!presentationmode)
+					kse.printStackTrace();
+			} catch (NoSuchAlgorithmException nsae) {
                 System.out.println("Unable get KeyPair");
-            } catch (CertificateException e) {
+				if(!presentationmode)
+					nsae.printStackTrace();
+			} catch (CertificateException ce) {
                 System.out.println("Unable get KeyPair");
-            } catch (IOException e) {
+				if(!presentationmode)
+					ce.printStackTrace();
+			} catch (IOException e) {
                 System.out.println("Unable get KeyPair");
-            }
+				if(!presentationmode)
+					e.printStackTrace();
+			}
         }
 
 		String domain;

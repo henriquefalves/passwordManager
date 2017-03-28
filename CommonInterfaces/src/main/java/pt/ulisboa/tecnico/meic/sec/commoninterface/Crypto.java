@@ -5,8 +5,10 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidSignatureEx
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.MissingSequenceNumException;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -83,9 +85,9 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		argsToSign.add(receiverPubKey.getEncoded());
 
 		byte[] cipheredSeqNum = null;
-		if(insecureMessage.sequenceNumber != null){		// if Message in plain text contains this element, it will be ciphered and signed
-			cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.sequenceNumber);
-			argsToSign.add(insecureMessage.sequenceNumber);
+		if(insecureMessage.challenge != null){		// if Message in plain text contains this element, it will be ciphered and signed
+			cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.challenge);
+			argsToSign.add(insecureMessage.challenge);
 		}
 
         byte[] cipheredDomain = null;
@@ -122,7 +124,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 
 	// receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
-	public static Message checkMessage(Message receivedMessage, BigInteger lastSeqNum, byte[] secretKey, Key receiverPriv, Key receiverPub ){
+	public static Message checkMessage(Message receivedMessage, byte[] lastChallenge, byte[] secretKey, Key receiverPriv, Key receiverPub ){
 		Message messageInPlainText = new Message();
 
 		byte[] secretKeyToDecipher = secretKey;		// use session key that receiver know (can be null)
@@ -146,12 +148,12 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		argsToCheckSign.add(receiverPub.getEncoded());
 
 
-		byte[] decipheredSeqNum = null;
+		byte[] decipheredChallenge = null;
 		// if receivedMessage contains this element, it will be deciphered and verified in signature
-		if(receivedMessage.sequenceNumber != null){
-			decipheredSeqNum = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.sequenceNumber);
-			argsToCheckSign.add(decipheredSeqNum);
-				messageInPlainText.sequenceNumber = decipheredSeqNum;
+		if(receivedMessage.challenge != null){
+			decipheredChallenge = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.challenge);
+			argsToCheckSign.add(decipheredChallenge);
+				messageInPlainText.challenge = decipheredChallenge;
 		}
 
         if (receivedMessage.domain != null){ // if receivedMessage contains this element, it will be deciphered and verified in signature
@@ -182,13 +184,12 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             throw new InvalidSignatureException();
         }
 
-        if(lastSeqNum != null){		// if the receiver wants to check the sequence number
-			if(decipheredSeqNum == null){
+        if(lastChallenge != null){		// if the receiver wants to check the sequence number
+			if(decipheredChallenge == null){
 				throw new MissingSequenceNumException();
 			}
-			BigInteger recSeqNum = new BigInteger(decipheredSeqNum);
-			BigInteger expectedSeqNum = lastSeqNum.add(BigInteger.valueOf(1));
-			if(!recSeqNum.equals(expectedSeqNum)){
+
+			if(!Arrays.equals(lastChallenge, decipheredChallenge)){
 				System.out.println("Crypto-checkMessage: Invalid seqNumber");
 				throw new InvalidSequenceNumberException();
 			}

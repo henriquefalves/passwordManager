@@ -8,18 +8,18 @@ public class SignatureAutentication {
     public Key publicKeySender;
   
 	public byte[] signature;
-    public byte[] sequenceNumber;
+    public byte[] challenge;
     public byte[] domain;
     public byte[] username;
     public byte[] password;
     public byte[] randomIv;
 
-	public SignatureAutentication(byte[] randomIv, Key publicKeySender, PublicKey myPublicKey, byte[] sequenceNumber,
+	public SignatureAutentication(byte[] randomIv, Key publicKeySender, PublicKey myPublicKey, byte[] challenge,
 			byte[] domain, byte[] username, byte[] password, byte[] signature) {
 		super();
 		this.publicKeySender = publicKeySender;
 		this.signature = signature;
-		this.sequenceNumber = sequenceNumber;
+		this.challenge = challenge;
 		this.domain = domain;
 		this.username = username;
 		this.password = password;

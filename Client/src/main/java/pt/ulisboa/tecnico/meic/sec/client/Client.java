@@ -57,6 +57,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		key = keystore.getKey(USERALIAS,  "".toCharArray());
 
 		if (key instanceof PrivateKey) {
+
 			// Get certificate of public key
 			java.security.cert.Certificate cert = null;
 			cert = keystore.getCertificate(USERALIAS);
@@ -68,10 +69,14 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
 			myPrivateKey = keyPair.getPrivate();
 			myPublicKey = keyPair.getPublic();
+			System.out.println(myPublicKey);
 		}
+
 		PublicKey serverPublicKey = null;
 		serverPublicKey= keystore.getCertificate(SERVER_ALIAS).getPublicKey();
+
 		((ClientFrontEnd)passwordManager).init(myPrivateKey, myPublicKey, serverPublicKey);
+
 	}
 
 	public void register_user() throws RemoteException, InvalidArgumentsException {
@@ -104,8 +109,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		byte[] hashUsername = Crypto.hashData(domain);
 		byte[] encryptedPassword = passwordManager.get(myPublicKey, hashDomain, hashUsername);
 		byte[] decryptedPassword = Crypto.decryptAsymmetric(encryptedPassword, myPrivateKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-		
-		
+
 		return decryptedPassword;
 	}
 
