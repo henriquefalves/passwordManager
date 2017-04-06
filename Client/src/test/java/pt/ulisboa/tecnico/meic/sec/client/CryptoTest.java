@@ -17,7 +17,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 
 public class CryptoTest {
 
-	private Crypto crypto;
+	/*private Crypto crypto;
 	private PublicKey public1;
 	private PrivateKey private1;
 	private SecretKey secretKey;
@@ -30,16 +30,9 @@ public class CryptoTest {
 		private1 = generateKeyPairRSA2048.getPrivate();
 		secretKey = crypto.generateSecretKeyAES128();
 	}
-//TODO: Cannot Test -> Henrique
-/*	@Test
-	public void testMax245() {
-		byte[] encryptedPass = null;
-		encryptedPass = crypto.encrypt("aaaaaaaaaaaaaaccccccccaaaavvvvvaavvvvvvvvvvvvvvvvvvvvvvvvaaaaaaxxxxxxxxxxxxxxxaaaaaaaaaaaaaabbnnnnnnnnnnnnnnnnnnnnnnaaaaaaaaaaaaaaaaaaasssssssssssssssssbbbbbbbbbbbbbbdddddddddddbbbbbbbbbbbbbbbbbbjjjjjjjjjjjbbbbbssmmmmmmmmmmmmmmmmmmmmmmmmmmmvvvvvvvvvvvvvvvvvvvmmmssssssssss".getBytes(StandardCharsets.UTF_8), public1);		
-		   
-	}
-*/
+
 	@Test
-	public void testPaddingAssymetricKey() {
+	public void testPaddingAsymmetricKey() {
 		 byte[] encryptedPass = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 
 		 byte[] encryptedPass2 = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
@@ -48,7 +41,7 @@ public class CryptoTest {
 	}
 
     @Test
-    public void testPaddingAssymetricKeyTwice() {
+    public void testPaddingAsymmetricKeyTwice() {
         byte[] encryptedPass = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
         byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, private1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 
@@ -59,7 +52,7 @@ public class CryptoTest {
     }
 	
 	@Test
-	public void testNormalFuntionalityAssymetricKey() {
+	public void testNormalFunctionalityAsymmetricKey() {
 		 byte[] beforeEncryption = "PASSWORD".getBytes(StandardCharsets.UTF_8);
 		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, private1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
@@ -68,7 +61,7 @@ public class CryptoTest {
 	}
 
 	@Test
-	public void testNormalFuntionalitySymetricKey() {
+	public void testNormalFunctionalitySymmetricKey() {
 		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
 		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
 		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, secretKey,"AES");
@@ -77,22 +70,11 @@ public class CryptoTest {
 	}
 	
 	@Test
-	public void testNoIVSymetricKey() {
+	public void testNoIVSymmetricKey() {
 		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
 		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
 		 byte[] encryptedPass2 = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
 
 		 assertArrayEquals(encryptedPass, encryptedPass2);  
-	}
-	
-//	//TODO: Unable to catch exception
-//	@Test
-//	public void testIntegritySymetricKey() {
-//		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
-//		 byte[] encryptedPass = crypto.encrypt(beforeEncryption, secretKey,"AES");
-//		 encryptedPass[5]=50;
-//		 byte[] decryptedPass = crypto.decrypt(encryptedPass, secretKey,"AES");
-//		 assertFalse(Arrays.equals(beforeEncryption, decryptedPass));
-//
-//	}
+	}*/
 }

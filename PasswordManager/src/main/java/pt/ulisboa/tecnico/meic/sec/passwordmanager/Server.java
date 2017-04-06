@@ -4,24 +4,12 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Vector;
 
 public class Server implements ServerAPI {
 	private Vector<User> users;
-
 
 	public Server() throws RemoteException {
 		users = new Vector<User>();
@@ -83,8 +71,5 @@ public class Server implements ServerAPI {
 		}
 		System.out.println("put: Unknown user");
 		throw new InvalidArgumentsException();
-
 	}
-
-
 }

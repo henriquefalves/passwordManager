@@ -7,15 +7,15 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameExc
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Scanner;
 
@@ -79,20 +79,91 @@ public class ClientApplication {
             System.out.println("Unable get KeyPair");
         }
 
-        client.register_user();
+		try {
+			client.register_user();
+		} catch (BadPaddingException e) {
+			System.out.println("Unable to register user");
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Unable to register user");
+		} catch (IllegalBlockSizeException e) {
+			System.out.println("Unable to register user");
+		} catch (SignatureException e) {
+			System.out.println("Unable to register user");
+		} catch (NoSuchPaddingException e) {
+			System.out.println("Unable to register user");
+		} catch (InvalidKeyException e) {
+			System.out.println("Unable to register user");
+		}
 
 		byte[] domain = "facebook.com".getBytes(StandardCharsets.UTF_8);
 		byte[] username = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
 		byte[] password = "123456".getBytes(StandardCharsets.UTF_8);
-		client.save_password(domain, username, password);
-		String st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
+		try {
+			client.save_password(domain, username, password);
+		} catch (IllegalBlockSizeException e) {
+			System.out.println("Unable to save password");
+		} catch (InvalidKeyException e) {
+			System.out.println("Unable to save password");
+		} catch (BadPaddingException e) {
+			System.out.println("Unable to save password");
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Unable to save password");
+		} catch (NoSuchPaddingException e) {
+			System.out.println("Unable to save password");
+		} catch (SignatureException e) {
+			System.out.println("Unable to save password");
+		}
+		String st = null;
+		try {
+			st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
+		} catch (IllegalBlockSizeException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (InvalidKeyException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (BadPaddingException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (NoSuchPaddingException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (SignatureException e) {
+			System.out.println("Unable to retrieve password");
+		}
 		System.out.println("PUT: "+password+ " Result Get: " + st);
 
 		byte[]domain2 = "twitter.com".getBytes(StandardCharsets.UTF_8);
 		byte[]username2 = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
 		byte[]password2 = "654321".getBytes(StandardCharsets.UTF_8);
-		client.save_password(domain2, username2, password2);
-		st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
+		try {
+			client.save_password(domain2, username2, password2);
+		} catch (IllegalBlockSizeException e) {
+			System.out.println("Unable to save password");
+		} catch (InvalidKeyException e) {
+			System.out.println("Unable to save password");
+		} catch (BadPaddingException e) {
+			System.out.println("Unable to save password");
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Unable to save password");
+		} catch (NoSuchPaddingException e) {
+			System.out.println("Unable to save password");
+		} catch (SignatureException e) {
+			System.out.println("Unable to save password");
+		}
+		try {
+			st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
+		} catch (IllegalBlockSizeException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (InvalidKeyException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (BadPaddingException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (NoSuchPaddingException e) {
+			System.out.println("Unable to retrieve password");
+		} catch (SignatureException e) {
+			System.out.println("Unable to retrieve password");
+		}
 		System.out.println("PUT: "+password+ " Result Get: " + st);
 
 		System.out.println("Press Enter to exit");
