@@ -6,7 +6,8 @@ import java.security.PublicKey;
 public class SignatureAutentication {
 
     public Key publicKeySender;
-  
+
+    // TODO miss public keys (sender, receiver)
 	public byte[] signature;
     public byte[] challenge;
     public byte[] domain;

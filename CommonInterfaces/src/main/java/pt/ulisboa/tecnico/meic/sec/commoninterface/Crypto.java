@@ -1,14 +1,9 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidSequenceNumberException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidSignatureException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.MissingSequenceNumException;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -72,21 +67,18 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	 * @param insecureMessage Message in plain text
 	 * @return cryptographically secure Message
 	 */
-	public static Message getSecureMessage(Message insecureMessage, byte[] passwordIv, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
+	public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
 	    byte[] randomIv = Crypto.generateIV();
 
 	    // argsToSign contains parameters what will be signed with senderPrivKey
         ArrayList<byte[]> argsToSign = new ArrayList<>();		// order of elements is important
-        if(passwordIv != null){
-			argsToSign.add(passwordIv);
-		}
 		argsToSign.add(randomIv);
 		argsToSign.add(senderPubKey.getEncoded());
 		argsToSign.add(receiverPubKey.getEncoded());
 
-		byte[] cipheredSeqNum = null;
+		byte[] cipheredChallenge = null;
 		if(insecureMessage.challenge != null){		// if Message in plain text contains this element, it will be ciphered and signed
-			cipheredSeqNum = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.challenge);
+			cipheredChallenge = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.challenge);
 			argsToSign.add(insecureMessage.challenge);
 		}
 
@@ -117,14 +109,14 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 		}
 		// create cryptographically secure Message
-		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredSeqNum, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, passwordIv);
+		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv);
 		return secureMessage;
 	}
 
 
 
 	// receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
-	public static Message checkMessage(Message receivedMessage, byte[] lastChallenge, byte[] secretKey, Key receiverPriv, Key receiverPub ){
+	public static Message checkMessage(Message receivedMessage, byte[] secretKey, Key receiverPriv, Key receiverPub ){
 		Message messageInPlainText = new Message();
 
 		byte[] secretKeyToDecipher = secretKey;		// use session key that receiver know (can be null)
@@ -139,21 +131,19 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 		// argsToCheckSign contains parameters what will be used to check the validity of signature
         ArrayList<byte[]> argsToCheckSign = new ArrayList<>();		// order of elements is equal to order specified in getSecureMessage()
-        if(receivedMessage.passwordIv != null){
-			argsToCheckSign.add(receivedMessage.passwordIv);
-			messageInPlainText.passwordIv = receivedMessage.passwordIv;
-		}
 		argsToCheckSign.add(receivedMessage.randomIv);
 		argsToCheckSign.add(receivedMessage.publicKeySender.getEncoded());
 		argsToCheckSign.add(receiverPub.getEncoded());
 
+		messageInPlainText.publicKeySender = receivedMessage.publicKeySender;
+		messageInPlainText.randomIv = receivedMessage.randomIv;
 
 		byte[] decipheredChallenge = null;
 		// if receivedMessage contains this element, it will be deciphered and verified in signature
 		if(receivedMessage.challenge != null){
 			decipheredChallenge = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.challenge);
 			argsToCheckSign.add(decipheredChallenge);
-				messageInPlainText.challenge = decipheredChallenge;
+			messageInPlainText.challenge = decipheredChallenge;
 		}
 
         if (receivedMessage.domain != null){ // if receivedMessage contains this element, it will be deciphered and verified in signature
@@ -184,16 +174,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             throw new InvalidSignatureException();
         }
 
-        if(lastChallenge != null){		// if the receiver wants to check the sequence number
-			if(decipheredChallenge == null){
-				throw new MissingSequenceNumException();
-			}
-
-			if(!Arrays.equals(lastChallenge, decipheredChallenge)){
-				System.out.println("Crypto-checkMessage: Invalid seqNumber");
-				throw new InvalidSequenceNumberException();
-			}
-		}
         System.out.println("Crypto-checkMessage: valid message");
         return messageInPlainText;
     }
