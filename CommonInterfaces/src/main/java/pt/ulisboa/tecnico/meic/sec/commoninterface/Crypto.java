@@ -117,6 +117,10 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 	// receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
 	public static Message checkMessage(Message receivedMessage, byte[] secretKey, Key receiverPriv, Key receiverPub ){
+		if(receivedMessage.randomIv == null || receivedMessage.signature == null){
+			throw new CorruptedMessageException();
+		}
+
 		Message messageInPlainText = new Message();
 
 		byte[] secretKeyToDecipher = secretKey;		// use session key that receiver know (can be null)

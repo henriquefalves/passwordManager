@@ -2,26 +2,22 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidChallengeException;
 
 import java.rmi.RemoteException;
 import java.security.*;
 
 
-public class ServerFrontEndTest  {
-    private static PublicKey clientPublic;
-    private static PrivateKey clientPrivate;
-    private static PublicKey serverPublic;
-    private static PrivateKey serverPrivate;
-    private static byte[] sessionKey;
+public abstract class ServerFrontEndTest  {
+    protected static PublicKey clientPublic;
+    protected static PrivateKey clientPrivate;
+    protected static PublicKey serverPublic;
+    protected static PrivateKey serverPrivate;
+    protected static byte[] sessionKey;
 
-    private static ServerFrontEnd serverFE;
-
-    private byte[] challenge;
+    protected static ServerFrontEnd serverFE;
+    protected byte[] challenge;
 
 
     @BeforeClass
@@ -35,11 +31,11 @@ public class ServerFrontEndTest  {
     serverPublic = serverKeyPair.getPublic();
     sessionKey = Crypto.generateSessionKey();
 
-    serverFE = new ServerFrontEnd(serverPrivate, serverPublic);
     }
 
     @Before
     public void setUpTest() throws RemoteException {
+        serverFE = new ServerFrontEnd(serverPrivate, serverPublic);
         Message insecureMessage = new Message();
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         Message response = serverFE.getChallenge(secureMessage);
@@ -49,67 +45,10 @@ public class ServerFrontEndTest  {
     }
 
 
-    @Test(expected = InvalidChallengeException.class)
-    public void invalidChallengeTest() throws RemoteException {
-        byte[] invalidChallenge = "invalidChallenge".getBytes();
-        Message insecureMessage = new Message(invalidChallenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        serverFE.register(secureMessage);
-    }
 
 
-    @Test(expected = InvalidChallengeException.class)
-    public void sendSameChallengeTwiceTest() throws RemoteException {
-        Message insecureMessage = new Message(challenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        serverFE.register(secureMessage);
-        serverFE.register(secureMessage);
-    }
-
-    @Test(expected = CorruptedMessageException.class)
-    public void wrongPublicKeyOfSenderTest() throws RemoteException {
-        Message insecureMessage = new Message(challenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        secureMessage.publicKeySender = serverPublic;
-        serverFE.register(secureMessage);
-    }
 
 
-    @Test(expected = CorruptedMessageException.class)
-    public void wrongIvTest() throws RemoteException {
-        Message insecureMessage = new Message(challenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        secureMessage.randomIv = Crypto.generateIV();
-        serverFE.register(secureMessage);
-    }
-
-
-    @Test(expected = CorruptedMessageException.class)
-    public void wrongDomainNotBlockSizeTest() throws RemoteException {
-        Message insecureMessage = new Message(challenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        secureMessage.domain = "wrongDomain".getBytes();        // size = 11 != AES block size
-        serverFE.register(secureMessage);
-    }
-
-    @Test(expected = CorruptedMessageException.class)
-    public void wrongDomainBlockSizeTest() throws RemoteException {
-        Message insecureMessage = new Message(challenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        secureMessage.domain = "1234567890123456".getBytes();       // size = 16 == AES block size
-        serverFE.register(secureMessage);
-    }
-
-
-    @Test(expected = CorruptedMessageException.class)
-    public void wrongDomainBlockSizeCipheredTest() throws RemoteException {
-        Message insecureMessage = new Message(challenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        byte[] wrongSecretKey = Crypto.generateSessionKey();
-        byte[] cipheredWrongDomain = Crypto.cipherSymmetric(wrongSecretKey, secureMessage.randomIv, "someDomain".getBytes());
-        secureMessage.domain = cipheredWrongDomain;
-        serverFE.register(secureMessage);
-    }
 
 
 }

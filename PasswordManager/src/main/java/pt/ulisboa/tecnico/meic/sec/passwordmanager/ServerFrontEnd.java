@@ -4,6 +4,7 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidChallengeException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.MissingChallengeException;
 
@@ -38,6 +39,10 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     }
 
     public void register(Message message) throws RemoteException {
+        if(message.publicKeySender == null){
+            throw new CorruptedMessageException();
+        }
+
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -54,6 +59,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     }
 
     public void put(Message message) throws RemoteException {
+        if(message.publicKeySender == null){
+            throw new CorruptedMessageException();
+        }
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -73,6 +81,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     }
 
     public Message get(Message message) throws RemoteException {
+        if(message.publicKeySender == null){
+            throw new CorruptedMessageException();
+        }
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -96,7 +107,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     }
 
     public Message getChallenge(Message message) throws RemoteException {
-
+        if(message.publicKeySender == null){
+            throw new CorruptedMessageException();
+        }
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
