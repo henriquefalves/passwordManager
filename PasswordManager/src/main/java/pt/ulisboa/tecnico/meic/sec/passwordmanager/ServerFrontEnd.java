@@ -146,7 +146,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
                         byte[] challenge = challenges.get(i);
                         challenges.remove(i);
                         challengesMap.put(pubKeyStr, challenges);
-                        System.out.println("Server-FE-checkChallenge: VALID challenge");
+                        System.out.println("Server-FE-checkChallenge: valid challenge");
                         return challenge;
                     }
                 }
