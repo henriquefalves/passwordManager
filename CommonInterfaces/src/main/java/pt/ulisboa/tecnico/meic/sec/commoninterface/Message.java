@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.security.Key;
 
 public class Message implements Serializable {
@@ -14,10 +13,9 @@ public class Message implements Serializable {
     public byte[] password;
     public byte[] secretKey;
     public byte[] randomIv;
-    public byte[] passwordIv;
 
     // constructor to serialize object
-    public Message(Key publicKeySender, byte[] signature, byte[] challenge, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, byte[] passwordIv) {
+    public Message(Key publicKeySender, byte[] signature, byte[] challenge, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv) {
         this.publicKeySender = publicKeySender;
         this.signature = signature;
         this.challenge = challenge;
@@ -26,7 +24,6 @@ public class Message implements Serializable {
         this.password = password;
         this.secretKey = secretKey;
         this.randomIv = randomIv;
-        this.passwordIv = passwordIv;
     }
 
     public Message(byte[] challenge, byte[] domain, byte[] username, byte[] password){
@@ -43,13 +40,12 @@ public class Message implements Serializable {
         this.signature = null;
         this.secretKey = null;
         this.randomIv = null;
-        this.passwordIv = null;
     }
 
     public Message(){
         this.publicKeySender = null;
         this.signature = this.challenge = this.domain = this.username = null;
-        this.password = this.secretKey = this.randomIv = this.passwordIv = null;
+        this.password = this.secretKey = this.randomIv = null;
     }
 
 }
