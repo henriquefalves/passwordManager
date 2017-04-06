@@ -97,4 +97,40 @@ public class ServerTest {
 	public void RegisterDuplicateKey() throws RemoteException {
 		server.register(key);
 	}
+
+	@Test
+	public void PutCorrectExecutionUpdate() {
+		byte[] serverPass;
+		try {
+			byte[] newPass  = "password2".getBytes(StandardCharsets.UTF_8);
+
+			server.put(key,VALID_DOMAIN,VALID_USERNAME,newPass);
+			serverPass = server.get(key, VALID_DOMAIN, VALID_USERNAME);
+			assertTrue(new String(serverPass, StandardCharsets.UTF_8).equals(new String(newPass, StandardCharsets.UTF_8)));
+		} catch (Exception e) {
+			fail();
+			e.printStackTrace();
+		}
+	}
+
+	@Test(expected = InvalidArgumentsException.class)
+	public void PutInvalidPublicKey() throws RemoteException {
+		server.put(null, VALID_DOMAIN, VALID_USERNAME,PASSWORD);
+	}
+
+	@Test(expected = InvalidArgumentsException.class)
+	public void PutInvalidDomain() throws RemoteException {
+		server.put(key, null, VALID_USERNAME, PASSWORD);
+	}
+
+
+	@Test(expected = InvalidArgumentsException.class)
+	public void PutInvalidUsername() throws RemoteException {
+		server.put(key, VALID_DOMAIN, null, PASSWORD);
+	}
+
+
+
+
+
 }

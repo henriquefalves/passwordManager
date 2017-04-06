@@ -26,7 +26,7 @@ public class ServerFrontEndTest {
     private static PrivateKey serverPrivate;
 
     private static ServerFrontEnd serverFE;
-    private BigInteger nextSeqNum;
+    private byte[] nextSeqNum;
 
 
     @BeforeClass
@@ -47,10 +47,10 @@ public class ServerFrontEndTest {
         Message insecureMessage = new Message(null, null, null, null);
         byte[] sessionKey = Crypto.generateSessionKey();
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, null, sessionKey, true, clientPrivate, clientPublic, serverPublic);
-        Message response = serverFE.getSequenceNumber(secureMessage);
+        Message response = serverFE.getChallenge(secureMessage);
 
         Message result = Crypto.checkMessage(response, null, sessionKey, clientPrivate, clientPublic);
-        nextSeqNum  = new BigInteger(result.sequenceNumber);
+        nextSeqNum  = result.challenge;
         System.out.println("SFEtest-setUpTest: seqNum = " + nextSeqNum);
     }
 

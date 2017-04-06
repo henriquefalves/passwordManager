@@ -42,6 +42,9 @@ public class Server implements ServerAPI {
 	}
 
 	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
+		if (publicKey == null || domain == null || username == null){
+			throw new InvalidArgumentsException();
+		}
 		for (User u : users){
 			if (u.isUserKey(publicKey)){
 				u.updateInfo(domain, username, password);
@@ -50,8 +53,7 @@ public class Server implements ServerAPI {
 			}
 		}
 		System.out.println("put: Unknown user");
-		// TODO exception - unknown user
-	}
+		throw new InvalidArgumentsException();	}
 
 	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
 		if (publicKey == null || domain == null || username == null){
@@ -69,6 +71,9 @@ public class Server implements ServerAPI {
 
 	public void put(Key publicKeySender, byte[] domain, byte[] username, byte[] password,
 			SignatureAutentication signatureAutentication) {
+		if (publicKeySender == null || domain == null || username == null){
+			throw new InvalidArgumentsException();
+		}
 		for (User u : users){
 			if (u.isUserKey(publicKeySender)){
 				u.updateInfo(domain, username, password,signatureAutentication);
@@ -77,8 +82,8 @@ public class Server implements ServerAPI {
 			}
 		}
 		System.out.println("put: Unknown user");
-		// TODO exception - unknown user
-		
+		throw new InvalidArgumentsException();
+
 	}
 
 
