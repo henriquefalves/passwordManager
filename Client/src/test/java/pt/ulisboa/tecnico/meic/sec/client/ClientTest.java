@@ -1,7 +1,7 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
 
-public class ClientTest {
+public class ClientTestOld {
 //
 //
 //	public static byte[] VALID_DOMAIN = "a.b".getBytes(StandardCharsets.UTF_8);
