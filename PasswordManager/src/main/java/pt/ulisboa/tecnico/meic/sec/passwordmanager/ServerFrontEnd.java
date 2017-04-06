@@ -25,6 +25,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     private Map<String, String> sessionKeys;
     public Server server;
 
+    SecureRandom randomGenerator;
+
     protected ServerFrontEnd(PrivateKey privateKey, PublicKey publicKey) throws RemoteException {
         this.myPrivateKey = privateKey;
         this.myPublicKey = publicKey;
@@ -32,6 +34,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         challengesMap = new HashMap<>();
         sessionKeys = new HashMap<>();
+        randomGenerator = new SecureRandom();
     }
 
     public void register(Message message) throws RemoteException {
@@ -108,8 +111,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             existingSessionKey = result.secretKey;
         }
 
-        SecureRandom random = new SecureRandom();
-        byte[] challenge= random.generateSeed(128);
+        byte[] challenge = new byte[128];
+        randomGenerator.nextBytes(challenge);
 
         ArrayList<byte[]> challenges = challengesMap.get(pubKeyStr);
         if(challenges == null){
