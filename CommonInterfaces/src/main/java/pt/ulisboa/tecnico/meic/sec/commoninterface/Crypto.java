@@ -1,6 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidSignatureException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
 
 import java.security.*;
 import java.util.ArrayList;
@@ -171,7 +171,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKeySender, dataToCheckSignature, signedData);
         if (!integrity){
             System.out.println("Crypto-checkMessage: Invalid signature");
-            throw new InvalidSignatureException();
+            throw new CorruptedMessageException();
         }
 
         System.out.println("Crypto-checkMessage: valid message");
@@ -201,8 +201,16 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			c.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
 			byte[] decodedBytes = c.doFinal(message);
 			return decodedBytes;
-		} catch (Exception e) {
+		} catch (IllegalBlockSizeException e){
+			System.out.println("decipherSymmetric: Illegal block size of data");
+			throw new CorruptedMessageException();
+		} catch (BadPaddingException e){
+			System.out.println("decipherSymmetric: Bad padding of data");
+			throw new CorruptedMessageException();
+		}
+			catch (Exception e) {
 			System.out.println("decipherSymmetric: AES decryption error");
+			System.out.println(e.getClass());
 			System.out.println(e.getMessage());
 			return  null;
 		}
