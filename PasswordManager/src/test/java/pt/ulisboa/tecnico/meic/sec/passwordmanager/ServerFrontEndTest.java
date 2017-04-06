@@ -8,6 +8,9 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidChallengeException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.rmi.RemoteException;
 import java.security.*;
 
@@ -39,7 +42,7 @@ public class ServerFrontEndTest  {
     }
 
     @Before
-    public void setUpTest() throws RemoteException {
+    public void setUpTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         Message insecureMessage = new Message();
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         Message response = serverFE.getChallenge(secureMessage);
@@ -50,7 +53,7 @@ public class ServerFrontEndTest  {
 
 
     @Test(expected = InvalidChallengeException.class)
-    public void invalidChallengeTest() throws RemoteException {
+    public void invalidChallengeTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         byte[] invalidChallenge = "invalidChallenge".getBytes();
         Message insecureMessage = new Message(invalidChallenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
@@ -59,7 +62,7 @@ public class ServerFrontEndTest  {
 
 
     @Test(expected = InvalidChallengeException.class)
-    public void sendSameChallengeTwiceTest() throws RemoteException {
+    public void sendSameChallengeTwiceTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         serverFE.register(secureMessage);
@@ -67,7 +70,7 @@ public class ServerFrontEndTest  {
     }
 
     @Test(expected = CorruptedMessageException.class)
-    public void wrongPublicKeyOfSenderTest() throws RemoteException {
+    public void wrongPublicKeyOfSenderTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         secureMessage.publicKeySender = serverPublic;
@@ -76,7 +79,7 @@ public class ServerFrontEndTest  {
 
 
     @Test(expected = CorruptedMessageException.class)
-    public void wrongIvTest() throws RemoteException {
+    public void wrongIvTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         secureMessage.randomIv = Crypto.generateIV();
@@ -85,7 +88,7 @@ public class ServerFrontEndTest  {
 
 
     @Test(expected = CorruptedMessageException.class)
-    public void wrongDomainNotBlockSizeTest() throws RemoteException {
+    public void wrongDomainNotBlockSizeTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         secureMessage.domain = "wrongDomain".getBytes();        // size = 11 != AES block size
@@ -93,7 +96,7 @@ public class ServerFrontEndTest  {
     }
 
     @Test(expected = CorruptedMessageException.class)
-    public void wrongDomainBlockSizeTest() throws RemoteException {
+    public void wrongDomainBlockSizeTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         secureMessage.domain = "1234567890123456".getBytes();       // size = 16 == AES block size
@@ -102,7 +105,7 @@ public class ServerFrontEndTest  {
 
 
     @Test(expected = CorruptedMessageException.class)
-    public void wrongDomainBlockSizeCipheredTest() throws RemoteException {
+    public void wrongDomainBlockSizeCipheredTest() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
         byte[] wrongSecretKey = Crypto.generateSessionKey();
@@ -110,6 +113,4 @@ public class ServerFrontEndTest  {
         secureMessage.domain = cipheredWrongDomain;
         serverFE.register(secureMessage);
     }
-
-
 }
