@@ -40,7 +40,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	}
 
 	/**
-	 * @return secure random 16 bytes Initialization Vector
+	 * @return secure random 16 bytes Initialization Vector 
 	 */
 	public static byte[] generateIV(){
 		byte[] iv = new byte[16];
@@ -67,7 +67,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	 * @param insecureMessage Message in plain text
 	 * @return cryptographically secure Message
 	 */
-	public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, SignatureException {
+	public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
 	    byte[] randomIv = Crypto.generateIV();
 
 	    // argsToSign contains parameters what will be signed with senderPrivKey
@@ -116,7 +116,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 
 	// receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
-	public static Message checkMessage(Message receivedMessage, byte[] secretKey, Key receiverPriv, Key receiverPub ) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
+	public static Message checkMessage(Message receivedMessage, byte[] secretKey, Key receiverPriv, Key receiverPub ){
 		Message messageInPlainText = new Message();
 
 		byte[] secretKeyToDecipher = secretKey;		// use session key that receiver know (can be null)
@@ -228,49 +228,139 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 	}	
 	
-	public static byte[] signData(PrivateKey privateKey, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	public static byte[] signData(PrivateKey privateKey, byte[] data){
+
 		Signature rsaSignature = null;
-        rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
-        rsaSignature.initSign(privateKey);
-        rsaSignature.update(data);
-        return rsaSignature.sign();
+		try {
+			rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		try {
+			rsaSignature.initSign(privateKey);
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		}
+		try {
+			rsaSignature.update(data);
+			return rsaSignature.sign();
+
+		} catch (SignatureException e) {
+			e.printStackTrace();
+		}
+		//TODO Maybe throw exception on signing
+		return null;
+
 	}
 
-	public static boolean verifySign(PublicKey publicKey, byte[] data, byte[]signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	public static boolean verifySign(PublicKey publicKey, byte[] data, byte[]signature){
 		Signature rsaSignature = null;
-        rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
-        rsaSignature.initVerify(publicKey);
-        rsaSignature.update(data);
-        return rsaSignature.verify(signature);
+		try {
+			rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			rsaSignature.initVerify(publicKey);
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			rsaSignature.update(data);
+			return rsaSignature.verify(signature);
+		} catch (SignatureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+
 	}
 
-	public static byte[] encryptAsymmetric(byte[] data, Key key, String algorithm) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+	public static byte[] encryptAsymmetric(byte[] data, Key key,String algorithm) {
 		Cipher rsa = null;
-        rsa = Cipher.getInstance(algorithm);
-        rsa.init(Cipher.ENCRYPT_MODE, key);
-        return rsa.doFinal(data);
+			try {
+				rsa = Cipher.getInstance(algorithm);
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				rsa.init(Cipher.ENCRYPT_MODE, key);
+			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				return rsa.doFinal(data);
+			} catch (IllegalBlockSizeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		return null;
 	}
 
-	public static byte[] decryptAsymmetric(byte[] ciphertext, Key key, String algorithm) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        Cipher rsa = null;
-        rsa = Cipher.getInstance(algorithm);
-        rsa.init(Cipher.DECRYPT_MODE, key);
-        return rsa.doFinal(ciphertext);
+	public static byte[] decryptAsymmetric(byte[] ciphertext, Key key, String algorithm) {
+			Cipher rsa = null;
+			try {
+				rsa = Cipher.getInstance(algorithm);
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				rsa.init(Cipher.DECRYPT_MODE, key);
+				//rsa.init(Cipher.DECRYPT_MODE, key);
+			} catch (InvalidKeyException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			try {
+				return rsa.doFinal(ciphertext);
+			} catch (IllegalBlockSizeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		return null;
 	}
 
-	public static KeyPair generateKeyPairRSA2048() throws NoSuchAlgorithmException {
-	    KeyPairGenerator keyGen = null;
-	    keyGen = KeyPairGenerator.getInstance("RSA");
-		keyGen.initialize(2048);
-		KeyPair keypair = keyGen.genKeyPair();
-		return keypair;
+	public static KeyPair generateKeyPairRSA2048(){
+		 KeyPairGenerator keyGen = null;
+		try {
+			keyGen = KeyPairGenerator.getInstance("RSA");
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		    keyGen.initialize(2048);
+		    KeyPair keypair = keyGen.genKeyPair();
+		    return keypair;
 	}
 	
-	public static SecretKey generateSecretKeyAES128() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = null;
-        keyGen = KeyGenerator.getInstance("AES");
-        keyGen.init(128); // for example
-        SecretKey secretKey = keyGen.generateKey();
-        return secretKey;
+	public static SecretKey generateSecretKeyAES128(){
+	KeyGenerator keyGen = null;
+	try {
+		keyGen = KeyGenerator.getInstance("AES");
+	} catch (NoSuchAlgorithmException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	keyGen.init(128); // for example
+	SecretKey secretKey = keyGen.generateKey();
+	return secretKey;
 	}
 }

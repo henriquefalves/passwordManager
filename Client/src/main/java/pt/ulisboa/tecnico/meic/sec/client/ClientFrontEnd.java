@@ -6,18 +6,12 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.Arrays;
 
 public class ClientFrontEnd implements ServerAPI {
@@ -41,7 +35,8 @@ public class ClientFrontEnd implements ServerAPI {
         this.serverPublicKey = serverPublicKey;
     }
 
-    public void register(Key publicKey) throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
+
+    public void register(Key publicKey) throws RemoteException {
         byte[] challenge = this.getChallenge();
         System.out.println("REGISTER-challenge = " + new String(challenge, StandardCharsets.UTF_8));
 
@@ -51,7 +46,7 @@ public class ClientFrontEnd implements ServerAPI {
         this.sendSessionKey = false;
     }
 
-    public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
+    public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
         byte[] challenge = this.getChallenge();
         System.out.println("PUT-challenge = " + new String(challenge, StandardCharsets.UTF_8));
         Message insecureMessage = new Message(challenge, domain, username, password);
@@ -60,7 +55,7 @@ public class ClientFrontEnd implements ServerAPI {
         this.sendSessionKey = false;
     }
 
-    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
+    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
 
         byte[] challenge = this.getChallenge();
         System.out.println("GET-challenge = " + new String(challenge, StandardCharsets.UTF_8));
@@ -74,7 +69,7 @@ public class ClientFrontEnd implements ServerAPI {
         return result.password;
     }
 
-    private byte[] getChallenge() throws RemoteException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, SignatureException, NoSuchPaddingException, InvalidKeyException {
+    private byte[] getChallenge() throws RemoteException {
         Message insecureMessage = new Message();
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         Message response = passwordmanager.getChallenge(secureMessage);

@@ -7,13 +7,13 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidChallengeException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.MissingChallengeException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.*;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Key;
 import java.util.*;
 
 public class ServerFrontEnd extends UnicastRemoteObject implements CommunicationAPI{
@@ -37,7 +37,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         randomGenerator = new SecureRandom();
     }
 
-    public void register(Message message) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, SignatureException, InvalidKeyException {
+    public void register(Message message) throws RemoteException {
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -53,7 +53,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
     }
 
-    public void put(Message message) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, SignatureException, InvalidKeyException {
+    public void put(Message message) throws RemoteException {
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -72,7 +72,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
     }
 
-    public Message get(Message message) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, SignatureException, InvalidKeyException {
+    public Message get(Message message) throws RemoteException {
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
@@ -95,7 +95,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         return secureMessage;
     }
 
-    public Message getChallenge(Message message) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, SignatureException, InvalidKeyException {
+    public Message getChallenge(Message message) throws RemoteException {
 
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
