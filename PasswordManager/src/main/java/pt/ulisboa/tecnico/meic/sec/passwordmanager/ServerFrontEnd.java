@@ -22,7 +22,10 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     private PrivateKey myPrivateKey;
     private PublicKey myPublicKey;
 
+    //TODO: comentar o que contem este map
     private Map<String, ArrayList<byte[]>> challengesMap;
+
+    //TODO: comentar o que contem este map
     private Map<String, String> sessionKeys;
     public Server server;
 
@@ -43,12 +46,14 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             throw new CorruptedMessageException();
         }
 
+        //TODO mateus: falar com o constantin sobre o funcionamento destas existing session keys e para que servem
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;
         if(existingSKstring != null){
             existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
         }
+
         Message result = Crypto.checkMessage(message, existingSessionKey, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
         server.register(message.publicKeySender);
@@ -62,6 +67,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
+
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
         String existingSKstring =sessionKeys.get(pubKeyStr);
         byte[] existingSessionKey = null;

@@ -123,18 +123,17 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 		Message messageInPlainText = new Message();
 
-		byte[] secretKeyToDecipher = secretKey;		// use session key that receiver know (can be null)
-	    if (receivedMessage.secretKey == null && secretKey == null){
-            System.out.println("Crypto-checkMessage: No secret key available to decipher");
-            return null;
-        }
-        if (receivedMessage.secretKey != null){		// check if received Message contains the session key
+		byte[] secretKeyToDecipher = secretKey;
+
+        //decypher session key
+        //TODO: falar com o constantin e perceber porque isto e necessario
+        if (receivedMessage.secretKey != null){
             secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 			messageInPlainText.secretKey = secretKeyToDecipher;
 	    }
 
-		// argsToCheckSign contains parameters what will be used to check the validity of signature
-        ArrayList<byte[]> argsToCheckSign = new ArrayList<>();		// order of elements is equal to order specified in getSecureMessage()
+        // argsToCheckSign contains parameters what will be used to check the validity of signature
+        ArrayList<byte[]> argsToCheckSign = new ArrayList<>();
 		argsToCheckSign.add(receivedMessage.randomIv);
 		argsToCheckSign.add(receivedMessage.publicKeySender.getEncoded());
 		argsToCheckSign.add(receiverPub.getEncoded());
@@ -143,30 +142,37 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		messageInPlainText.randomIv = receivedMessage.randomIv;
 
 		byte[] decipheredChallenge = null;
-		// if receivedMessage contains this element, it will be deciphered and verified in signature
-		if(receivedMessage.challenge != null){
+
+        // if existent, add challenge to signature verification
+        if(receivedMessage.challenge != null){
 			decipheredChallenge = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.challenge);
 			argsToCheckSign.add(decipheredChallenge);
 			messageInPlainText.challenge = decipheredChallenge;
 		}
 
-        if (receivedMessage.domain != null){ // if receivedMessage contains this element, it will be deciphered and verified in signature
+        // if existent, add challenge to signature verification
+        if (receivedMessage.domain != null){
             byte[] decipheredDomain = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.domain);
 			argsToCheckSign.add(decipheredDomain);
 			messageInPlainText.domain = decipheredDomain;
         }
-        if (receivedMessage.username != null){ // if receivedMessage contains this element, it will be deciphered and verified in signature
+
+        // if existent, add username to signature verification
+        if (receivedMessage.username != null){
             byte[] decipheredUsername = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.username);
 			argsToCheckSign.add(decipheredUsername);
 			messageInPlainText.username = decipheredUsername;
         }
-        if (receivedMessage.password != null){ // if receivedMessage contains this element, it will be deciphered and verified in signature
+
+        // if existent, add password to signature verification
+        if (receivedMessage.password != null){
             byte[] decipheredPassword = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.password);
 			argsToCheckSign.add(decipheredPassword);
 			messageInPlainText.password = decipheredPassword;
         }
 
-        byte[][] arrayToCheckSign = argsToCheckSign.toArray(new byte[0][]); // transform Array to byte array
+        // transform Array to byte array
+        byte[][] arrayToCheckSign = argsToCheckSign.toArray(new byte[0][]);
         byte[] dataToCheckSignature = Crypto.concatenateData(arrayToCheckSign);
 
         byte[] signedData = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.signature);
@@ -308,7 +314,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		
+
 		return null;
 	}
 

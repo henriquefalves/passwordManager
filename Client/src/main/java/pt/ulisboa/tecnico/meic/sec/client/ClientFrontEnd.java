@@ -38,7 +38,6 @@ public class ClientFrontEnd implements ServerAPI {
 
     public void register(Key publicKey) throws RemoteException {
         byte[] challenge = this.getChallenge();
-        System.out.println("REGISTER-challenge = " + new String(challenge, StandardCharsets.UTF_8));
 
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
@@ -48,7 +47,6 @@ public class ClientFrontEnd implements ServerAPI {
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
         byte[] challenge = this.getChallenge();
-        System.out.println("PUT-challenge = " + new String(challenge, StandardCharsets.UTF_8));
         Message insecureMessage = new Message(challenge, domain, username, password);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.put(secureMessage);
@@ -56,9 +54,7 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-
         byte[] challenge = this.getChallenge();
-        System.out.println("GET-challenge = " + new String(challenge, StandardCharsets.UTF_8));
         Message insecureMessage = new Message(challenge, domain, username, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, sendSessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         Message response =  passwordmanager.get(secureMessage);
@@ -76,16 +72,14 @@ public class ClientFrontEnd implements ServerAPI {
         this.sendSessionKey = false;
 
         Message result = Crypto.checkMessage(response, sessionKey, this.myPrivateKey, this.myPublicKey);
-        System.out.println("ClientCrypto-getChallenge = " +new String(result.challenge, StandardCharsets.UTF_8));
         return result.challenge;
     }
 
-    private void checkChallenge(byte[] expectedChallenge, byte[] receivedChallenge){
+    private void checkChallenge(byte[] expectedChallenge, byte[] receivedChallenge) {
         if(receivedChallenge == null || !Arrays.equals(expectedChallenge, receivedChallenge)){
             System.out.println("Client-FE-checkChallenge: Invalid challenge");
-            throw new WrongChallengeException();                          // TODO handle exception
+            throw new WrongChallengeException();
+            //TODO handle exception
         }
     }
-
-
 }
