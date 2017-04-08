@@ -37,10 +37,10 @@ public abstract class ServerFrontEndTest  {
     public void setUpTest() throws RemoteException {
         serverFE = new ServerFrontEnd(serverPrivate, serverPublic);
         Message insecureMessage = new Message();
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, true, clientPrivate, clientPublic, serverPublic);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
         Message response = serverFE.getChallenge(secureMessage);
 
-        Message result = Crypto.checkMessage(response, sessionKey, clientPrivate, clientPublic);
+        Message result = Crypto.checkMessage(response, clientPrivate, clientPublic);
         challenge = result.challenge;
     }
 

@@ -24,9 +24,6 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
     // contains the list of valid challenges for each PubKey
     private Map<String, ArrayList<byte[]>> challengesMap;
-
-    // tinha SK por cada pubKey, como a SK agora é enviada em cada mensagem, já não precisamos disso
-    private Map<String, String> sessionKeys;
     public Server server;
 
     SecureRandom randomGenerator;
@@ -37,7 +34,6 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         server = new Server();
 
         challengesMap = new HashMap<>();
-        sessionKeys = new HashMap<>();
         randomGenerator = new SecureRandom();
     }
 
@@ -45,22 +41,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
-
-        // mais uma vez, já não precisamos disso tudo
-        String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
-        String existingSKstring =sessionKeys.get(pubKeyStr);
-        byte[] existingSessionKey = null;
-        if(existingSKstring != null){
-            existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
-        }
-
-        Message result = Crypto.checkMessage(message, existingSessionKey, myPrivateKey, myPublicKey);
+        Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
         server.register(message.publicKeySender);
-        if(result.secretKey != null){
-            String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
-            sessionKeys.put(pubKeyStr, newSessionKey);
-        }
     }
 
     public void put(Message message) throws RemoteException {
@@ -68,47 +51,23 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             throw new CorruptedMessageException();
         }
 
-        String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
-        String existingSKstring =sessionKeys.get(pubKeyStr);
-        byte[] existingSessionKey = null;
-        if(existingSKstring != null){
-            existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
-        }
-
-        Message result = Crypto.checkMessage(message, existingSessionKey, myPrivateKey, myPublicKey);
+        Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
         SignatureAutentication signatureAutentication = new SignatureAutentication(message.randomIv, message.publicKeySender, myPublicKey, message.challenge, message.domain, message.username,message.password, message.signature);
         server.put(message.publicKeySender, result.domain, result.username, result.password , signatureAutentication);
-
-        if(result.secretKey != null){
-            String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
-            sessionKeys.put(pubKeyStr, newSessionKey);
-        }
     }
 
     public Message get(Message message) throws RemoteException {
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
-        String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
-        String existingSKstring =sessionKeys.get(pubKeyStr);
-        byte[] existingSessionKey = null;
-        if(existingSKstring != null){
-            existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
-        }
 
-        Message result = Crypto.checkMessage(message, existingSessionKey, myPrivateKey, myPublicKey);
+        Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(result.publicKeySender, result.challenge);
         byte[] password = server.get(message.publicKeySender, result.domain, result.username);
 
-        if(result.secretKey != null){
-            String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
-            sessionKeys.put(pubKeyStr, newSessionKey);
-            existingSessionKey = result.secretKey;
-        }
-
         Message insecureMessage = new Message(challenge, null, null, password);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, existingSessionKey, false, myPrivateKey, myPublicKey, message.publicKeySender);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
 
@@ -117,18 +76,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             throw new CorruptedMessageException();
         }
         String pubKeyStr = Base64.getEncoder().encodeToString(message.publicKeySender.getEncoded());
-        String existingSKstring =sessionKeys.get(pubKeyStr);
-        byte[] existingSessionKey = null;
-        if(existingSKstring != null){
-            existingSessionKey = Base64.getDecoder().decode(sessionKeys.get(pubKeyStr));
-        }
 
-        Message result = Crypto.checkMessage(message, existingSessionKey, myPrivateKey, myPublicKey);
-        if(result.secretKey != null){
-            String newSessionKey = Base64.getEncoder().encodeToString(result.secretKey);
-            sessionKeys.put(pubKeyStr, newSessionKey);
-            existingSessionKey = result.secretKey;
-        }
+        Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
 
         byte[] challenge = new byte[128];
         randomGenerator.nextBytes(challenge);
@@ -146,7 +95,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         System.out.println("ServerFE-getChallenge: challenge to send = " + new String(challenge, StandardCharsets.UTF_8));
         Message insecureMessage = new Message(challenge, null, null, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, existingSessionKey, false, myPrivateKey, myPublicKey, message.publicKeySender);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
 

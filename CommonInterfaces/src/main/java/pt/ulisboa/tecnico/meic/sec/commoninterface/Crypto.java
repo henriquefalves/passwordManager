@@ -67,7 +67,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	 * @param insecureMessage Message in plain text
 	 * @return cryptographically secure Message
 	 */
-	public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, boolean sendSecretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
+	public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
 	    byte[] randomIv = Crypto.generateIV();
 
 	    // argsToSign contains parameters what will be signed with senderPrivKey
@@ -103,11 +103,8 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, dataToSign);
 
 		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
+		byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
-		byte[] cipheredSecretKey = null;
-		if (sendSecretKey){		// if need to send the session Key
-			cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
-		}
 		// create cryptographically secure Message
 		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv);
 		return secureMessage;
@@ -116,26 +113,15 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
 
 	// receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
-	public static Message checkMessage(Message receivedMessage, byte[] secretKey, Key receiverPriv, Key receiverPub ){
-		if(receivedMessage.randomIv == null || receivedMessage.signature == null){
+	public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub ){
+		if(receivedMessage.randomIv == null || receivedMessage.signature == null || receivedMessage.secretKey == null){
 			throw new CorruptedMessageException();
 		}
 
 		Message messageInPlainText = new Message();
 
-		byte[] secretKeyToDecipher = secretKey;
-
-        //decypher session key
-        //TODO: falar com o constantin e perceber porque isto e necessario
-		// RESP: era necessario antes, quando SK nem sempre estava na Message
-		// o receptor podia já conhecer uma SK para esse emissor e era preciso verificar se a mensagem
-		// recebida tinha um SK. Se tiver, esse SK era usado para decifrar o resto do cinteúdo
-		// da mensagem. Se não tiver, usava a SK que conhecia. Se não tiver e se o receptor não conhecer
-		// nenhuma SK, era gerado um erro. Esses casos todos estavam neste IF e nos outros que já foram removidos
-        if (receivedMessage.secretKey != null){
-            secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-			messageInPlainText.secretKey = secretKeyToDecipher;
-	    }
+		byte[] secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		messageInPlainText.secretKey = secretKeyToDecipher;
 
         // argsToCheckSign contains parameters what will be used to check the validity of signature
         ArrayList<byte[]> argsToCheckSign = new ArrayList<>();
