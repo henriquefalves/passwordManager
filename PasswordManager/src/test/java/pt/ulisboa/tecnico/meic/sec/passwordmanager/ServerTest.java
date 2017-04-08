@@ -102,11 +102,13 @@ public class ServerTest {
 	public void PutCorrectExecutionUpdate() {
 		byte[] serverPass;
 		try {
-			byte[] newPass  = "password2".getBytes(StandardCharsets.UTF_8);
+			String insertedPassword = "password2";
+			byte[] newPass  = insertedPassword.getBytes(StandardCharsets.UTF_8);
 
 			server.put(key,VALID_DOMAIN,VALID_USERNAME,newPass);
 			serverPass = server.get(key, VALID_DOMAIN, VALID_USERNAME);
-			assertTrue(new String(serverPass, StandardCharsets.UTF_8).equals(new String(newPass, StandardCharsets.UTF_8)));
+			String fromServer = new String(serverPass, StandardCharsets.UTF_8);
+			assertTrue(fromServer.equals(new String(newPass, StandardCharsets.UTF_8)));
 		} catch (Exception e) {
 			fail();
 			e.printStackTrace();

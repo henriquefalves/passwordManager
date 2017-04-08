@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDigitalSignature;
 
 import java.security.*;
 import java.util.ArrayList;
@@ -171,11 +172,9 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         // check validity of signature
 		boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKeySender, dataToCheckSignature, signedData);
         if (!integrity){
-            System.out.println("Crypto-checkMessage: Invalid signature");
             throw new CorruptedMessageException();
         }
 
-        System.out.println("Crypto-checkMessage: valid message");
         return messageInPlainText;
     }
 
@@ -188,7 +187,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			byte[] encodedBytes = c.doFinal(message);
 			return encodedBytes;
 		} catch (Exception e) {
-			System.out.println("cipherSymmetric: AES encryption error");
 			System.out.println(e.getMessage());
 			return null;
 		}
@@ -223,7 +221,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			md = MessageDigest.getInstance(DEFAULT_HASH_ALGORITHM);
 			md.update(data);
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			System.out.println("INVALID ALGORITHM FOR HASHING");
 		}
 		return  md.digest();
 
@@ -235,22 +233,22 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		try {
 			rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			System.out.println("Invalid Algorithm for Signing");
 		}
 		try {
 			rsaSignature.initSign(privateKey);
 		} catch (InvalidKeyException e) {
-			e.printStackTrace();
+			System.out.println("The private Key used on the digital signature is invalid");
 		}
 		try {
 			rsaSignature.update(data);
 			return rsaSignature.sign();
 
 		} catch (SignatureException e) {
-			e.printStackTrace();
+			System.out.println("The data to sign is invalid to be digitally signed");
 		}
-		//TODO Maybe throw exception on signing
-		return null;
+		throw new InvalidDigitalSignature();
+
 
 	}
 
@@ -259,21 +257,21 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		try {
 			rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Invalid Algorithm to validated Signature");
+
 		}
 		try {
 			rsaSignature.initVerify(publicKey);
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Invalid public Key to verify digital signature ");
+
 		}
 		try {
 			rsaSignature.update(data);
 			return rsaSignature.verify(signature);
 		} catch (SignatureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Invalid digital signature ");
+
 		}
 		return false;
 
@@ -284,26 +282,22 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			try {
 				rsa = Cipher.getInstance(algorithm);
 			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid Algorithm to encrypt Asymmetrically");
 			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid Algorithm to encrypt Asymmetrically");
 			}
 			try {
 				rsa.init(Cipher.ENCRYPT_MODE, key);
 			} catch (InvalidKeyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid key to encrypt Asymmetrically");
 			}
 			try {
 				return rsa.doFinal(data);
 			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid data to encrypt Asymmetrically");
 			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Error encrypting data  Asymmetrically");
+
 			}
 
 		return null;
@@ -314,27 +308,25 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			try {
 				rsa = Cipher.getInstance(algorithm);
 			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid Algorithm to decrypt Asymmetrically");
 			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid Algorithm to decrypt Asymmetrically");
+
 			}
 			try {
 				rsa.init(Cipher.DECRYPT_MODE, key);
 				//rsa.init(Cipher.DECRYPT_MODE, key);
 			} catch (InvalidKeyException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				System.out.println("Invalid key to decrypt Asymmetrically");
+
 			}
 			try {
 				return rsa.doFinal(ciphertext);
 			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid data to decrypt Asymmetrically");
 			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("Invalid data to decrypt Asymmetrically");
+
 			}
 		return null;
 	}
@@ -344,9 +336,8 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		try {
 			keyGen = KeyPairGenerator.getInstance("RSA");
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+            System.out.println("Invalid Algorithm to generated Asymmetric Key");
+        }
 		    keyGen.initialize(2048);
 		    KeyPair keypair = keyGen.genKeyPair();
 		    return keypair;
@@ -357,9 +348,9 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	try {
 		keyGen = KeyGenerator.getInstance("AES");
 	} catch (NoSuchAlgorithmException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+        System.out.println("Invalid Algorithm to generated Symmetric Key");
+
+    }
 	keyGen.init(128); // for example
 	SecretKey secretKey = keyGen.generateKey();
 	return secretKey;

@@ -1,82 +1,77 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
+import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
-import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Hashtable;
 
 
-public class User {
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private Key publicKey;
-    private Hashtable<String, Hashtable<String, String>> domains;
+    private Hashtable<String, SignatureAuthentication> mapPasswords;
 
     public User(Key publicKey){
         this.publicKey = publicKey;
-        domains = new Hashtable<>();
+        mapPasswords = new Hashtable<>();
     }
 
     public boolean isUserKey(Key key){
         return key.equals(this.publicKey);
     }
 
-    public void updateInfo(byte[] domain, byte[] username, byte[] password){
-        String domainString = Base64.getEncoder().encodeToString(domain);
-        String usernameString = Base64.getEncoder().encodeToString(username);
-        String passwordString = Base64.getEncoder().encodeToString(password);
 
-        Hashtable<String, String> usernames = domains.get(domainString);
-        if (usernames == null){					// unknown domain
-            usernames = new Hashtable<String, String>();
-            usernames.put(usernameString, passwordString);
-            domains.put(domainString, usernames);
+    /**
+     * This method should be eliminated since the signature is stored
+     */
+    @Deprecated
+    public void updateInfo(byte[] domain, byte[] username, byte[] password){
+
+        byte[] concatenateData = Crypto.concatenateData(new byte[][]{domain, username});
+        byte[] preKey = Crypto.hashData(concatenateData);
+        String key = Base64.getEncoder().encodeToString(preKey);
+
+        if (mapPasswords.containsKey(key)) {                    // unknown domain
+
+            mapPasswords.replace(key, new SignatureAuthentication(null,null, null,null,null,null,password,null));
+
+        } else {
+            mapPasswords.put(key, new SignatureAuthentication(null,null, null,null,null,null,password,null));
+
         }
-        else{									// known domain
-            String pass = usernames.get(usernameString);
-            if (pass == null){						// unknown username
-                usernames.put(usernameString, passwordString);
-            }
-            else{									// known username
-                usernames.replace(usernameString, passwordString);
-            }
-        }
+
     }
 
     public byte[] getPassword(byte[] domain, byte[] username) {
-    	String domainString = Base64.getEncoder().encodeToString(domain);
-        String usernameString = Base64.getEncoder().encodeToString(username);
-        Hashtable<String, String> usernames = domains.get(domainString);
-        if(usernames == null) {
+        byte[] concatenateData = Crypto.concatenateData(new byte[][]{domain, username});
+        byte[] preKey = Crypto.hashData(concatenateData);
+        String key = Base64.getEncoder().encodeToString(preKey);
+
+        SignatureAuthentication signatureAuthentication = mapPasswords.get(key);
+        if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
-        String password = usernames.get(usernameString);
-        if (password == null) {
-            throw new InvalidArgumentsException();
-        }
-        return Base64.getDecoder().decode(password);
+        return signatureAuthentication.password;
     }
 
-	public void updateInfo(byte[] domain, byte[] username, byte[] password,
-			SignatureAutentication signatureAutentication) {
-		String domainString = Base64.getEncoder().encodeToString(domain);
-        String usernameString = Base64.getEncoder().encodeToString(username);
-        String passwordString = Base64.getEncoder().encodeToString(password);
+	public void updateInfo(byte[] domain, byte[] username, byte[] password, SignatureAuthentication signatureAuthentication) {
+        byte[] concatenateData = Crypto.concatenateData(new byte[][]{signatureAuthentication.domain, signatureAuthentication.username});
+        byte[] preKey = Crypto.hashData(concatenateData);
+        String key = Base64.getEncoder().encodeToString(preKey);
 
-        Hashtable<String, String> usernames = domains.get(domainString);
-        if (usernames == null){					// unknown domain
-            usernames = new Hashtable<String, String>();
-            usernames.put(usernameString, passwordString);
-            domains.put(domainString, usernames);
+        if (mapPasswords.containsKey(key)) {                    // unknown domain
+
+            mapPasswords.replace(key, signatureAuthentication);
+
+        } else {
+            mapPasswords.put(key, signatureAuthentication);
+
         }
-        else{									// known domain
-            String pass = usernames.get(usernameString);
-            if (pass == null){						// unknown username
-                usernames.put(usernameString, passwordString);
-            }
-            else{									// known username
-                usernames.replace(usernameString, passwordString);
-            }
-        }		
-	}
+
+    }
 }

@@ -20,16 +20,37 @@ public class ServerApplication {
             PrivateKey myPrivateKey = keyPair.getPrivate();
             PublicKey myPublicKey = keyPair.getPublic();
             ServerFrontEnd passwordManager = new ServerFrontEnd(myPrivateKey, myPublicKey);
-            System.out.println("Server created");
             Registry reg = LocateRegistry.createRegistry(registryPort);
-            System.out.println("Registry created!!");
             reg.rebind("password-manager", passwordManager);
-            System.out.println("Rebind done!!");
+            System.out.println("Server Running....");
 
-            System.out.println("Press Enter to exit");
-            String button = (new Scanner(System.in)).nextLine();
+            Scanner reader = new Scanner(System.in);
+            boolean on=true;
+            while(on) {
+                System.out.println("Execute command:");
+                System.out.println("exit or saveState");
+                String choice = reader.nextLine();
 
-        } catch (AccessException e) {
+                switch (choice) {
+                    case "exit":
+                        on = false;
+                        break;
+                    case "saveState":
+                        passwordManager.saveState();
+                        break;
+                    case "import":
+                        //TODO
+                        passwordManager.saveState();
+                        break;
+
+                    default:
+                        System.out.println("Incorrect Command");
+                        break;
+
+
+                }
+            }
+            } catch (AccessException e) {
             e.printStackTrace();
         } catch (RemoteException e) {
             e.printStackTrace();
