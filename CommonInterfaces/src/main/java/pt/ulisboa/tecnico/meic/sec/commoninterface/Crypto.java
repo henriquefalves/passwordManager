@@ -111,8 +111,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		return secureMessage;
 	}
 
-
-
 	// receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
 	public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub ){
 		if(receivedMessage.randomIv == null || receivedMessage.signature == null || receivedMessage.secretKey == null){
@@ -207,11 +205,11 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			System.out.println("decipherSymmetric: Bad padding of data");
 			throw new CorruptedMessageException();
 		}
-			catch (Exception e) {
+        catch (Exception e) {
 			System.out.println("decipherSymmetric: AES decryption error");
 			System.out.println(e.getClass());
 			System.out.println(e.getMessage());
-			return  null;
+			return null;
 		}
 	}
 
@@ -228,7 +226,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 	}	
 	
 	public static byte[] signData(PrivateKey privateKey, byte[] data){
-
 		Signature rsaSignature = null;
 		try {
 			rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
@@ -248,8 +245,6 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			System.out.println("The data to sign is invalid to be digitally signed");
 		}
 		throw new InvalidDigitalSignature();
-
-
 	}
 
 	public static boolean verifySign(PublicKey publicKey, byte[] data, byte[]signature){
@@ -273,66 +268,66 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			System.out.println("Invalid digital signature ");
 
 		}
-		return false;
 
+		return false;
 	}
 
 	public static byte[] encryptAsymmetric(byte[] data, Key key,String algorithm) {
 		Cipher rsa = null;
-			try {
-				rsa = Cipher.getInstance(algorithm);
-			} catch (NoSuchAlgorithmException e) {
-				System.out.println("Invalid Algorithm to encrypt Asymmetrically");
-			} catch (NoSuchPaddingException e) {
-				System.out.println("Invalid Algorithm to encrypt Asymmetrically");
-			}
-			try {
-				rsa.init(Cipher.ENCRYPT_MODE, key);
-			} catch (InvalidKeyException e) {
-				System.out.println("Invalid key to encrypt Asymmetrically");
-			}
-			try {
-				return rsa.doFinal(data);
-			} catch (IllegalBlockSizeException e) {
-				System.out.println("Invalid data to encrypt Asymmetrically");
-			} catch (BadPaddingException e) {
-				System.out.println("Error encrypting data  Asymmetrically");
+        try {
+            rsa = Cipher.getInstance(algorithm);
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Invalid Algorithm to encrypt Asymmetrically");
+        } catch (NoSuchPaddingException e) {
+            System.out.println("Invalid Algorithm to encrypt Asymmetrically");
+        }
+        try {
+            rsa.init(Cipher.ENCRYPT_MODE, key);
+        } catch (InvalidKeyException e) {
+            System.out.println("Invalid key to encrypt Asymmetrically");
+        }
+        try {
+            return rsa.doFinal(data);
+        } catch (IllegalBlockSizeException e) {
+            System.out.println("Invalid data to encrypt Asymmetrically");
+        } catch (BadPaddingException e) {
+            System.out.println("Error encrypting data  Asymmetrically");
 
-			}
+        }
 
 		return null;
 	}
 
 	public static byte[] decryptAsymmetric(byte[] ciphertext, Key key, String algorithm) {
-			Cipher rsa = null;
-			try {
-				rsa = Cipher.getInstance(algorithm);
-			} catch (NoSuchAlgorithmException e) {
+        Cipher rsa = null;
+        try {
+            rsa = Cipher.getInstance(algorithm);
+        } catch (NoSuchAlgorithmException e) {
 
-				System.out.println("Invalid Algorithm to decrypt Asymmetrically");
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				e.printStackTrace();
-			}
-			try {
-				rsa.init(Cipher.DECRYPT_MODE, key);
-			} catch (InvalidKeyException e1) {
+            System.out.println("Invalid Algorithm to decrypt Asymmetrically");
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+        try {
+            rsa.init(Cipher.DECRYPT_MODE, key);
+        } catch (InvalidKeyException e1) {
 
-				System.out.println("Invalid key to decrypt Asymmetrically");
-				e1.printStackTrace();
-			}
-			try {
-				return rsa.doFinal(ciphertext);
-			} catch (IllegalBlockSizeException e) {
-				System.out.println("decryptAsymmetric: Illegal block size of data");
-				throw new CorruptedMessageException();
-			} catch (BadPaddingException e) {
-				System.out.println("decryptAsymmetric: Bad padding of data");
-				throw new CorruptedMessageException();
-			}
+            System.out.println("Invalid key to decrypt Asymmetrically");
+            e1.printStackTrace();
+        }
+        try {
+            return rsa.doFinal(ciphertext);
+        } catch (IllegalBlockSizeException e) {
+            System.out.println("decryptAsymmetric: Illegal block size of data");
+            throw new CorruptedMessageException();
+        } catch (BadPaddingException e) {
+            System.out.println("decryptAsymmetric: Bad padding of data");
+            throw new CorruptedMessageException();
+        }
 	}
 
-	public static KeyPair generateKeyPairRSA2048(){
+	public static KeyPair generateKeyPairRSA2048() {
 		 KeyPairGenerator keyGen = null;
 		try {
 			keyGen = KeyPairGenerator.getInstance("RSA");
@@ -344,16 +339,16 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		    return keypair;
 	}
 	
-	public static SecretKey generateSecretKeyAES128(){
-	KeyGenerator keyGen = null;
-	try {
-		keyGen = KeyGenerator.getInstance("AES");
-	} catch (NoSuchAlgorithmException e) {
-        System.out.println("Invalid Algorithm to generated Symmetric Key");
+	public static SecretKey generateSecretKeyAES128() {
+        KeyGenerator keyGen = null;
+        try {
+            keyGen = KeyGenerator.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Invalid Algorithm to generated Symmetric Key");
 
-    }
-	keyGen.init(128); // for example
-	SecretKey secretKey = keyGen.generateKey();
-	return secretKey;
+        }
+        keyGen.init(128); // for example
+        SecretKey secretKey = keyGen.generateKey();
+        return secretKey;
 	}
 }

@@ -23,8 +23,6 @@ public class ClientTest {
 
 	public static Client client = null;
 
-	//TODO: TEST WITH MINIMUM CHARACTERS FOR CIPHER AFTER DECIDING HOW WE WILL CIPHER
-
     @BeforeClass
     public static void setUp() throws Exception {
 		client = new Client("rmi://localhost:8006/password-manager");

@@ -74,7 +74,7 @@ public class CryptoTest {
     }
 	
 	@Test
-	public void testNormalFuntionalityAssymetricKey() {
+	public void testNormalFunctionalityAsymmetricKey() {
 		 byte[] beforeEncryption = "PASSWORD".getBytes(StandardCharsets.UTF_8);
 		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, private1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
@@ -83,30 +83,34 @@ public class CryptoTest {
 	}
 
 	@Test
-	public void testNormalFuntionalitySymetricKey() {
-		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
-		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
-		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, secretKey,"AES");
+	public void testNormalFunctionalitySymmetricKey() {
+		//TODO: falar com o Henrique para perceber se e mesmo suposto ser Asymetric encription
+		//TODO: porque o teste diz Symmetric key
+		byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
+		byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
+		byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, secretKey,"AES");
 		 
-		 assertArrayEquals(beforeEncryption, decryptedPass);  
+		assertArrayEquals(beforeEncryption, decryptedPass);
 	}
 	
 	@Test
-	public void testNoIVSymetricKey() {
+	public void testNoIVSymmetricKey() {
+		//TODO: falar com o Henrique para perceber se e mesmo suposto ser Asymetric encription
+		//TODO: porque o teste diz Symmetric key
 		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
 		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
 		 byte[] encryptedPass2 = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
 
 		 assertArrayEquals(encryptedPass, encryptedPass2);  
 	}
-	
-//	//TODO: Unable to catch exception
+
+//	TODO: no way to test this, because you get corrupted padding message on decryption
 //	@Test
-//	public void testIntegritySymetricKey() {
+//	public void testIntegritySymmetricKey() {
 //		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
-//		 byte[] encryptedPass = crypto.encrypt(beforeEncryption, secretKey,"AES");
-//		 encryptedPass[5]=50;
-//		 byte[] decryptedPass = crypto.decrypt(encryptedPass, secretKey,"AES");
+//		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
+//		 encryptedPass[0]='a';
+//		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, secretKey,"AES");
 //		 assertFalse(Arrays.equals(beforeEncryption, decryptedPass));
 //
 //	}
