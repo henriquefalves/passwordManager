@@ -314,29 +314,24 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 			try {
 				rsa = Cipher.getInstance(algorithm);
 			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			try {
 				rsa.init(Cipher.DECRYPT_MODE, key);
-				//rsa.init(Cipher.DECRYPT_MODE, key);
 			} catch (InvalidKeyException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			try {
 				return rsa.doFinal(ciphertext);
 			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("decryptAsymmetric: Illegal block size of data");
+				throw new CorruptedMessageException();
 			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("decryptAsymmetric: Bad padding of data");
+				throw new CorruptedMessageException();
 			}
-		return null;
 	}
 
 	public static KeyPair generateKeyPairRSA2048(){

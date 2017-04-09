@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.meic.sec.client;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -30,6 +31,20 @@ public class CryptoTest {
 		private1 = generateKeyPairRSA2048.getPrivate();
 		secretKey = crypto.generateSecretKeyAES128();
 	}
+
+	@Test
+	public void signatureSwapOrderTest(){
+		byte[] dataToSign1 = "AAAAABBBBB".getBytes();
+		byte[] dataToSign2 = "BBBBBAAAAA".getBytes();
+
+		byte[] signature1 = Crypto.signData(private1, dataToSign1);
+		byte[] signature2 = Crypto.signData(private1, dataToSign2);
+
+		assertFalse(Arrays.equals(signature1, signature2));
+		assertFalse(Crypto.verifySign(public1, dataToSign2, signature1));
+		assertFalse(Crypto.verifySign(public1, dataToSign1, signature2));
+	}
+
 //TODO: Cannot Test -> Henrique
 /*	@Test
 	public void testMax245() {

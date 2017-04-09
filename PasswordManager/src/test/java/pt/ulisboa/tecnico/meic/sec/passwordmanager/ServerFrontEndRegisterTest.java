@@ -177,4 +177,22 @@ public class ServerFrontEndRegisterTest extends ServerFrontEndTest {
         secureMessage.signature = null;
         serverFE.register(secureMessage);
     }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void registerWrongSessionKeyTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, null, null, null);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        byte[] badSessionKey = new byte[256];
+        secureMessage.secretKey = badSessionKey;
+        serverFE.register(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void registerNullSessionKeyTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, null, null, null);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.secretKey = null;
+        serverFE.register(secureMessage);
+    }
+
 }

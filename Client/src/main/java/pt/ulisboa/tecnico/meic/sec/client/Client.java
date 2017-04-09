@@ -37,7 +37,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		this.passwordManager = new ClientFrontEnd(remoteServerName);
 	}
 
-	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) throws FileNotFoundException, NoSuchAlgorithmException, CertificateException, IOException {
+	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) throws NoSuchAlgorithmException, CertificateException, IOException {
 		KeyStore ks = keystore;
 
 		FileInputStream fis=null;
@@ -53,8 +53,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		//Get the key with the given alias.
 		keystore = loadKeystore( keystore , keystoreName, keystorePassword.toCharArray());
 
-		Key key = null;
-		key = keystore.getKey(USERALIAS,  "".toCharArray());
+		Key key = keystore.getKey(USERALIAS,  "".toCharArray());
 
 		if (key instanceof PrivateKey) {
 

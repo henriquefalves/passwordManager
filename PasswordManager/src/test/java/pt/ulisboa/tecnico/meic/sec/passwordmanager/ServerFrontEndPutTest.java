@@ -229,4 +229,34 @@ public class ServerFrontEndPutTest extends ServerFrontEndTest {
         secureMessage.signature = null;
         serverFE.put(secureMessage);
     }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void putWrongSessionKeyTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, DOMAIN, USERNAME, PASSWORD);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        byte[] badSessionKey = new byte[256];
+        secureMessage.secretKey = badSessionKey;
+        serverFE.put(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void putNullSessionKeyTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, DOMAIN, USERNAME, PASSWORD);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.secretKey = null;
+        serverFE.put(secureMessage);
+    }
+
+
+    @Test(expected = CorruptedMessageException.class)
+    public void putSwapAttributesTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, DOMAIN, USERNAME, PASSWORD);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        byte[] temp = secureMessage.username;
+        secureMessage.username = secureMessage.domain;
+        secureMessage.domain = temp;
+        serverFE.put(secureMessage);
+    }
+
+
 }
