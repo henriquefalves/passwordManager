@@ -36,7 +36,6 @@ public class ClientFrontEnd implements ServerAPI {
 
     public void register(Key publicKey) throws RemoteException {
         byte[] challenge = this.getChallenge();
-
         Message insecureMessage = new Message(challenge, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
         passwordmanager.register(secureMessage);

@@ -58,6 +58,19 @@ public class ServerFrontEndPutTest extends ServerFrontEndTest {
         serverFE.put(secureMessage);
     }
 
+    @Test(expected = CorruptedMessageException.class)
+    public void putIntersectedChallengeTest() throws RemoteException {
+        // get new challenge
+        Message insecureMessageChall = new Message();
+        Message secureMessageChall = Crypto.getSecureMessage(insecureMessageChall, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        Message response = serverFE.getChallenge(secureMessageChall);
+
+        Message insecureMessage = new Message(challenge, DOMAIN, USERNAME, PASSWORD);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.challenge = response.challenge;
+        serverFE.put(secureMessage);
+    }
+
 
     @Test(expected = InvalidChallengeException.class)
     public void putSendSameChallengeTwiceTest() throws RemoteException {
