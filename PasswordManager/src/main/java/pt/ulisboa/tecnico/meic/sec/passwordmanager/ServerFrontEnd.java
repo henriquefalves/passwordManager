@@ -53,8 +53,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
-        SignatureAutentication signatureAutentication = new SignatureAutentication(message.randomIv, message.publicKeySender, myPublicKey, message.challenge, message.domain, message.username,message.password, message.signature);
-        server.put(message.publicKeySender, result.domain, result.username, result.password , signatureAutentication);
+        SignatureAuthentication signatureAuthentication = new SignatureAuthentication(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature);
+        server.put(message.publicKeySender, result.domain, result.username, result.password , signatureAuthentication);
     }
 
     public Message get(Message message) throws RemoteException {
@@ -113,13 +113,14 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
                         byte[] challenge = challenges.get(i);
                         challenges.remove(i);
                         challengesMap.put(pubKeyStr, challenges);
-                        System.out.println("Server-FE-checkChallenge: valid challenge");
                         return challenge;
                     }
                 }
-                System.out.println("Server-FE-checkChallenge: Invalid challenge");
                 throw new InvalidChallengeException();
             }
+    }
+    public void saveState(){
+        server.saveServerState();
     }
 
 }
