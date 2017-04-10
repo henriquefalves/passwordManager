@@ -3,7 +3,7 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 import java.security.Key;
 import java.security.PublicKey;
 
-public class SignatureAuthentication {
+public class UserData {
 
     public Key publicKeySender;
 	public PublicKey publicKeyReceiver;
@@ -14,7 +14,7 @@ public class SignatureAuthentication {
     public byte[] password;
     public byte[] randomIv;
 
-	public SignatureAuthentication(byte[] randomIv, Key publicKeySender, PublicKey publicKeyReceiver, byte[] challenge,
+	public UserData(byte[] randomIv, Key publicKeySender, PublicKey publicKeyReceiver, byte[] challenge,
 								   byte[] domain, byte[] username, byte[] password, byte[] signature) {
 		super();
 		this.publicKeySender = publicKeySender;
