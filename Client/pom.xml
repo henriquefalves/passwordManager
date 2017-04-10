@@ -46,7 +46,6 @@
                         <argument>localhost</argument>
                         <argument>password-manager</argument>
                         <argument>8006</argument>
-                        <argument>8007</argument>
                     </arguments>
                     <systemProperties>
                     </systemProperties>

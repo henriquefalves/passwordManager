@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 
+import javafx.util.Pair;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
@@ -53,7 +54,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
-        UserData signatureAuthentication = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature);
+        //TODO BY MATEUS: ATENCAO AO TIMESTAMP AQUI, METI A 0 PARA COMPILAR
+        UserData signatureAuthentication = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature, 0);
         server.put(message.publicKeySender, result.domain, result.username, result.password , signatureAuthentication);
     }
 
@@ -64,9 +66,13 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(result.publicKeySender, result.challenge);
-        byte[] password = server.get(message.publicKeySender, result.domain, result.username);
-
-        Message insecureMessage = new Message(challenge, null, null, password, 0, 0, null);
+        Pair<byte[], Integer> pair = server.newGet(message.publicKeySender, result.domain, result.username);
+        byte[] password = pair.getKey();
+        Integer timestamp = pair.getValue();
+        //TODO BY MATEUS: NAO ME LEMBRO PARA QUE NECESSITAMOS DO TIMESTAMP
+        //TODO BY MATEUS: POR ISSO NAO ESTOU A FAZER NADA COM ELE. ELUCIDEM-ME PLS
+        System.out.println(result.rid);
+        Message insecureMessage = new Message(challenge, null, null, password, 0, result.rid, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
@@ -98,27 +104,25 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         return secureMessage;
     }
 
-    private byte[] checkChallenge(Key publicKey, byte[] receivedChallenge){
-            if(receivedChallenge == null){
-                throw new MissingChallengeException();
-            }
-            String pubKeyStr = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-            ArrayList<byte[]> challenges = challengesMap.get(pubKeyStr);
-            if(challenges == null){
-                throw new InvalidChallengeException();
-            }else{
-                for (int i = 0; i < challenges.size(); i++) {
-                    if(Arrays.equals(challenges.get(i), receivedChallenge)){
-                        byte[] challenge = challenges.get(i);
-                        challenges.remove(i);
-                        challengesMap.put(pubKeyStr, challenges);
-                        return challenge;
-                    }
+    private byte[] checkChallenge(Key publicKey, byte[] receivedChallenge) {
+        if(receivedChallenge == null) {
+            throw new MissingChallengeException();
+        }
+        String pubKeyStr = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+        ArrayList<byte[]> challenges = challengesMap.get(pubKeyStr);
+        if(challenges == null) {
+            throw new InvalidChallengeException();
+        } else {
+            for (int i = 0; i < challenges.size(); i++) {
+                if(Arrays.equals(challenges.get(i), receivedChallenge)){
+                    byte[] challenge = challenges.get(i);
+                    challenges.remove(i);
+                    challengesMap.put(pubKeyStr, challenges);
+                    return challenge;
                 }
-                throw new InvalidChallengeException();
             }
+            throw new InvalidChallengeException();
+        }
     }
-
-
 }
 

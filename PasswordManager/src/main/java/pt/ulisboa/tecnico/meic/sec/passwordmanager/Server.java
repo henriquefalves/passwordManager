@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
+import javafx.util.Pair;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
@@ -57,6 +58,19 @@ public class Server implements ServerAPI,Serializable {
 			return password;
 		}
 			throw new InvalidArgumentsException();
+	}
+
+	//TODO: rename function
+	public Pair<byte[], Integer> newGet(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
+		if (publicKey == null || domain == null || username == null){
+			{throw new InvalidArgumentsException(); }
+		}
+		if(users.containsKey(publicKey)) {
+			byte[] password = users.get(publicKey).getPassword(domain, username);
+			Integer timestamp = users.get(publicKey).getTimestamp(domain, username);
+			return new Pair<>(password, timestamp);
+		}
+		throw new InvalidArgumentsException();
 	}
 
 	public void put(Key publicKeySender, byte[] domain, byte[] username, byte[] password,

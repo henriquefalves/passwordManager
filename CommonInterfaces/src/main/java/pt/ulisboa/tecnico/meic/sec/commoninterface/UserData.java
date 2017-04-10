@@ -16,9 +16,11 @@ public class UserData implements Serializable {
     public byte[] username;
     public byte[] password;
     public byte[] randomIv;
+    public Integer timestamp;
 
-	public UserData(byte[] randomIv, Key publicKeySender, PublicKey publicKeyReceiver, byte[] challenge,
-								   byte[] domain, byte[] username, byte[] password, byte[] signature) {
+    public UserData(byte[] randomIv, Key publicKeySender, PublicKey publicKeyReceiver, byte[] challenge,
+								   byte[] domain, byte[] username, byte[] password,
+									byte[] signature, Integer timestamp) {
 		super();
 		this.publicKeySender = publicKeySender;
 		this.publicKeyReceiver = publicKeyReceiver;
@@ -28,16 +30,6 @@ public class UserData implements Serializable {
 		this.username = username;
 		this.password = password;
 		this.randomIv = randomIv;
+		this.timestamp = timestamp;
 	}
-
-
-	/**
-	 * At anytime a server admin could check the validity of the stored password
-	 */
-	public boolean verifySignature(){
-		//TODO
-		return false;
-	}
-
-
 }

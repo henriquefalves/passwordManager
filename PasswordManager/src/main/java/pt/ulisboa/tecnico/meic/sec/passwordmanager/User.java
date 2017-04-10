@@ -38,15 +38,15 @@ public class User implements Serializable {
         byte[] preKey = Crypto.hashData(concatenateData);
         String key = Base64.getEncoder().encodeToString(preKey);
 
-        if (mapPasswords.containsKey(key)) {                    // unknown domain
-
-            mapPasswords.replace(key, new UserData(null,null, null,null,null,null,password,null));
+        //TODO BY MATEUS: HENRIQUE, ATENCAO AO ULTIMO ARGUMENTO QUE É TIMESTAMP
+        //TODO EU METI NESTAS CHAMADAS UM TIMESTAMP A 0, MAS ACHO QUE O TENS DE PASSAR DE LA DE BAIXO
+        // unknown domain
+        if (mapPasswords.containsKey(key)) {
+            mapPasswords.replace(key, new UserData(null,null, null,null,null,null,password,null, 0));
 
         } else {
-            mapPasswords.put(key, new UserData(null,null, null,null,null,null,password,null));
-
+            mapPasswords.put(key, new UserData(null,null, null,null,null,null,password,null, 0));
         }
-
     }
 
     public byte[] getPassword(byte[] domain, byte[] username) {
@@ -97,5 +97,17 @@ public class User implements Serializable {
             count++;
         }
         return count;
+    }
+
+    public Integer getTimestamp(byte[] domain, byte[] username) {
+        byte[] concatenateData = Crypto.concatenateData(new byte[][]{domain, username});
+        byte[] preKey = Crypto.hashData(concatenateData);
+        String key = Base64.getEncoder().encodeToString(preKey);
+
+        UserData signatureAuthentication = mapPasswords.get(key);
+        if(signatureAuthentication == null) {
+            throw new InvalidArgumentsException();
+        }
+        return signatureAuthentication.timestamp;
     }
 }

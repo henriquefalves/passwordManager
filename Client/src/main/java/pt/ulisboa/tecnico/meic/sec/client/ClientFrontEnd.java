@@ -19,8 +19,6 @@ public class ClientFrontEnd implements ServerAPI {
     private Key serverPublicKey;
     private byte[] sessionKey;
     private int rid;
-    private ArrayList<Message> readList;
-    private int FAKE_WTS = 0;
 
     //TODO: CHANGE ALL INVOCATIONS ON SERVER (ONLY CALLING 1 RIGHT NOW)
 
@@ -34,7 +32,6 @@ public class ClientFrontEnd implements ServerAPI {
         sessionKey = Crypto.generateSessionKey();
 
         rid = 0;
-        readList = new ArrayList<>();
     }
 
     public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey){
@@ -47,7 +44,7 @@ public class ClientFrontEnd implements ServerAPI {
         for(int i = 0; i < listReplicas.size(); i++) {
 
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, null, null, null, FAKE_WTS, 0, null);
+            Message insecureMessage = new Message(challenge, null, null, null, 0, 0, null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
            //TODO Execute Thread
@@ -58,9 +55,8 @@ public class ClientFrontEnd implements ServerAPI {
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
         for(int i = 0; i < listReplicas.size(); i++) {
-
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, domain, username, password, FAKE_WTS, 0, null);
+            Message insecureMessage = new Message(challenge, domain, username, password, 0, 0, null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
             listReplicas.get(i).put(secureMessage);
         }
@@ -69,37 +65,38 @@ public class ClientFrontEnd implements ServerAPI {
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
         //Regular Register Read Version (1,N)
         rid++;
-        readList = new ArrayList<>();
-        //Now send message to all servers
+        ArrayList<Message> readList = new ArrayList<>();
+
         for(int i = 0; i < listReplicas.size(); i++) {
 
-        byte[] challenge = this.getChallenge(i);
-        //TODO need to add RID here
-        Message insecureMessage = new Message(challenge, domain, username, null, FAKE_WTS, rid, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+            //Create messages
+            byte[] challenge = this.getChallenge(i);
+            Message insecureMessage = new Message(challenge, domain, username, null, 0, rid, null);
+            Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
             //TODO: should be threaded
+            //Server call
             Message response = listReplicas.get(i).get(secureMessage);
             Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
             checkChallenge(challenge, result.challenge);
-            readList.add(result);
-            if(readList.size() > (listReplicas.size()/2)) {
-                byte[] commonValue = getCommonPasswordValue(readList);
-                readList = new ArrayList<>();
-                return commonValue;
-            }
-            //TODO BY Henrique considera isto e diz-me qualquer coisa
-//            while(!readList.size() > (listReplicas.size()/2)|| THRESHOLD_WAITTIME){
-//                Thread.sleep(2000*listReplicas.size());
-//            }
-//            byte[] commonValue = getCommonPasswordValue(readList);
-//            readList = new ArrayList<>();
-//            return commonValue;
 
+            //TODO: check signature from UserData
+            System.out.println("Message rid: " + result.rid + ". Local rid: " + rid);
+            //bonrr (algorithm) makes this check
+            if(result.rid == rid) {
+                //Add result to read list
+                readList.add(result);
+                if(readList.size() > (listReplicas.size()/2)) {
+                    byte[] commonValue = getCommonPasswordValue(readList);
+                    return commonValue;
+                }
+            }
         }
         return null;
     }
 
+
+    //receives a list of messages and returns the most common password
     private byte[] getCommonPasswordValue(ArrayList<Message> messages) {
         HashMap<byte[], Integer> map = new HashMap<>();
         for(Message m : messages) {

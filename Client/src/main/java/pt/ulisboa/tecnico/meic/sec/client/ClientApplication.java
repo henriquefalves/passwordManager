@@ -25,7 +25,7 @@ public class ClientApplication {
 	/**
 	 * Defines user interaction or automatic
 	 */
-	private static boolean debug = true;
+	private static boolean debug = false;
 	/**
 	 * Defines if the program should printStackTrace of Execeptions
 	 */

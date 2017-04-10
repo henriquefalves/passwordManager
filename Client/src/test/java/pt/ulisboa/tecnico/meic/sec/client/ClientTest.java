@@ -86,8 +86,8 @@ public class ClientTest {
 			byte[] pass = client.retrieve_password(VALID_DOMAIN, VALID_USERNAME);
 			assertTrue(new String(pass, StandardCharsets.UTF_8).equals(new String(PASSWORD1, StandardCharsets.UTF_8)));
 		} catch (Exception e) {
-			fail();
 			e.printStackTrace();
+			fail();
 		}
 	}
 

@@ -107,6 +107,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		byte[] hashDomain = Crypto.hashData(domain);
 		byte[] hashUsername = Crypto.hashData(domain);
 		byte[] encryptedPassword = passwordManager.get(myPublicKey, hashDomain, hashUsername);
+		System.out.println(encryptedPassword);
 		byte[] decryptedPassword = Crypto.decryptAsymmetric(encryptedPassword, myPrivateKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 
 		return decryptedPassword;
