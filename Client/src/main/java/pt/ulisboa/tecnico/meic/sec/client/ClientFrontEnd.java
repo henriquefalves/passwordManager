@@ -23,6 +23,8 @@ public class ClientFrontEnd implements ServerAPI {
     //TODO: CHANGE ALL INVOCATIONS ON SERVER (ONLY CALLING 1 RIGHT NOW)
 
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
+    private int acks;
+    private int wts;
 
     public ClientFrontEnd(ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
        for(String i:remoteServerNames) {
@@ -54,12 +56,31 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
+        wts++;
+        acks=0;
         for(int i = 0; i < listReplicas.size(); i++) {
+            //TODO Must be multiThreaded
             byte[] challenge = this.getChallenge(i);
             Message insecureMessage = new Message(challenge, domain, username, password, 0, 0, null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
             listReplicas.get(i).put(secureMessage);
+            acks++;
+
         }
+
+        //TODO by Mateus: tinhas o sinal de operador mal henrique
+        //TODO: esta parte do codigo nao esta a fazer nada porque os puts estao sincronos
+        //TODO: por isso vou comentar
+        /*while(acks < listReplicas.size()/2) {
+            try {
+                Thread.sleep(2000 * listReplicas.size());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }*/
+        acks=0;
+
+
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
