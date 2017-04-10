@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
@@ -8,7 +9,6 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.security.Key;
 import java.util.Iterator;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Server implements ServerAPI,Serializable {

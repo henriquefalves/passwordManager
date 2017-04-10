@@ -107,7 +107,7 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 		byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
 		// create cryptographically secure Message
-		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv);
+		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, insecureMessage.wts, insecureMessage.rid, insecureMessage.userData);
 		return secureMessage;
 	}
 

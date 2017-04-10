@@ -4,11 +4,11 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidChallengeException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.MissingChallengeException;
 
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.PrivateKey;
@@ -66,7 +66,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         byte[] challenge = checkChallenge(result.publicKeySender, result.challenge);
         byte[] password = server.get(message.publicKeySender, result.domain, result.username);
 
-        Message insecureMessage = new Message(challenge, null, null, password);
+        Message insecureMessage = new Message(challenge, null, null, password, 0, 0, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
@@ -93,11 +93,10 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             challengesMap.put(pubKeyStr, challenges);
         }
 
-        Message insecureMessage = new Message(challenge, null, null, null);
+        Message insecureMessage = new Message(challenge, null, null, null, 0, 0, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
-
 
     private byte[] checkChallenge(Key publicKey, byte[] receivedChallenge){
             if(receivedChallenge == null){

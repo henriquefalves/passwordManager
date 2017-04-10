@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.io.*;

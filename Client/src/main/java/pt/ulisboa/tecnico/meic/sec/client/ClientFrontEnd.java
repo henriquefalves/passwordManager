@@ -12,21 +12,30 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 public class ClientFrontEnd implements ServerAPI {
     private Key myPrivateKey;
     private Key myPublicKey;
     private Key serverPublicKey;
     private byte[] sessionKey;
+    private int rid;
+    private ArrayList<Message> readList;
+    private int serverCount;
+    private int FAKE_WTS = 0;
+
+    //TODO: CHANGE ALL INVOCATIONS ON SERVER (ONLY CALLING 1 RIGHT NOW)
 
     //TODO: turn this into arraylist
-    CommunicationAPI passwordmanager;
+    ArrayList<CommunicationAPI> passwordmanagers = new ArrayList<>();
 
     public ClientFrontEnd(ArrayList<String> remoteServerName) throws RemoteException, NotBoundException, MalformedURLException {
         //passwordmanager = (CommunicationAPI) Naming.lookup(remoteServerName);
         sessionKey = Crypto.generateSessionKey();
+
+        rid = 0;
+        readList = new ArrayList<>();
+        serverCount = remoteServerName.size();
     }
 
     public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey){
@@ -37,33 +46,63 @@ public class ClientFrontEnd implements ServerAPI {
 
     public void register(Key publicKey) throws RemoteException {
         byte[] challenge = this.getChallenge();
-        Message insecureMessage = new Message(challenge, null, null, null);
+        Message insecureMessage = new Message(challenge, null, null, null, FAKE_WTS, 0, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        passwordmanager.register(secureMessage);
+        passwordmanagers.get(0).register(secureMessage);
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
         byte[] challenge = this.getChallenge();
-        Message insecureMessage = new Message(challenge, domain, username, password);
+        Message insecureMessage = new Message(challenge, domain, username, password, FAKE_WTS, 0, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        passwordmanager.put(secureMessage);
+        passwordmanagers.get(0).put(secureMessage);
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-        byte[] challenge = this.getChallenge();
-        Message insecureMessage = new Message(challenge, domain, username, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        Message response =  passwordmanager.get(secureMessage);
+        //Regular Register Read Version (1,N)
+        rid++;
+        readList = new ArrayList<>();
+        //Now send message to all servers
 
-        Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
-        checkChallenge(challenge, result.challenge);
-        return result.password;
+        byte[] challenge = this.getChallenge();
+        //need to add RID here
+        Message insecureMessage = new Message(challenge, domain, username, null, FAKE_WTS, rid, null);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+
+        for(int i = 0; i < serverCount; i++) {
+            //TODO: should be threaded
+            Message response = passwordmanagers.get(i).get(secureMessage);
+            Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
+            checkChallenge(challenge, result.challenge);
+            readList.add(result);
+            if(readList.size() > (serverCount/2)) {
+                byte[] commonValue = getCommonPasswordValue(readList);
+                readList = new ArrayList<>();
+                return commonValue;
+            }
+        }
+        return null;
+    }
+
+    public byte[] getCommonPasswordValue(ArrayList<Message> messages) {
+        HashMap<byte[], Integer> map = new HashMap<>();
+        for(Message m : messages) {
+            Integer val = map.get(m.password);
+            if(val != null) {
+                map.put(m.password, val + 1);
+            } else {
+                map.put(m.password, 1);
+            }
+        }
+        byte[] password = Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
+        System.out.println("Pass from most common values: " + password);
+        return password;
     }
 
     private byte[] getChallenge() throws RemoteException {
         Message insecureMessage = new Message();
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        Message response = passwordmanager.getChallenge(secureMessage);
+        Message response = passwordmanagers.get(0).getChallenge(secureMessage);
 
         Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
         return result.challenge;

@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.meic.sec.passwordmanager;
+package pt.ulisboa.tecnico.meic.sec.commoninterface;
 
 import java.io.Serializable;
 import java.security.Key;
