@@ -26,6 +26,7 @@ public class ClientFrontEnd implements ServerAPI {
 
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
     private int acks;
+    private int wts;
 
     public ClientFrontEnd(ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
        for(String i:remoteServerNames) {
@@ -58,6 +59,7 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
+        wts++;
         acks=0;
         for(int i = 0; i < listReplicas.size(); i++) {
             //TODO Must be multiThreaded
