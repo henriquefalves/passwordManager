@@ -69,7 +69,6 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 			KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
 			myPrivateKey = keyPair.getPrivate();
 			myPublicKey = keyPair.getPublic();
-			System.out.println(myPublicKey);
 		}
 
 		PublicKey serverPublicKey = null;

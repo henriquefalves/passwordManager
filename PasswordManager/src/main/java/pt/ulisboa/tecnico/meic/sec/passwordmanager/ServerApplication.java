@@ -22,7 +22,7 @@ public class ServerApplication {
             ServerFrontEnd passwordManager = new ServerFrontEnd(myPrivateKey, myPublicKey);
             Registry reg = LocateRegistry.createRegistry(registryPort);
             reg.rebind("password-manager", passwordManager);
-            System.out.println("Server Running....");
+            System.out.println("Server Running on Port:" +registryPort);
 
             Scanner reader = new Scanner(System.in);
             boolean on=true;

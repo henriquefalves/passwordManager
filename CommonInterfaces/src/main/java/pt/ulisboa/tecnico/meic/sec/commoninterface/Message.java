@@ -45,6 +45,17 @@ public class Message implements Serializable {
         this.rid = rid;
         this.userData = userData;
     }
+    public Message(byte[] challenge, byte[] domain, byte[] username, byte[] password){
+        this.challenge = challenge;
+        this.domain = domain;
+        this.username = username;
+        this.password = password;
+        this.publicKeySender = null;
+        this.signature = null;
+        this.secretKey = null;
+        this.randomIv = null;
+        this.userData = userData;
+    }
 
     public Message(){
         this.publicKeySender = null;

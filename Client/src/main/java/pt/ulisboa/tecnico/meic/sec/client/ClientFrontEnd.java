@@ -7,7 +7,6 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 
 import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -21,21 +20,21 @@ public class ClientFrontEnd implements ServerAPI {
     private byte[] sessionKey;
     private int rid;
     private ArrayList<Message> readList;
-    private int serverCount;
     private int FAKE_WTS = 0;
 
     //TODO: CHANGE ALL INVOCATIONS ON SERVER (ONLY CALLING 1 RIGHT NOW)
 
-    //TODO: turn this into arraylist
-    ArrayList<CommunicationAPI> passwordmanagers = new ArrayList<>();
+    ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
 
-    public ClientFrontEnd(ArrayList<String> remoteServerName) throws RemoteException, NotBoundException, MalformedURLException {
-        //passwordmanager = (CommunicationAPI) Naming.lookup(remoteServerName);
+    public ClientFrontEnd(ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
+       for(String i:remoteServerNames) {
+           CommunicationAPI lookup = (CommunicationAPI) Naming.lookup(i);
+           listReplicas.add(lookup);
+       }
         sessionKey = Crypto.generateSessionKey();
 
         rid = 0;
         readList = new ArrayList<>();
-        serverCount = remoteServerName.size();
     }
 
     public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey){
@@ -45,17 +44,26 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     public void register(Key publicKey) throws RemoteException {
-        byte[] challenge = this.getChallenge();
-        Message insecureMessage = new Message(challenge, null, null, null, FAKE_WTS, 0, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        passwordmanagers.get(0).register(secureMessage);
+        for(int i = 0; i < listReplicas.size(); i++) {
+
+            byte[] challenge = this.getChallenge(i);
+            Message insecureMessage = new Message(challenge, null, null, null, FAKE_WTS, 0, null);
+            Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+
+           //TODO Execute Thread
+           listReplicas.get(i).register(secureMessage);
+
+       }
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
-        byte[] challenge = this.getChallenge();
-        Message insecureMessage = new Message(challenge, domain, username, password, FAKE_WTS, 0, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        passwordmanagers.get(0).put(secureMessage);
+        for(int i = 0; i < listReplicas.size(); i++) {
+
+            byte[] challenge = this.getChallenge(i);
+            Message insecureMessage = new Message(challenge, domain, username, password, FAKE_WTS, 0, null);
+            Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+            listReplicas.get(i).put(secureMessage);
+        }
     }
 
     public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
@@ -63,28 +71,36 @@ public class ClientFrontEnd implements ServerAPI {
         rid++;
         readList = new ArrayList<>();
         //Now send message to all servers
+        for(int i = 0; i < listReplicas.size(); i++) {
 
-        byte[] challenge = this.getChallenge();
-        //need to add RID here
+        byte[] challenge = this.getChallenge(i);
+        //TODO need to add RID here
         Message insecureMessage = new Message(challenge, domain, username, null, FAKE_WTS, rid, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
-        for(int i = 0; i < serverCount; i++) {
             //TODO: should be threaded
-            Message response = passwordmanagers.get(i).get(secureMessage);
+            Message response = listReplicas.get(i).get(secureMessage);
             Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
             checkChallenge(challenge, result.challenge);
             readList.add(result);
-            if(readList.size() > (serverCount/2)) {
+            if(readList.size() > (listReplicas.size()/2)) {
                 byte[] commonValue = getCommonPasswordValue(readList);
                 readList = new ArrayList<>();
                 return commonValue;
             }
+            //TODO BY Henrique considera isto e diz-me qualquer coisa
+//            while(!readList.size() > (listReplicas.size()/2)|| THRESHOLD_WAITTIME){
+//                Thread.sleep(2000*listReplicas.size());
+//            }
+//            byte[] commonValue = getCommonPasswordValue(readList);
+//            readList = new ArrayList<>();
+//            return commonValue;
+
         }
         return null;
     }
 
-    public byte[] getCommonPasswordValue(ArrayList<Message> messages) {
+    private byte[] getCommonPasswordValue(ArrayList<Message> messages) {
         HashMap<byte[], Integer> map = new HashMap<>();
         for(Message m : messages) {
             Integer val = map.get(m.password);
@@ -99,10 +115,10 @@ public class ClientFrontEnd implements ServerAPI {
         return password;
     }
 
-    private byte[] getChallenge() throws RemoteException {
+    private byte[] getChallenge(int replicaID) throws RemoteException {
         Message insecureMessage = new Message();
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-        Message response = passwordmanagers.get(0).getChallenge(secureMessage);
+        Message response = listReplicas.get(replicaID).getChallenge(secureMessage);
 
         Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
         return result.challenge;

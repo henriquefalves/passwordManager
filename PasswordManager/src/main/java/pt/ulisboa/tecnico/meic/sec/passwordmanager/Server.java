@@ -28,7 +28,8 @@ public class Server implements ServerAPI,Serializable {
 			throw new DuplicatePublicKeyException();
 
 		User newUser = new User(publicKey);
-		users.put(publicKey,newUser);
+        System.out.println("REGISTER DONE");
+        users.put(publicKey,newUser);
 	}
 
 	@Deprecated

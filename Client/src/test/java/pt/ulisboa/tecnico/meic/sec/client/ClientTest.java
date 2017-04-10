@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -25,7 +26,9 @@ public class ClientTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-		client = new Client("rmi://localhost:8006/password-manager");
+    	ArrayList<String> listOfReplicas= new ArrayList<String>();
+    	listOfReplicas.add("rmi://localhost:8006/password-manager");
+		client = new Client(listOfReplicas);
 
         KeyStore ks = null;
         try {
