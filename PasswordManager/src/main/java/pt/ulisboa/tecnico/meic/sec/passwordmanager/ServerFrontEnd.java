@@ -54,9 +54,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
-        //TODO BY MATEUS: ATENCAO AO TIMESTAMP AQUI, METI A 0 PARA COMPILAR
-        UserData signatureAuthentication = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature, 0);
-        server.put(message.publicKeySender, result.domain, result.username, result.password , signatureAuthentication);
+        UserData dataTransfer = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature, Crypto.byteArrayToLeInt(result.wts));
+        server.put(message.publicKeySender, result.domain, result.username, result.password , dataTransfer);
     }
 
     public Message get(Message message) throws RemoteException {
@@ -64,16 +63,17 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             throw new CorruptedMessageException();
         }
 
-        Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
-        byte[] challenge = checkChallenge(result.publicKeySender, result.challenge);
-        Pair<byte[], Integer> pair = server.newGet(message.publicKeySender, result.domain, result.username);
+        Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
+        byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
+        Pair<byte[], Integer> pair = server.newGet(message.publicKeySender, decipheredMessage.domain, decipheredMessage.username);
         byte[] password = pair.getKey();
         Integer timestamp = pair.getValue();
         //TODO BY MATEUS: NAO ME LEMBRO PARA QUE NECESSITAMOS DO TIMESTAMP
         //TODO BY MATEUS: POR ISSO NAO ESTOU A FAZER NADA COM ELE. ELUCIDEM-ME PLS
-        System.out.println(result.rid);
-        Message insecureMessage = new Message(challenge, null, null, password, 0, result.rid, null);
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
+        //Comment because of tests
+        // System.out.println(Crypto.byteArrayToLeInt(decipheredMessage.rid));
+        Message insecureMessage = new Message(challenge, null, null, password, null, decipheredMessage.rid, null);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
 
@@ -99,7 +99,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             challengesMap.put(pubKeyStr, challenges);
         }
 
-        Message insecureMessage = new Message(challenge, null, null, null, 0, 0, null);
+        Message insecureMessage = new Message(challenge, null, null, null, null, null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }

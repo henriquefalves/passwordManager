@@ -1,10 +1,7 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.WrongChallengeException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.*;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -27,58 +24,54 @@ public class ClientFrontEnd implements ServerAPI {
     private int wts;
 
     public ClientFrontEnd(ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
-       for(String i:remoteServerNames) {
-           CommunicationAPI lookup = (CommunicationAPI) Naming.lookup(i);
-           listReplicas.add(lookup);
-       }
+        for (String i : remoteServerNames) {
+            CommunicationAPI lookup = (CommunicationAPI) Naming.lookup(i);
+            listReplicas.add(lookup);
+        }
         sessionKey = Crypto.generateSessionKey();
 
         rid = 0;
     }
 
-    public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey){
+    public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey) {
         this.myPrivateKey = myPrivateKey;
         this.myPublicKey = myPublicKey;
         this.serverPublicKey = serverPublicKey;
     }
 
     public void register(Key publicKey) throws RemoteException {
-        for(int i = 0; i < listReplicas.size(); i++) {
+        for (int i = 0; i < listReplicas.size(); i++) {
+            //TODO Execute Thread
 
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, null, null, null, 0, 0, null);
+            Message insecureMessage = new Message(challenge, null, null, null, null, null, null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
-           //TODO Execute Thread
-           listReplicas.get(i).register(secureMessage);
+            listReplicas.get(i).register(secureMessage);
 
-       }
+        }
     }
 
     public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
         wts++;
-        acks=0;
-        for(int i = 0; i < listReplicas.size(); i++) {
+        acks = 0;
+        for (int i = 0; i < listReplicas.size(); i++) {
             //TODO Must be multiThreaded
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, domain, username, password, 0, 0, null);
+            Message insecureMessage = new Message(challenge, domain, username, password, Crypto.leIntToByteArray(wts), null, null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
             listReplicas.get(i).put(secureMessage);
+
             acks++;
+            if(acks>listReplicas.size()/2) {
+                acks = 0;
+                return;
+            }
 
         }
 
-        //TODO by Mateus: tinhas o sinal de operador mal henrique
-        //TODO: esta parte do codigo nao esta a fazer nada porque os puts estao sincronos
-        //TODO: por isso vou comentar
-        /*while(acks < listReplicas.size()/2) {
-            try {
-                Thread.sleep(2000 * listReplicas.size());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }*/
-        acks=0;
+
+        acks = 0;
 
 
     }
@@ -88,11 +81,11 @@ public class ClientFrontEnd implements ServerAPI {
         rid++;
         ArrayList<Message> readList = new ArrayList<>();
 
-        for(int i = 0; i < listReplicas.size(); i++) {
+        for (int i = 0; i < listReplicas.size(); i++) {
 
             //Create messages
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, domain, username, null, 0, rid, null);
+            Message insecureMessage = new Message(challenge, domain, username, null, null,Crypto.leIntToByteArray(rid) , null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
             //TODO: should be threaded
@@ -101,13 +94,16 @@ public class ClientFrontEnd implements ServerAPI {
             Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
             checkChallenge(challenge, result.challenge);
 
-            //TODO: check signature from UserData
+            //TODO: check signature from UserData - FOR NOW this is still not working
+            //  because get should return UserData and not byte[] password
+            //verifyPasswordValidity(result.userData);
+
             System.out.println("Message rid: " + result.rid + ". Local rid: " + rid);
             //bonrr (algorithm) makes this check
-            if(result.rid == rid) {
+            if (Crypto.byteArrayToLeInt(result.rid) == rid) {
                 //Add result to read list
                 readList.add(result);
-                if(readList.size() > (listReplicas.size()/2)) {
+                if (readList.size() > (listReplicas.size() / 2)) {
                     byte[] commonValue = getCommonPasswordValue(readList);
                     return commonValue;
                 }
@@ -116,13 +112,21 @@ public class ClientFrontEnd implements ServerAPI {
         return null;
     }
 
+    private boolean verifyPasswordValidity(UserData userData) {
+        //TODO
+        return false;
+    }
 
-    //receives a list of messages and returns the most common password
-    private byte[] getCommonPasswordValue(ArrayList<Message> messages) {
+
+    /**
+     * @param listOfMessages received by the Thread
+     * @return most common password in messages
+     */
+    private byte[] getCommonPasswordValue(ArrayList<Message> listOfMessages) {
         HashMap<byte[], Integer> map = new HashMap<>();
-        for(Message m : messages) {
+        for (Message m : listOfMessages) {
             Integer val = map.get(m.password);
-            if(val != null) {
+            if (val != null) {
                 map.put(m.password, val + 1);
             } else {
                 map.put(m.password, 1);
@@ -136,6 +140,7 @@ public class ClientFrontEnd implements ServerAPI {
     private byte[] getChallenge(int replicaID) throws RemoteException {
         Message insecureMessage = new Message();
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
+
         Message response = listReplicas.get(replicaID).getChallenge(secureMessage);
 
         Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
@@ -143,7 +148,7 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     private void checkChallenge(byte[] expectedChallenge, byte[] receivedChallenge) {
-        if(receivedChallenge == null || !Arrays.equals(expectedChallenge, receivedChallenge)){
+        if (receivedChallenge == null || !Arrays.equals(expectedChallenge, receivedChallenge)) {
             System.out.println("Client-FE-checkChallenge: Invalid challenge");
             throw new WrongChallengeException();
             //TODO handle exception

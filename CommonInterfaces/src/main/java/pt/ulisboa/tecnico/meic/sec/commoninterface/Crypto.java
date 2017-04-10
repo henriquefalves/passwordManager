@@ -17,263 +17,283 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class Crypto {
 
-public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
-	public static final String DEFAULT_SIGN_ALGORITHM = "SHA256withRSA";
-	public static final String ASYMETRIC_CIPHER_ALGORITHM1= "RSA/ECB/PKCS1Padding";
+    public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
+    public static final String DEFAULT_SIGN_ALGORITHM = "SHA256withRSA";
+    public static final String ASYMETRIC_CIPHER_ALGORITHM1 = "RSA/ECB/PKCS1Padding";
 
-	private static SecureRandom secureRandom = new SecureRandom();
+    private static SecureRandom secureRandom = new SecureRandom();
 
-	public static byte[] concatenateData(byte[][] args){
-		int size = 0;
-		byte[] result;
-		for (byte[] b : args){
-			size += b.length;
-		}
-		result = new byte[size];
-		int pos = 0;
-		for (byte[] b : args){
-			for(byte b2 : b){
-				result[pos] = b2;
-				pos++;
-			}
-		}
-		return result;
-	}
+    public static byte[] concatenateData(byte[][] args) {
+        int size = 0;
+        byte[] result;
+        for (byte[] b : args) {
+            size += b.length;
+        }
+        result = new byte[size];
+        int pos = 0;
+        for (byte[] b : args) {
+            for (byte b2 : b) {
+                result[pos] = b2;
+                pos++;
+            }
+        }
+        return result;
+    }
 
-	/**
-	 * @return secure random 16 bytes Initialization Vector 
-	 */
-	public static byte[] generateIV(){
-		byte[] iv = new byte[16];
-		secureRandom.nextBytes(iv);
-		return iv;
-	}
+    /**
+     * @return secure random 16 bytes Initialization Vector
+     */
+    public static byte[] generateIV() {
+        byte[] iv = new byte[16];
+        secureRandom.nextBytes(iv);
+        return iv;
+    }
 
-	/**
-	 * @return AES Key with 128 bytes
-	 */
-	public static byte[] generateSessionKey(){
-		try {
-			KeyGenerator kg = KeyGenerator.getInstance("AES");
-			kg.init(128);
-			SecretKey secretKey = kg.generateKey();
-			return secretKey.getEncoded();
-		} catch (Exception e) {
-			System.out.println("Key generator: AES secret key error");
-			return null;
-		}
-	}
+    /**
+     * @return AES Key with 128 bytes
+     */
+    public static byte[] generateSessionKey() {
+        try {
+            KeyGenerator kg = KeyGenerator.getInstance("AES");
+            kg.init(128);
+            SecretKey secretKey = kg.generateKey();
+            return secretKey.getEncoded();
+        } catch (Exception e) {
+            System.out.println("Key generator: AES secret key error");
+            return null;
+        }
+    }
 
-	/**
-	 * @param insecureMessage Message in plain text
-	 * @return cryptographically secure Message
-	 */
-	public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey){
-	    byte[] randomIv = Crypto.generateIV();
+    /**
+     * @param insecureMessage Message in plain text
+     * @return cryptographically secure Message
+     */
+    public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey) {
+        byte[] randomIv = Crypto.generateIV();
 
-	    // argsToSign contains parameters what will be signed with senderPrivKey
-        ArrayList<byte[]> argsToSign = new ArrayList<>();		// order of elements is important
-		argsToSign.add(randomIv);
-		argsToSign.add(senderPubKey.getEncoded());
-		argsToSign.add(receiverPubKey.getEncoded());
+        // argsToSign contains parameters what will be signed with senderPrivKey
+        ArrayList<byte[]> argsToSign = new ArrayList<>();        // order of elements is important
+        argsToSign.add(randomIv);
+        argsToSign.add(senderPubKey.getEncoded());
+        argsToSign.add(receiverPubKey.getEncoded());
 
-		byte[] cipheredChallenge = null;
-		if(insecureMessage.challenge != null){		// if Message in plain text contains this element, it will be ciphered and signed
-			cipheredChallenge = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.challenge);
-			argsToSign.add(insecureMessage.challenge);
-		}
+        byte[] cipheredChallenge = null;
+        if (insecureMessage.challenge != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredChallenge = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.challenge);
+            argsToSign.add(insecureMessage.challenge);
+        }
 
         byte[] cipheredDomain = null;
-        if(insecureMessage.domain != null){		// if Message in plain text contains this element, it will be ciphered and signed
+        if (insecureMessage.domain != null) {        // if Message in plain text contains this element, it will be ciphered and signed
             cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.domain);
-			argsToSign.add(insecureMessage.domain);
+            argsToSign.add(insecureMessage.domain);
         }
-        byte[] cipheredUsername= null;
-        if(insecureMessage.username != null){	// if Message in plain text contains this element, it will be ciphered and signed
+        byte[] cipheredUsername = null;
+        if (insecureMessage.username != null) {    // if Message in plain text contains this element, it will be ciphered and signed
             cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.username);
-			argsToSign.add(insecureMessage.username);
+            argsToSign.add(insecureMessage.username);
         }
-        byte[] cipheredPassword= null;
-        if(insecureMessage.password != null){	// if Message in plain text contains this element, it will be ciphered and signed
+        byte[] cipheredPassword = null;
+        if (insecureMessage.password != null) {    // if Message in plain text contains this element, it will be ciphered and signed
             cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.password);
-			argsToSign.add(insecureMessage.password);
+            argsToSign.add(insecureMessage.password);
+        }
+        byte[] cipheredRid = null;
+        if (insecureMessage.rid != null) {    // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredRid = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.rid);
+            argsToSign.add(insecureMessage.rid);
+        }
+        byte[] cipheredWts = null;
+        if (insecureMessage.wts != null) {    // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredWts = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.wts);
+            argsToSign.add(insecureMessage.wts);
         }
 
-        byte[][] arrayToSign = argsToSign.toArray(new byte[0][]);	// transform array to byte array
-        byte[] dataToSign = Crypto.concatenateData(arrayToSign);			// merge all data that will be sign
-		byte[] signedData = Crypto.signData((PrivateKey)senderPrivKey, dataToSign);
+        byte[][] arrayToSign = argsToSign.toArray(new byte[0][]);    // transform array to byte array
+        byte[] dataToSign = Crypto.concatenateData(arrayToSign);            // merge all data that will be sign
+        byte[] signedData = Crypto.signData((PrivateKey) senderPrivKey, dataToSign);
 
-		byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
-		byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
+        byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
+        byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
-		// create cryptographically secure Message
-		Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, insecureMessage.wts, insecureMessage.rid, insecureMessage.userData);
-		return secureMessage;
-	}
+        // create cryptographically secure Message
+        Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, cipheredWts, cipheredRid, insecureMessage.userData);
+        return secureMessage;
+    }
 
-	// receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
-	public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub ){
-		if(receivedMessage.randomIv == null || receivedMessage.signature == null || receivedMessage.secretKey == null){
-			throw new CorruptedMessageException();
-		}
+    // receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
+    public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub) {
+        if (receivedMessage.randomIv == null || receivedMessage.signature == null || receivedMessage.secretKey == null) {
+            throw new CorruptedMessageException();
+        }
 
-		Message messageInPlainText = new Message();
+        Message messageInPlainText = new Message();
 
-		byte[] secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-		messageInPlainText.secretKey = secretKeyToDecipher;
+        byte[] secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+        messageInPlainText.secretKey = secretKeyToDecipher;
 
         // argsToCheckSign contains parameters what will be used to check the validity of signature
         ArrayList<byte[]> argsToCheckSign = new ArrayList<>();
-		argsToCheckSign.add(receivedMessage.randomIv);
-		argsToCheckSign.add(receivedMessage.publicKeySender.getEncoded());
-		argsToCheckSign.add(receiverPub.getEncoded());
+        argsToCheckSign.add(receivedMessage.randomIv);
+        argsToCheckSign.add(receivedMessage.publicKeySender.getEncoded());
+        argsToCheckSign.add(receiverPub.getEncoded());
 
-		messageInPlainText.publicKeySender = receivedMessage.publicKeySender;
-		messageInPlainText.randomIv = receivedMessage.randomIv;
+        messageInPlainText.publicKeySender = receivedMessage.publicKeySender;
+        messageInPlainText.randomIv = receivedMessage.randomIv;
 
-		byte[] decipheredChallenge = null;
-
-        // if existent, add challenge to signature verification
-        if(receivedMessage.challenge != null){
-			decipheredChallenge = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.challenge);
-			argsToCheckSign.add(decipheredChallenge);
-			messageInPlainText.challenge = decipheredChallenge;
-		}
+        byte[] decipheredChallenge = null;
 
         // if existent, add challenge to signature verification
-        if (receivedMessage.domain != null){
+        if (receivedMessage.challenge != null) {
+            decipheredChallenge = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.challenge);
+            argsToCheckSign.add(decipheredChallenge);
+            messageInPlainText.challenge = decipheredChallenge;
+        }
+
+        // if existent, add challenge to signature verification
+        if (receivedMessage.domain != null) {
             byte[] decipheredDomain = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.domain);
-			argsToCheckSign.add(decipheredDomain);
-			messageInPlainText.domain = decipheredDomain;
+            argsToCheckSign.add(decipheredDomain);
+            messageInPlainText.domain = decipheredDomain;
         }
 
         // if existent, add username to signature verification
-        if (receivedMessage.username != null){
+        if (receivedMessage.username != null) {
             byte[] decipheredUsername = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.username);
-			argsToCheckSign.add(decipheredUsername);
-			messageInPlainText.username = decipheredUsername;
+            argsToCheckSign.add(decipheredUsername);
+            messageInPlainText.username = decipheredUsername;
         }
 
         // if existent, add password to signature verification
-        if (receivedMessage.password != null){
+        if (receivedMessage.password != null) {
             byte[] decipheredPassword = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.password);
-			argsToCheckSign.add(decipheredPassword);
-			messageInPlainText.password = decipheredPassword;
+            argsToCheckSign.add(decipheredPassword);
+            messageInPlainText.password = decipheredPassword;
+        }
+        if (receivedMessage.rid != null) {    // if Message in plain text contains this element, it will be ciphered and signed
+            byte[] decipheredRid = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.rid);
+            argsToCheckSign.add(decipheredRid);
+            messageInPlainText.rid = decipheredRid;
+        }
+        if (receivedMessage.wts != null) {    // if Message in plain text contains this element, it will be ciphered and signed
+            byte[] decipheredWts = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.wts);
+            argsToCheckSign.add(decipheredWts);
+            messageInPlainText.wts = decipheredWts;
         }
 
         // transform Array to byte array
         byte[][] arrayToCheckSign = argsToCheckSign.toArray(new byte[0][]);
+
         byte[] dataToCheckSignature = Crypto.concatenateData(arrayToCheckSign);
 
         byte[] signedData = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.signature);
 
         // check validity of signature
-		boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKeySender, dataToCheckSignature, signedData);
-        if (!integrity){
+        boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKeySender, dataToCheckSignature, signedData);
+        if (!integrity) {
             throw new CorruptedMessageException();
         }
 
         return messageInPlainText;
     }
 
-	public static byte[] cipherSymmetric(byte [] key, byte[] iv, byte[] message) {
-		try {
-			SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
-			IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-			Cipher c = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-			c.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-			byte[] encodedBytes = c.doFinal(message);
-			return encodedBytes;
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			return null;
-		}
-	}
+    public static byte[] cipherSymmetric(byte[] key, byte[] iv, byte[] message) {
+        try {
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            Cipher c = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            c.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
+            byte[] encodedBytes = c.doFinal(message);
+            return encodedBytes;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
 
-	public static byte[] decipherSymmetric(byte [] key, byte[] iv, byte[] message){
-		try {
-			SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
-			IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-			Cipher c = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-			c.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
-			byte[] decodedBytes = c.doFinal(message);
-			return decodedBytes;
-		} catch (IllegalBlockSizeException e){
-			System.out.println("decipherSymmetric: Illegal block size of data");
-			throw new CorruptedMessageException();
-		} catch (BadPaddingException e){
-			System.out.println("decipherSymmetric: Bad padding of data");
-			throw new CorruptedMessageException();
-		}
-        catch (Exception e) {
-			System.out.println("decipherSymmetric: AES decryption error");
-			System.out.println(e.getClass());
-			System.out.println(e.getMessage());
-			return null;
-		}
-	}
+    public static byte[] decipherSymmetric(byte[] key, byte[] iv, byte[] message) {
+        try {
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            Cipher c = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            c.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
+            byte[] decodedBytes = c.doFinal(message);
+            return decodedBytes;
+        } catch (IllegalBlockSizeException e) {
+            System.out.println("decipherSymmetric: Illegal block size of data");
+            throw new CorruptedMessageException();
+        } catch (BadPaddingException e) {
+            System.out.println("decipherSymmetric: Bad padding of data");
+            throw new CorruptedMessageException();
+        } catch (Exception e) {
+            System.out.println("decipherSymmetric: AES decryption error");
+            System.out.println(e.getClass());
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
 
-	public static byte[] hashData(byte[] data) {
-		MessageDigest md = null;
-		try {
-			md = MessageDigest.getInstance(DEFAULT_HASH_ALGORITHM);
-			md.update(data);
-		} catch (NoSuchAlgorithmException e) {
-			System.out.println("INVALID ALGORITHM FOR HASHING");
-		}
-		return  md.digest();
+    public static byte[] hashData(byte[] data) {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance(DEFAULT_HASH_ALGORITHM);
+            md.update(data);
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("INVALID ALGORITHM FOR HASHING");
+        }
+        return md.digest();
 
-	}	
-	
-	public static byte[] signData(PrivateKey privateKey, byte[] data){
-		Signature rsaSignature = null;
-		try {
-			rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
-		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Invalid Algorithm for Signing");
-		}
-		try {
-			rsaSignature.initSign(privateKey);
-		} catch (InvalidKeyException e) {
-			System.out.println("The private Key used on the digital signature is invalid");
-		}
-		try {
-			rsaSignature.update(data);
-			return rsaSignature.sign();
+    }
 
-		} catch (SignatureException e) {
-			System.out.println("The data to sign is invalid to be digitally signed");
-		}
-		throw new InvalidDigitalSignature();
-	}
+    public static byte[] signData(PrivateKey privateKey, byte[] data) {
+        Signature rsaSignature = null;
+        try {
+            rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Invalid Algorithm for Signing");
+        }
+        try {
+            rsaSignature.initSign(privateKey);
+        } catch (InvalidKeyException e) {
+            System.out.println("The private Key used on the digital signature is invalid");
+        }
+        try {
+            rsaSignature.update(data);
+            return rsaSignature.sign();
 
-	public static boolean verifySign(PublicKey publicKey, byte[] data, byte[]signature){
-		Signature rsaSignature = null;
-		try {
-			rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
-		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Invalid Algorithm to validated Signature");
+        } catch (SignatureException e) {
+            System.out.println("The data to sign is invalid to be digitally signed");
+        }
+        throw new InvalidDigitalSignature();
+    }
 
-		}
-		try {
-			rsaSignature.initVerify(publicKey);
-		} catch (InvalidKeyException e) {
-			System.out.println("Invalid public Key to verify digital signature ");
+    public static boolean verifySign(PublicKey publicKey, byte[] data, byte[] signature) {
+        Signature rsaSignature = null;
+        try {
+            rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Invalid Algorithm to validated Signature");
 
-		}
-		try {
-			rsaSignature.update(data);
-			return rsaSignature.verify(signature);
-		} catch (SignatureException e) {
-			System.out.println("Invalid digital signature ");
+        }
+        try {
+            rsaSignature.initVerify(publicKey);
+        } catch (InvalidKeyException e) {
+            System.out.println("Invalid public Key to verify digital signature ");
 
-		}
+        }
+        try {
+            rsaSignature.update(data);
+            return rsaSignature.verify(signature);
+        } catch (SignatureException e) {
+            System.out.println("Invalid digital signature ");
 
-		return false;
-	}
+        }
 
-	public static byte[] encryptAsymmetric(byte[] data, Key key,String algorithm) {
-		Cipher rsa = null;
+        return false;
+    }
+
+    public static byte[] encryptAsymmetric(byte[] data, Key key, String algorithm) {
+        Cipher rsa = null;
         try {
             rsa = Cipher.getInstance(algorithm);
         } catch (NoSuchAlgorithmException e) {
@@ -295,10 +315,10 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
 
         }
 
-		return null;
-	}
+        return null;
+    }
 
-	public static byte[] decryptAsymmetric(byte[] ciphertext, Key key, String algorithm) {
+    public static byte[] decryptAsymmetric(byte[] ciphertext, Key key, String algorithm) {
         Cipher rsa = null;
         try {
             rsa = Cipher.getInstance(algorithm);
@@ -325,21 +345,21 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
             System.out.println("decryptAsymmetric: Bad padding of data");
             throw new CorruptedMessageException();
         }
-	}
+    }
 
-	public static KeyPair generateKeyPairRSA2048() {
-		 KeyPairGenerator keyGen = null;
-		try {
-			keyGen = KeyPairGenerator.getInstance("RSA");
-		} catch (NoSuchAlgorithmException e) {
+    public static KeyPair generateKeyPairRSA2048() {
+        KeyPairGenerator keyGen = null;
+        try {
+            keyGen = KeyPairGenerator.getInstance("RSA");
+        } catch (NoSuchAlgorithmException e) {
             System.out.println("Invalid Algorithm to generated Asymmetric Key");
         }
-		    keyGen.initialize(2048);
-		    KeyPair keypair = keyGen.genKeyPair();
-		    return keypair;
-	}
-	
-	public static SecretKey generateSecretKeyAES128() {
+        keyGen.initialize(2048);
+        KeyPair keypair = keyGen.genKeyPair();
+        return keypair;
+    }
+
+    public static SecretKey generateSecretKeyAES128() {
         KeyGenerator keyGen = null;
         try {
             keyGen = KeyGenerator.getInstance("AES");
@@ -350,5 +370,30 @@ public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
         keyGen.init(128); // for example
         SecretKey secretKey = keyGen.generateKey();
         return secretKey;
-	}
+    }
+
+    /** Necessary to cipher integers
+     * @param encodedValue
+     * @return
+     */
+    public static int byteArrayToLeInt(byte[] encodedValue) {
+        int value = (encodedValue[3] << (Byte.SIZE * 3));
+        value |= (encodedValue[2] & 0xFF) << (Byte.SIZE * 2);
+        value |= (encodedValue[1] & 0xFF) << (Byte.SIZE * 1);
+        value |= (encodedValue[0] & 0xFF);
+        return value;
+    }
+
+     /** Necessary  to cipher integers
+     * @param value
+     * @return
+     */
+    public static byte[] leIntToByteArray(int value) {
+        byte[] encodedValue = new byte[Integer.SIZE / Byte.SIZE];
+        encodedValue[3] = (byte) (value >> Byte.SIZE * 3);
+        encodedValue[2] = (byte) (value >> Byte.SIZE * 2);
+        encodedValue[1] = (byte) (value >> Byte.SIZE);
+        encodedValue[0] = (byte) value;
+        return encodedValue;
+    }
 }

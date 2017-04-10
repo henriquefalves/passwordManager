@@ -38,8 +38,7 @@ public class User implements Serializable {
         byte[] preKey = Crypto.hashData(concatenateData);
         String key = Base64.getEncoder().encodeToString(preKey);
 
-        //TODO BY MATEUS: HENRIQUE, ATENCAO AO ULTIMO ARGUMENTO QUE É TIMESTAMP
-        //TODO EU METI NESTAS CHAMADAS UM TIMESTAMP A 0, MAS ACHO QUE O TENS DE PASSAR DE LA DE BAIXO
+
         // unknown domain
         if (mapPasswords.containsKey(key)) {
             mapPasswords.replace(key, new UserData(null,null, null,null,null,null,password,null, 0));
@@ -61,20 +60,23 @@ public class User implements Serializable {
         return signatureAuthentication.password;
     }
 
-	public void updateInfo(byte[] domain, byte[] username, byte[] password, UserData signatureAuthentication) {
-        byte[] concatenateData = Crypto.concatenateData(new byte[][]{signatureAuthentication.domain, signatureAuthentication.username});
+	public void updateInfo(byte[] domain, byte[] username, byte[] password, UserData dataTransfer) {
+        byte[] concatenateData = Crypto.concatenateData(new byte[][]{dataTransfer.domain, dataTransfer.username});
         byte[] preKey = Crypto.hashData(concatenateData);
         String key = Base64.getEncoder().encodeToString(preKey);
 
         if (mapPasswords.containsKey(key)) {                    // unknown domain
-
-            mapPasswords.replace(key, signatureAuthentication);
+            int ts = mapPasswords.get(key).timestamp;
+            Integer wts = dataTransfer.timestamp;
+            if (wts > ts)
+                mapPasswords.replace(key, dataTransfer);
+                 mapPasswords.replace(key, dataTransfer);
 
         } else {
-            mapPasswords.put(key, signatureAuthentication);
+            mapPasswords.put(key, dataTransfer);
 
         }
-        saveOperation(signatureAuthentication);
+        saveOperation(dataTransfer);
         counter++;
 
     }

@@ -13,12 +13,12 @@ public class Message implements Serializable {
     public byte[] password;
     public byte[] secretKey;
     public byte[] randomIv;
-    public int wts;
-    public int rid;
+    public byte[] wts;
+    public byte[] rid;
     public UserData userData;
 
     // constructor to serialize object
-    public Message(Key publicKeySender, byte[] signature, byte[] challenge, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv, int wts, int rid, UserData userData) {
+    public Message(Key publicKeySender, byte[] signature, byte[] challenge, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv,  byte[] wts,  byte[] rid, UserData userData) {
         this.publicKeySender = publicKeySender;
         this.signature = signature;
         this.challenge = challenge;
@@ -32,7 +32,7 @@ public class Message implements Serializable {
         this.userData = userData;
     }
 
-    public Message(byte[] challenge, byte[] domain, byte[] username, byte[] password, int wts, int rid, UserData userData){
+    public Message(byte[] challenge, byte[] domain, byte[] username, byte[] password,  byte[] wts,  byte[] rid, UserData userData){
         this.challenge = challenge;
         this.domain = domain;
         this.username = username;
