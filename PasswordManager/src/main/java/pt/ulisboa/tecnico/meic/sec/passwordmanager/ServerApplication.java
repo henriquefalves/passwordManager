@@ -35,13 +35,7 @@ public class ServerApplication {
                     case "exit":
                         on = false;
                         break;
-                    case "saveState":
-                        passwordManager.saveState();
-                        break;
-                    case "import":
-                        //TODO
-                        passwordManager.saveState();
-                        break;
+
 
                     default:
                         System.out.println("Incorrect Command");

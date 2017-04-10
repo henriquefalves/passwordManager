@@ -1,11 +1,14 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
+import java.io.Serializable;
 import java.security.Key;
 import java.security.PublicKey;
 
-public class UserData {
+public class UserData implements Serializable {
 
-    public Key publicKeySender;
+	private static final long serialVersionUID = 1L;
+
+	public Key publicKeySender;
 	public PublicKey publicKeyReceiver;
 	public byte[] signature;
     public byte[] challenge;

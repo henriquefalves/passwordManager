@@ -119,9 +119,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
                 throw new InvalidChallengeException();
             }
     }
-    public void saveState(){
-        server.saveServerState();
-    }
+
 
 }
 
