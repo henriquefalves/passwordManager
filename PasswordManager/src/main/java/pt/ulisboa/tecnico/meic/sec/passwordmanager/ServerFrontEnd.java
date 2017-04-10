@@ -53,7 +53,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
-        SignatureAuthentication signatureAuthentication = new SignatureAuthentication(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature);
+        UserData signatureAuthentication = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature);
         server.put(message.publicKeySender, result.domain, result.username, result.password , signatureAuthentication);
     }
 

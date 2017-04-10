@@ -24,6 +24,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 
 public class Client extends UnicastRemoteObject implements ClientAPI {
 	private static final String SERVER_ALIAS = "server";
@@ -33,7 +34,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 
 	private ServerAPI passwordManager;
 
-	public Client(String remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
+	public Client(ArrayList<String> remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
 		this.passwordManager = new ClientFrontEnd(remoteServerName);
 	}
 

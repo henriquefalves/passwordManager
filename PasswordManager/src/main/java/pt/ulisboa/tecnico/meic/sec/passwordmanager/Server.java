@@ -12,13 +12,11 @@ import java.util.Vector;
 public class Server implements ServerAPI,Serializable {
 
 	private static final long serialVersionUID = 1L;
-
 	private Vector<User> users;
 	private int clock=0;
 
-
 	public Server() throws RemoteException {
-		users = new Vector<User>();
+		users = new Vector<>();
 	}
 
 	public void register(Key publicKey) throws RemoteException {
@@ -33,8 +31,8 @@ public class Server implements ServerAPI,Serializable {
 		}
 		User newUser = new User(publicKey);
 		users.addElement(newUser);
-
 	}
+
 	@Deprecated
 	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
 		clock++;
@@ -48,7 +46,8 @@ public class Server implements ServerAPI,Serializable {
 				return;
 			}
 		}
-		throw new InvalidArgumentsException();	}
+		throw new InvalidArgumentsException();
+	}
 
 	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
 		clock++;
@@ -65,7 +64,7 @@ public class Server implements ServerAPI,Serializable {
 	}
 
 	public void put(Key publicKeySender, byte[] domain, byte[] username, byte[] password,
-			SignatureAuthentication signatureAuthentication) {
+		UserData signatureAuthentication) {
 		clock++;
 
 		if (publicKeySender == null || domain == null || username == null){
@@ -78,9 +77,9 @@ public class Server implements ServerAPI,Serializable {
 			}
 		}
 		throw new InvalidArgumentsException();
-
 	}
-	public void saveServerState(){
+
+	public void saveServerState() {
 		String folder = System.getProperty("user.dir");
 
 		try {
@@ -91,9 +90,5 @@ public class Server implements ServerAPI,Serializable {
 		} catch (IOException ioe) {
 			System.out.println("Error writing state to file");
 		}
-
-
 	}
-
-
 }

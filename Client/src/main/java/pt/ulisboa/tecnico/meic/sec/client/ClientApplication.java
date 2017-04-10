@@ -17,6 +17,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ClientApplication {
@@ -32,8 +33,13 @@ public class ClientApplication {
 	public static void main(String[] args) {
 
 		try {
-			String name = "rmi://"+args[0]+":"+args[1]+"/"+args[2];
-			Client client = new Client(name);
+			ArrayList<String> serverNames = new ArrayList<>();
+			String address = args[0];
+			String objectName = args[1];
+			for(int i = 2; i < args.length; i++) {
+				serverNames.add("rmi://"+address+":"+args[i]+"/"+objectName);
+			}
+			Client client = new Client(serverNames);
 
 			KeyStore ks = null;
 			try {

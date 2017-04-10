@@ -14,7 +14,7 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Key publicKey;
-    private Hashtable<String, SignatureAuthentication> mapPasswords;
+    private Hashtable<String, UserData> mapPasswords;
 
     public User(Key publicKey){
         this.publicKey = publicKey;
@@ -38,10 +38,10 @@ public class User implements Serializable {
 
         if (mapPasswords.containsKey(key)) {                    // unknown domain
 
-            mapPasswords.replace(key, new SignatureAuthentication(null,null, null,null,null,null,password,null));
+            mapPasswords.replace(key, new UserData(null,null, null,null,null,null,password,null));
 
         } else {
-            mapPasswords.put(key, new SignatureAuthentication(null,null, null,null,null,null,password,null));
+            mapPasswords.put(key, new UserData(null,null, null,null,null,null,password,null));
 
         }
 
@@ -52,14 +52,14 @@ public class User implements Serializable {
         byte[] preKey = Crypto.hashData(concatenateData);
         String key = Base64.getEncoder().encodeToString(preKey);
 
-        SignatureAuthentication signatureAuthentication = mapPasswords.get(key);
+        UserData signatureAuthentication = mapPasswords.get(key);
         if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
         return signatureAuthentication.password;
     }
 
-	public void updateInfo(byte[] domain, byte[] username, byte[] password, SignatureAuthentication signatureAuthentication) {
+	public void updateInfo(byte[] domain, byte[] username, byte[] password, UserData signatureAuthentication) {
         byte[] concatenateData = Crypto.concatenateData(new byte[][]{signatureAuthentication.domain, signatureAuthentication.username});
         byte[] preKey = Crypto.hashData(concatenateData);
         String key = Base64.getEncoder().encodeToString(preKey);

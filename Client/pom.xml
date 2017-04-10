@@ -44,8 +44,8 @@
                     <mainClass>${mainclass}</mainClass>
                     <arguments>
                         <argument>localhost</argument>
-                        <argument>8006</argument>
                         <argument>password-manager</argument>
+                        <argument>8006</argument>
                     </arguments>
                     <systemProperties>
                     </systemProperties>

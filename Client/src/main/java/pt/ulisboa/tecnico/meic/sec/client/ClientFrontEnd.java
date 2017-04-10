@@ -12,6 +12,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ClientFrontEnd implements ServerAPI {
@@ -20,10 +21,11 @@ public class ClientFrontEnd implements ServerAPI {
     private Key serverPublicKey;
     private byte[] sessionKey;
 
+    //TODO: turn this into arraylist
     CommunicationAPI passwordmanager;
 
-    public ClientFrontEnd(String remoteServerName) throws RemoteException, NotBoundException, MalformedURLException {
-        passwordmanager = (CommunicationAPI) Naming.lookup(remoteServerName);
+    public ClientFrontEnd(ArrayList<String> remoteServerName) throws RemoteException, NotBoundException, MalformedURLException {
+        //passwordmanager = (CommunicationAPI) Naming.lookup(remoteServerName);
         sessionKey = Crypto.generateSessionKey();
     }
 
@@ -32,7 +34,6 @@ public class ClientFrontEnd implements ServerAPI {
         this.myPublicKey = myPublicKey;
         this.serverPublicKey = serverPublicKey;
     }
-
 
     public void register(Key publicKey) throws RemoteException {
         byte[] challenge = this.getChallenge();
