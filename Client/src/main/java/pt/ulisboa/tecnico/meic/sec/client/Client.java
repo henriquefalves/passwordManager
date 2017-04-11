@@ -90,11 +90,12 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		if(username==null) throw new InvalidUsernameException();
 		if(password==null) throw new InvalidPasswordException();
 
-		byte[] hashDomain = Crypto.hashData(domain);
-		byte[] hashUsername = Crypto.hashData(domain);
+
+		byte[] hashPreKey = Crypto.concatenateData(new byte[][]{domain, username});
+		byte[] hashKey = Crypto.hashData(hashPreKey);
 		byte[] encryptedPassword = Crypto.encryptAsymmetric(password, myPublicKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 		
-		passwordManager.put(myPublicKey, hashDomain, hashUsername, encryptedPassword);
+		passwordManager.put(myPublicKey, hashKey, encryptedPassword);
 	}
 
 	/* 
@@ -103,10 +104,10 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	public byte[] retrieve_password(byte[] domain, byte[] username) throws RemoteException, InvalidDomainException, InvalidUsernameException, InexistentTupleException {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
-		
-		byte[] hashDomain = Crypto.hashData(domain);
-		byte[] hashUsername = Crypto.hashData(domain);
-		byte[] encryptedPassword = passwordManager.get(myPublicKey, hashDomain, hashUsername);
+
+		byte[] hashPreKey = Crypto.concatenateData(new byte[][]{domain, username});
+		byte[] hashKey = Crypto.hashData(hashPreKey);
+		byte[] encryptedPassword = passwordManager.get(myPublicKey, hashKey);
 		System.out.println(encryptedPassword);
 		byte[] decryptedPassword = Crypto.decryptAsymmetric(encryptedPassword, myPrivateKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
 

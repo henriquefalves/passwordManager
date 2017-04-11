@@ -32,26 +32,23 @@ public class User implements Serializable {
      * This method should be eliminated since the signature is stored
      */
     @Deprecated
-    public void updateInfo(byte[] domain, byte[] username, byte[] password){
+    public void updateInfo(byte[]  hashKey, byte[] password){
 
-        byte[] concatenateData = Crypto.concatenateData(new byte[][]{domain, username});
-        byte[] preKey = Crypto.hashData(concatenateData);
-        String key = Base64.getEncoder().encodeToString(preKey);
+        String key = Base64.getEncoder().encodeToString(hashKey);
 
 
         // unknown domain
         if (mapPasswords.containsKey(key)) {
-            mapPasswords.replace(key, new UserData(null,null, null,null,null,null,password,null, null));
+            mapPasswords.replace(key, new UserData(null,null, null,null,null,password,null, null));
 
         } else {
-            mapPasswords.put(key, new UserData(null,null, null,null,null,null,password,null, null));
+            mapPasswords.put(key, new UserData(null,null, null,null,null,password,null, null));
         }
     }
 
-    public byte[] getPassword(byte[] domain, byte[] username) {
-        byte[] concatenateData = Crypto.concatenateData(new byte[][]{domain, username});
-        byte[] preKey = Crypto.hashData(concatenateData);
-        String key = Base64.getEncoder().encodeToString(preKey);
+    public byte[] getPassword(byte[] hashKey) {
+
+        String key = Base64.getEncoder().encodeToString(hashKey);
 
         UserData signatureAuthentication = mapPasswords.get(key);
         if(signatureAuthentication == null) {
@@ -60,10 +57,9 @@ public class User implements Serializable {
         return signatureAuthentication.password;
     }
 
-	public void updateInfo(byte[] domain, byte[] username, byte[] password, UserData dataTransfer) {
-        byte[] concatenateData = Crypto.concatenateData(new byte[][]{dataTransfer.domain, dataTransfer.username});
-        byte[] preKey = Crypto.hashData(concatenateData);
-        String key = Base64.getEncoder().encodeToString(preKey);
+	public void updateInfo(byte[]hashKey, byte[] password, UserData dataTransfer) {
+
+        String key = Base64.getEncoder().encodeToString(hashKey);
 
         if (mapPasswords.containsKey(key)) {                    // unknown domain
             int ts = Crypto.byteArrayToLeInt(mapPasswords.get(key).wts);
@@ -101,10 +97,9 @@ public class User implements Serializable {
         return count;
     }
 
-    public  byte[] getTimestamp(byte[] domain, byte[] username) {
-        byte[] concatenateData = Crypto.concatenateData(new byte[][]{domain, username});
-        byte[] preKey = Crypto.hashData(concatenateData);
-        String key = Base64.getEncoder().encodeToString(preKey);
+    public  byte[] getTimestamp(byte[] hashKey) {
+
+        String key = Base64.getEncoder().encodeToString(hashKey);
 
         UserData signatureAuthentication = mapPasswords.get(key);
         if(signatureAuthentication == null) {

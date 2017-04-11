@@ -34,58 +34,57 @@ public class Server implements ServerAPI, Serializable {
     }
 
     @Deprecated
-    public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
+    public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
 
-        if (publicKey == null || domain == null || username == null) {
+        if (publicKey == null || hashKey == null ) {
             throw new InvalidArgumentsException();
 
         }
         if (users.containsKey(publicKey)) {
-            users.get(publicKey).updateInfo(domain, username, password);
+            users.get(publicKey).updateInfo(hashKey, password);
             return;
 
         }
         throw new InvalidArgumentsException();
     }
 
-    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
+    public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
 
-        if (publicKey == null || domain == null || username == null) {
+        if (publicKey == null || hashKey == null ) {
             {
                 throw new InvalidArgumentsException();
             }
         }
         if (users.containsKey(publicKey)) {
-            byte[] password = users.get(publicKey).getPassword(domain, username);
+            byte[] password = users.get(publicKey).getPassword(hashKey);
             return password;
         }
         throw new InvalidArgumentsException();
     }
 
     //TODO: rename function
-    public Pair<byte[], byte[]> newGet(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-        if (publicKey == null || domain == null || username == null) {
+    public Pair<byte[], byte[]> newGet(Key publicKey, byte[] hashKey) throws RemoteException {
+        if (publicKey == null || hashKey == null ) {
             {
                 throw new InvalidArgumentsException();
             }
         }
         if (users.containsKey(publicKey)) {
-            byte[] password = users.get(publicKey).getPassword(domain, username);
-            byte[] ts = users.get(publicKey).getTimestamp(domain, username);
+            byte[] password = users.get(publicKey).getPassword(hashKey);
+            byte[] ts = users.get(publicKey).getTimestamp(hashKey);
             return new Pair<>(password, ts);
         }
         throw new InvalidArgumentsException();
     }
 
-    public void put(Key publicKeySender, byte[] domain, byte[] username, byte[] password,
-                    UserData signatureAuthentication) {
+    public void put(Key publicKeySender, byte[] hashKey, byte[] password, UserData transferData) {
 
-        if (publicKeySender == null || domain == null || username == null) {
+        if (publicKeySender == null || hashKey == null) {
             throw new InvalidArgumentsException();
         }
         if (users.containsKey(publicKeySender)) {
 
-            users.get(publicKeySender).updateInfo(domain, username, password, signatureAuthentication);
+            users.get(publicKeySender).updateInfo(hashKey, password, transferData);
             return;
 
         }
@@ -107,10 +106,10 @@ public class Server implements ServerAPI, Serializable {
                 oi.close();
                 fi.close();
                 if (users.containsKey(data.publicKeySender))
-                    users.get(data.publicKeySender).updateInfo(data.domain, data.username, data.password, data);
+                    users.get(data.publicKeySender).updateInfo(data.hashKey, data.password, data);
                 else {
                     users.put(data.publicKeySender, new User(data.publicKeySender));
-                    users.get(data.publicKeySender).updateInfo(data.domain, data.username, data.password, data);
+                    users.get(data.publicKeySender).updateInfo(data.hashKey, data.password, data);
                 }
                 counter++;
             } catch (FileNotFoundException e) {

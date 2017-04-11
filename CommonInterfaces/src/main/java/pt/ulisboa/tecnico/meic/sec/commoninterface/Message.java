@@ -8,8 +8,7 @@ public class Message implements Serializable {
     public Key publicKeySender;
     public byte[] signature;
     public byte[] challenge;
-    public byte[] domain;
-    public byte[] username;
+    public byte[] hashKey;
     public byte[] password;
     public byte[] secretKey;
     public byte[] randomIv;
@@ -18,12 +17,11 @@ public class Message implements Serializable {
     public UserData userData;
 
     // constructor to serialize object
-    public Message(Key publicKeySender, byte[] signature, byte[] challenge, byte[] domain, byte[] username, byte[] password, byte[] secretKey, byte[] randomIv,  byte[] wts,  byte[] rid, UserData userData) {
+    public Message(Key publicKeySender, byte[] signature, byte[] challenge, byte[] hashKey, byte[] password, byte[] secretKey, byte[] randomIv,  byte[] wts,  byte[] rid, UserData userData) {
         this.publicKeySender = publicKeySender;
         this.signature = signature;
         this.challenge = challenge;
-        this.domain = domain;
-        this.username = username;
+        this.hashKey = hashKey;
         this.password = password;
         this.secretKey = secretKey;
         this.randomIv = randomIv;
@@ -32,11 +30,10 @@ public class Message implements Serializable {
         this.userData = userData;
     }
 
-    public Message(byte[] challenge, byte[] domain, byte[] username, byte[] password,  byte[] wts,  byte[] rid, UserData userData){
+    public Message(byte[] challenge, byte[] hashKey, byte[] password,  byte[] wts,  byte[] rid, UserData userData){
         this.challenge = challenge;
-        this.domain = domain;
-        this.username = username;
         this.password = password;
+        this.hashKey= hashKey;
         this.publicKeySender = null;
         this.signature = null;
         this.secretKey = null;
@@ -45,11 +42,10 @@ public class Message implements Serializable {
         this.rid = rid;
         this.userData = userData;
     }
-    public Message(byte[] challenge, byte[] domain, byte[] username, byte[] password){
+    public Message(byte[] challenge, byte[] hashKey,  byte[] password){
         this.challenge = challenge;
-        this.domain = domain;
-        this.username = username;
         this.password = password;
+        this.hashKey=hashKey;
         this.publicKeySender = null;
         this.signature = null;
         this.secretKey = null;
@@ -59,7 +55,7 @@ public class Message implements Serializable {
 
     public Message(){
         this.publicKeySender = null;
-        this.signature = this.challenge = this.domain = this.username = null;
+        this.signature = this.challenge = this.hashKey =  null;
         this.password = this.secretKey = this.randomIv = null;
     }
 }

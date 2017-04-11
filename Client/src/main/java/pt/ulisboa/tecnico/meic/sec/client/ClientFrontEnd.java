@@ -44,7 +44,7 @@ public class ClientFrontEnd implements ServerAPI {
             //TODO Execute Thread
 
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, null, null, null, null, null, null);
+            Message insecureMessage = new Message(challenge, null,  null, null, null, null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
             listReplicas.get(i).register(secureMessage);
@@ -52,13 +52,13 @@ public class ClientFrontEnd implements ServerAPI {
         }
     }
 
-    public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
+    public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
         wts++;
         acks = 0;
         for (int i = 0; i < listReplicas.size(); i++) {
             //TODO Must be multiThreaded
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, domain, username, password, Crypto.leIntToByteArray(wts), null, null);
+            Message insecureMessage = new Message(challenge, hashKey, password, Crypto.leIntToByteArray(wts), null, null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
             listReplicas.get(i).put(secureMessage);
 
@@ -76,7 +76,7 @@ public class ClientFrontEnd implements ServerAPI {
 
     }
 
-    public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
+    public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
         //Regular Register Read Version (1,N)
         rid++;
         ArrayList<Message> readList = new ArrayList<>();
@@ -85,7 +85,7 @@ public class ClientFrontEnd implements ServerAPI {
 
             //Create messages
             byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, domain, username, null, null,Crypto.leIntToByteArray(rid) , null);
+            Message insecureMessage = new Message(challenge, hashKey, null, null,Crypto.leIntToByteArray(rid) , null);
             Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
             //TODO: should be threaded

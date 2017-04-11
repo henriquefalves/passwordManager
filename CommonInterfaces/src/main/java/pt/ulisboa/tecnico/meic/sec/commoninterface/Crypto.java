@@ -83,16 +83,12 @@ public class Crypto {
             argsToSign.add(insecureMessage.challenge);
         }
 
-        byte[] cipheredDomain = null;
-        if (insecureMessage.domain != null) {        // if Message in plain text contains this element, it will be ciphered and signed
-            cipheredDomain = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.domain);
-            argsToSign.add(insecureMessage.domain);
+        byte[] cipheredHashKey = null;
+        if (insecureMessage.hashKey != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredHashKey = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.hashKey);
+            argsToSign.add(insecureMessage.hashKey);
         }
-        byte[] cipheredUsername = null;
-        if (insecureMessage.username != null) {    // if Message in plain text contains this element, it will be ciphered and signed
-            cipheredUsername = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.username);
-            argsToSign.add(insecureMessage.username);
-        }
+
         byte[] cipheredPassword = null;
         if (insecureMessage.password != null) {    // if Message in plain text contains this element, it will be ciphered and signed
             cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.password);
@@ -117,7 +113,7 @@ public class Crypto {
         byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
         // create cryptographically secure Message
-        Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredDomain, cipheredUsername, cipheredPassword, cipheredSecretKey, randomIv, cipheredWts, cipheredRid, insecureMessage.userData);
+        Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredHashKey, cipheredPassword, cipheredSecretKey, randomIv, cipheredWts, cipheredRid, insecureMessage.userData);
         return secureMessage;
     }
 
@@ -150,19 +146,13 @@ public class Crypto {
             messageInPlainText.challenge = decipheredChallenge;
         }
 
-        // if existent, add challenge to signature verification
-        if (receivedMessage.domain != null) {
-            byte[] decipheredDomain = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.domain);
-            argsToCheckSign.add(decipheredDomain);
-            messageInPlainText.domain = decipheredDomain;
+        // if existent, add hashKey to signature verification
+        if (receivedMessage.hashKey != null) {
+            byte[] decipheredHashKey = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.hashKey);
+            argsToCheckSign.add(decipheredHashKey);
+            messageInPlainText.hashKey = decipheredHashKey;
         }
 
-        // if existent, add username to signature verification
-        if (receivedMessage.username != null) {
-            byte[] decipheredUsername = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.username);
-            argsToCheckSign.add(decipheredUsername);
-            messageInPlainText.username = decipheredUsername;
-        }
 
         // if existent, add password to signature verification
         if (receivedMessage.password != null) {
