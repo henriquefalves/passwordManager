@@ -54,7 +54,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
-        UserData dataTransfer = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature, Crypto.byteArrayToLeInt(result.wts));
+        UserData dataTransfer = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.domain, result.username,result.password, result.signature,result.wts);
         server.put(message.publicKeySender, result.domain, result.username, result.password , dataTransfer);
     }
 
@@ -65,9 +65,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
-        Pair<byte[], Integer> pair = server.newGet(message.publicKeySender, decipheredMessage.domain, decipheredMessage.username);
+        Pair<byte[], byte[]> pair = server.newGet(message.publicKeySender, decipheredMessage.domain, decipheredMessage.username);
         byte[] password = pair.getKey();
-        Integer timestamp = pair.getValue();
+        byte[] ts = pair.getValue();
         //TODO BY MATEUS: NAO ME LEMBRO PARA QUE NECESSITAMOS DO TIMESTAMP
         //TODO BY MATEUS: POR ISSO NAO ESTOU A FAZER NADA COM ELE. ELUCIDEM-ME PLS
         //Comment because of tests

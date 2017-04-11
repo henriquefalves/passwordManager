@@ -30,7 +30,6 @@ public class Server implements ServerAPI, Serializable {
             throw new DuplicatePublicKeyException();
 
         User newUser = new User(publicKey);
-        System.out.println("REGISTER DONE");
         users.put(publicKey, newUser);
     }
 
@@ -64,7 +63,7 @@ public class Server implements ServerAPI, Serializable {
     }
 
     //TODO: rename function
-    public Pair<byte[], Integer> newGet(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
+    public Pair<byte[], byte[]> newGet(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
         if (publicKey == null || domain == null || username == null) {
             {
                 throw new InvalidArgumentsException();
@@ -72,8 +71,8 @@ public class Server implements ServerAPI, Serializable {
         }
         if (users.containsKey(publicKey)) {
             byte[] password = users.get(publicKey).getPassword(domain, username);
-            Integer timestamp = users.get(publicKey).getTimestamp(domain, username);
-            return new Pair<>(password, timestamp);
+            byte[] ts = users.get(publicKey).getTimestamp(domain, username);
+            return new Pair<>(password, ts);
         }
         throw new InvalidArgumentsException();
     }

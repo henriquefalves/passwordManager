@@ -41,10 +41,10 @@ public class User implements Serializable {
 
         // unknown domain
         if (mapPasswords.containsKey(key)) {
-            mapPasswords.replace(key, new UserData(null,null, null,null,null,null,password,null, 0));
+            mapPasswords.replace(key, new UserData(null,null, null,null,null,null,password,null, null));
 
         } else {
-            mapPasswords.put(key, new UserData(null,null, null,null,null,null,password,null, 0));
+            mapPasswords.put(key, new UserData(null,null, null,null,null,null,password,null, null));
         }
     }
 
@@ -66,8 +66,8 @@ public class User implements Serializable {
         String key = Base64.getEncoder().encodeToString(preKey);
 
         if (mapPasswords.containsKey(key)) {                    // unknown domain
-            int ts = mapPasswords.get(key).timestamp;
-            Integer wts = dataTransfer.timestamp;
+            int ts = Crypto.byteArrayToLeInt(mapPasswords.get(key).wts);
+            Integer wts = Crypto.byteArrayToLeInt(dataTransfer.wts);
             if (wts > ts)
                 mapPasswords.replace(key, dataTransfer);
                  mapPasswords.replace(key, dataTransfer);
@@ -101,7 +101,7 @@ public class User implements Serializable {
         return count;
     }
 
-    public Integer getTimestamp(byte[] domain, byte[] username) {
+    public  byte[] getTimestamp(byte[] domain, byte[] username) {
         byte[] concatenateData = Crypto.concatenateData(new byte[][]{domain, username});
         byte[] preKey = Crypto.hashData(concatenateData);
         String key = Base64.getEncoder().encodeToString(preKey);
@@ -110,6 +110,6 @@ public class User implements Serializable {
         if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
-        return signatureAuthentication.timestamp;
+        return signatureAuthentication.wts;
     }
 }

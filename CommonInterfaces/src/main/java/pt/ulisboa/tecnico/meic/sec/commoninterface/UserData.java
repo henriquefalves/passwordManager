@@ -16,11 +16,11 @@ public class UserData implements Serializable {
     public byte[] username;
     public byte[] password;
     public byte[] randomIv;
-    public Integer timestamp;
+    public byte[] wts;
 
     public UserData(byte[] randomIv, Key publicKeySender, PublicKey publicKeyReceiver, byte[] challenge,
 								   byte[] domain, byte[] username, byte[] password,
-									byte[] signature, Integer timestamp) {
+									byte[] signature, byte[] wts) {
 		super();
 		this.publicKeySender = publicKeySender;
 		this.publicKeyReceiver = publicKeyReceiver;
@@ -30,6 +30,6 @@ public class UserData implements Serializable {
 		this.username = username;
 		this.password = password;
 		this.randomIv = randomIv;
-		this.timestamp = timestamp;
+		this.wts = wts;
 	}
 }
