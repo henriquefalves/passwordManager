@@ -9,6 +9,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.Key;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class ClientFrontEnd implements ServerAPI {
     private Key myPrivateKey;
@@ -28,8 +30,6 @@ public class ClientFrontEnd implements ServerAPI {
             CommunicationAPI lookup = (CommunicationAPI) Naming.lookup(i);
             listReplicas.add(lookup);
         }
-        sessionKey = Crypto.generateSessionKey();
-
         rid = 0;
     }
 
@@ -37,78 +37,94 @@ public class ClientFrontEnd implements ServerAPI {
         this.myPrivateKey = myPrivateKey;
         this.myPublicKey = myPublicKey;
         this.serverPublicKey = serverPublicKey;
+        sessionKey = Crypto.generateSessionKey();
+        CommunicationLink.initCommunicationLink(myPrivateKey, myPublicKey, serverPublicKey, sessionKey);
     }
 
     public void register(Key publicKey) throws RemoteException {
+        CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
+        CommunicationLink.Register registerLink = new CommunicationLink.Register();
         for (int i = 0; i < listReplicas.size(); i++) {
-            //TODO Execute Thread
-
-            byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, null,  null, null, null, null);
-            Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-
-            listReplicas.get(i).register(secureMessage);
-
+            Message insecureMessage = new Message(null, null,  null, null, null, null);
+            registerLink.initializeRegister(listReplicas.get(i), insecureMessage, count);
+            Thread thread = new Thread(registerLink);
+            thread.start();
         }
+        try {
+            if(count.await(5, TimeUnit.SECONDS)){
+                System.out.println("register: success");
+            }
+            else {
+                // TODO
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // TODO
+        }
+
     }
 
     public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
         wts++;
-        acks = 0;
+        CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
+        CommunicationLink.Put putLink = new CommunicationLink.Put();
         for (int i = 0; i < listReplicas.size(); i++) {
-            //TODO Must be multiThreaded
-            byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, hashKey, password, Crypto.leIntToByteArray(wts), null, null);
-            Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-            listReplicas.get(i).put(secureMessage);
-
-            acks++;
-            if(acks>listReplicas.size()/2) {
-                acks = 0;
-                return;
-            }
-
+            Message insecureMessage = new Message(null, hashKey, password, Crypto.leIntToByteArray(wts), null, null);
+            putLink.initializePut(listReplicas.get(i), insecureMessage, count);
+            Thread thread = new Thread(putLink);
+            thread.start();
         }
 
-
-        acks = 0;
-
+        try {
+            if(count.await(5, TimeUnit.SECONDS)){
+                System.out.println("put: success");
+            }
+            else {
+                // TODO
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // TODO
+        }
 
     }
 
     public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
         //Regular Register Read Version (1,N)
         rid++;
-        ArrayList<Message> readList = new ArrayList<>();
+  //      ArrayList<Message> readList = new ArrayList<>();
 
+        List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
+        CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
+        CommunicationLink.Get getLink = new CommunicationLink.Get();
         for (int i = 0; i < listReplicas.size(); i++) {
 
-            //Create messages
-            byte[] challenge = this.getChallenge(i);
-            Message insecureMessage = new Message(challenge, hashKey, null, null,Crypto.leIntToByteArray(rid) , null);
-            Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
-
-            //TODO: should be threaded
-            //Server call
-            Message response = listReplicas.get(i).get(secureMessage);
-            Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
-            checkChallenge(challenge, result.challenge);
-
-            //TODO: check signature from UserData - FOR NOW this is still not working
-            //  because get should return UserData and not byte[] password
-            //verifyPasswordValidity(result.userData);
-
-            System.out.println("Message rid: " + result.rid + ". Local rid: " + rid);
-            //bonrr (algorithm) makes this check
-            if (Crypto.byteArrayToLeInt(result.rid) == rid) {
-                //Add result to read list
-                readList.add(result);
-                if (readList.size() > (listReplicas.size() / 2)) {
-                    byte[] commonValue = getCommonPasswordValue(readList);
-                    return commonValue;
-                }
-            }
+            Message insecureMessage = new Message(null, hashKey, null, null,Crypto.leIntToByteArray(rid) , null);
+            getLink.initializeGet(listReplicas.get(i), insecureMessage, rid, count, readList);
+            Thread thread = new Thread(getLink);
+            thread.start();
         }
+        try {
+            if(count.await(5, TimeUnit.SECONDS)){
+                System.out.println("get: success");
+
+                ArrayList<Message> resultList = new ArrayList<>();      // transform to ArrayList
+                synchronized (readList){            // must be synchronized to avoid conflicts
+                    for(Message m : readList){
+                        resultList.add(m);
+                    }
+                }
+                byte[] commonValue = getCommonPasswordValue(resultList);
+                return commonValue;
+            }
+            else {
+                // TODO
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // TODO
+        }
+
         return null;
     }
 
@@ -137,21 +153,5 @@ public class ClientFrontEnd implements ServerAPI {
         return password;
     }
 
-    private byte[] getChallenge(int replicaID) throws RemoteException {
-        Message insecureMessage = new Message();
-        Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, this.myPrivateKey, this.myPublicKey, this.serverPublicKey);
 
-        Message response = listReplicas.get(replicaID).getChallenge(secureMessage);
-
-        Message result = Crypto.checkMessage(response, this.myPrivateKey, this.myPublicKey);
-        return result.challenge;
-    }
-
-    private void checkChallenge(byte[] expectedChallenge, byte[] receivedChallenge) {
-        if (receivedChallenge == null || !Arrays.equals(expectedChallenge, receivedChallenge)) {
-            System.out.println("Client-FE-checkChallenge: Invalid challenge");
-            throw new WrongChallengeException();
-            //TODO handle exception
-        }
-    }
 }
