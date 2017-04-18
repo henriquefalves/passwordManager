@@ -84,7 +84,7 @@ public class CommunicationLink {
                 byte[] challenge = CommunicationLink.getChallenge(this.server);
                 message.challenge = challenge;
                 Message secureMessage = Crypto.getSecureMessage(message, sessionKey, myPrivateKey, myPublicKey, serverPublicKey);
-                this.server.get(secureMessage);
+                this.server.put(secureMessage);
                 this.countDown.countDown();
             } catch (Exception e) {
                 e.printStackTrace();
