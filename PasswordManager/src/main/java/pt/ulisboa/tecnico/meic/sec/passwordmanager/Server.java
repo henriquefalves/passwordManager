@@ -35,16 +35,17 @@ public class Server implements ServerAPI, Serializable {
     @Deprecated
     public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
 
-        if (publicKey == null || hashKey == null ) {
-            throw new InvalidArgumentsException();
-
-        }
-        if (users.containsKey(publicKey)) {
-            users.get(publicKey).updateInfo(hashKey, password);
-            return;
-
-        }
-        throw new InvalidArgumentsException();
+        throw new RuntimeException();
+//        if (publicKey == null || hashKey == null ) {
+//            throw new InvalidArgumentsException();
+//
+//        }
+//        if (users.containsKey(publicKey)) {
+//            users.get(publicKey).updateInfo(hashKey, password);
+//            return;
+//
+//        }
+//        throw new InvalidArgumentsException();
     }
 
     public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
@@ -68,24 +69,40 @@ public class Server implements ServerAPI, Serializable {
             }
         }
         if (users.containsKey(publicKey)) {
-            return users.get(publicKey).getFullInfo(hashKey);
+            return users.get(publicKey).getUserData(hashKey);
         }
         throw new InvalidArgumentsException();
     }
 
-    public void put(Key publicKeySender, UserData transferData) {
+    public byte[] put(Key publicKeySender, UserData transferData) {
 
         if (publicKeySender == null || transferData.hashDomainUser == null) {
             throw new InvalidArgumentsException();
         }
         if (users.containsKey(publicKeySender)) {
 
-            users.get(publicKeySender).updateInfo(transferData.hashDomainUser, transferData.password, transferData);
-            return;
+            users.get(publicKeySender).updateInfo(transferData.hashDomainUser, transferData);
+            return transferData.wts;
 
         }
         throw new InvalidArgumentsException();
     }
+
+//    public byte[] newPut(Key publicKeySender, byte[] hashKey, UserData transferData) {
+//
+//        if (publicKeySender == null || hashKey == null) {
+//            throw new InvalidArgumentsException();
+//        }
+//        if (users.containsKey(publicKeySender)) {
+//
+//            users.get(publicKeySender).updateInfo(hashKey, transferData);
+//            return transferData.wts;
+//
+//        }
+//        throw new InvalidArgumentsException();
+//    }
+
+
 
 
 
@@ -125,24 +142,4 @@ public class Server implements ServerAPI, Serializable {
 //    }
 
 
-    //       we need this?
-
-    public void numberOfUsers() {
-        int count = 0;
-        for (User value : users.values()) {
-            count++;
-        }
-        System.out.println("NumberOfUsers=" + count);
-    }
-
-    //       we need this?
-
-    public void numberOfPasswords() {
-        Iterator it = users.entrySet().iterator();
-        int count = 0;
-        for (User userX : users.values()) {
-            count = count + userX.numberOfPasswords();
-        }
-        System.out.println("NumberOfPasswords=" + count);
-    }
 }

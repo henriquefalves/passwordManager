@@ -68,7 +68,8 @@ public class ClientFrontEnd implements ServerAPI {
 //            Message insecureMessage = new Message(null, hashKey, password, Crypto.intToByteArray(wts), null, null);
             UserData userDataToSend = new UserData(hashDomainUsername, password, Crypto.intToByteArray(wts));
             Message insecureMessage = new Message(null, userDataToSend);
-            putLink.initializePut(listReplicas.get(i), insecureMessage, count);
+            putLink.initializePut(listReplicas.get(i), insecureMessage, wts, count);
+
             Thread thread = new Thread(putLink);
             thread.start();
         }

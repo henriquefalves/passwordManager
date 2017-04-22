@@ -50,13 +50,22 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
+        Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
+        byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
 
         UserData dataTransfer = result.userData;
         dataTransfer.hashCommunicationData = result.currentCommunicationData; // save communication data of received message
-        server.put(message.publicKeySender, dataTransfer);
+        byte[] wts = server.put(message.publicKeySender, dataTransfer);
+        UserData userDataToSend = new UserData();
+        userDataToSend.wts = wts;
+        Message insecureMessage = new Message(challenge, userDataToSend);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
+
+        //TODO Return secure message com o WTS
+        //return secureMessage;
     }
 
     public Message get(Message message) throws RemoteException {

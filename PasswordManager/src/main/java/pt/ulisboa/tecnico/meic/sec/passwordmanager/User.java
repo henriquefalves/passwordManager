@@ -8,6 +8,7 @@ import java.io.*;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Hashtable;
+import java.util.LinkedList;
 
 
 public class User implements Serializable {
@@ -15,7 +16,11 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Key publicKey;
-    private Hashtable<String, UserData> mapPasswords;
+    /**
+     * Key - [domain,username]
+     * Value - History passwords
+     */
+    private Hashtable<String, LinkedList<UserData>> mapPasswords;
     private int counter;
 
     public User(Key publicKey){
@@ -28,66 +33,69 @@ public class User implements Serializable {
     }
 
 
-    /**
-     * This method should be eliminated since the signature is stored
-     */
-    @Deprecated
-    public void updateInfo(byte[]  hashKey, byte[] password){
+//    /**
+//     * This method should be eliminated since the signature is stored
+//     */
+//    @Deprecated
+//    public void updateInfo(byte[]  hashKey, byte[] password){
+//
+//        String key = Base64.getEncoder().encodeToString(hashKey);
+//
+//        UserData newUserData = new UserData(null, null, null, null, null, password, null, null);
+//
+//        // unknown domain
+//        if (mapPasswords.containsKey(key)) {
+//            LinkedList<UserData> history = mapPasswords.get(key);
+//            history.add(newUserData);
+//        } else {
+//            LinkedList<UserData> newHistory = new LinkedList<>();
+//            newHistory.add(newUserData);
+//            mapPasswords.put(key, newHistory);        }
+//    }
 
+    public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-
-        // unknown domain
-        if (mapPasswords.containsKey(key)) {
-            mapPasswords.replace(key, new UserData(null,null, null,null,null,password,null, null));
-
+        if (mapPasswords.containsKey(key)) {                    // unknown domain
+            LinkedList<UserData> history = mapPasswords.get(key);
+            int lastWts = Crypto.byteArrayToInt(history.getLast().wts);
+            Integer wts = Crypto.byteArrayToInt(dataTransfer.wts);
+            if (wts > lastWts) {
+                history.add(dataTransfer);
+            }
         } else {
-            mapPasswords.put(key, new UserData(null,null, null,null,null,password,null, null));
+            LinkedList<UserData> newHistory = new LinkedList<>();
+            newHistory.add(dataTransfer);
+            mapPasswords.put(key, newHistory);
         }
+        saveOperation(dataTransfer);
+        counter++;
     }
 
     public byte[] getPassword(byte[] hashKey) {
 
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-        UserData signatureAuthentication = mapPasswords.get(key);
+        UserData signatureAuthentication = mapPasswords.get(key).getLast();
         if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
         return signatureAuthentication.password;
     }
 
-    public UserData getFullInfo(byte[] hashKey) {
+    public UserData getUserData(byte[] hashKey) {
 
 
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-        UserData signatureAuthentication = mapPasswords.get(key);
+        UserData signatureAuthentication = mapPasswords.get(key).getLast();
         if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
         return signatureAuthentication;
     }
 
-	public void updateInfo(byte[]hashKey, byte[] password, UserData dataTransfer) {
 
-        String key = Base64.getEncoder().encodeToString(hashKey);
-
-        if (mapPasswords.containsKey(key)) {                    // unknown domain
-            int ts = Crypto.byteArrayToInt(mapPasswords.get(key).timestamp);
-            Integer wts = Crypto.byteArrayToInt(dataTransfer.timestamp);
-            if (wts > ts)
-                mapPasswords.replace(key, dataTransfer);
-                 mapPasswords.replace(key, dataTransfer);
-
-        } else {
-            mapPasswords.put(key, dataTransfer);
-
-        }
-        saveOperation(dataTransfer);
-        counter++;
-
-    }
     public void saveOperation( UserData sign){
         String folder = System.getProperty("user.dir");
 
@@ -101,22 +109,5 @@ public class User implements Serializable {
             System.out.println("Error writing state to file");
         }
     }
-    public int numberOfPasswords(){
-        int count=0;
-        for (UserData userX : mapPasswords.values()) {
-            count++;
-        }
-        return count;
-    }
 
-    public  byte[] getTimestamp(byte[] hashKey) {
-
-        String key = Base64.getEncoder().encodeToString(hashKey);
-
-        UserData signatureAuthentication = mapPasswords.get(key);
-        if(signatureAuthentication == null) {
-            throw new InvalidArgumentsException();
-        }
-        return signatureAuthentication.timestamp;
-    }
 }
