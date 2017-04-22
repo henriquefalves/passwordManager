@@ -92,6 +92,7 @@ public class ClientApplication {
 		String passwordString = "123456";
 		byte[] password = passwordString.getBytes(StandardCharsets.UTF_8);
 		client.save_password(domain, username, password);
+
 		String st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
 		System.out.println("PUT: "+"123456"+ " Result Get: " + st);
 

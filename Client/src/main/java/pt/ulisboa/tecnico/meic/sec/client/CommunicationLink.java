@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.security.Key;
 import java.util.Arrays;

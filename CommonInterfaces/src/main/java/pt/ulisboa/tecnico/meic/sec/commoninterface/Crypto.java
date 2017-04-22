@@ -124,7 +124,6 @@ public class Crypto {
         UserData cipheredUserData = null;
         if (insecureMessage.userData != null){
             cipheredUserData = addContentOfUserDataToSign(insecureMessage.userData, argsToSign, secretKey, randomIv);
-            System.out.println("crypto-getSecureMessage: len of argsToSign (!= 0-1 ?) = " + argsToSign.size());
         }
 
         byte[][] arrayToSign = argsToSign.toArray(new byte[0][]);    // transform array to byte array
@@ -140,6 +139,9 @@ public class Crypto {
     }
 
 
+
+
+    
     // receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
     public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub) {
         if (receivedMessage.randomIv == null || receivedMessage.signature == null || receivedMessage.secretKey == null) {
@@ -175,10 +177,10 @@ public class Crypto {
         // argsToCheckSign contains parameters what will be used to check the validity of signature
         ArrayList<byte[]> argsToCheckSign = new ArrayList<>();
         argsToCheckSign.add(hashedCommunicationDataToCheckSign);
-        messageInPlainText.userData = getContentOfUserDataCheckToSign(receivedMessage.userData,
-                                argsToCheckSign, secretKeyToDecipher, receivedMessage.randomIv);
-        System.out.println("crypto-checkMessage: len of argsToCheckSign (!= 0 ?) = " + argsToCheckSign.size());
-
+        if(receivedMessage.userData != null){
+            messageInPlainText.userData = getContentOfUserDataCheckToSign(receivedMessage.userData,
+                    argsToCheckSign, secretKeyToDecipher, receivedMessage.randomIv);
+        }
         messageInPlainText.currentCommunicationData = hashedCommunicationDataToCheckSign;
 
         // transform Array to byte array
@@ -225,9 +227,9 @@ public class Crypto {
             decipheredUserData.wts = decipheredWts;
         }
         if (cipheredUserData.hashCommunicationData != null) {
-            byte[] decipheredhashCommunicationData = Crypto.decipherSymmetric(secretKeyToDecipher, randomIv, cipheredUserData.hashCommunicationData);
-            argsToCheckSign.add(decipheredhashCommunicationData);
-            decipheredUserData.hashCommunicationData = decipheredhashCommunicationData;
+            byte[] decipheredHashCommunicationData = Crypto.decipherSymmetric(secretKeyToDecipher, randomIv, cipheredUserData.hashCommunicationData);
+            argsToCheckSign.add(decipheredHashCommunicationData);
+            decipheredUserData.hashCommunicationData = decipheredHashCommunicationData;
         }
         return decipheredUserData;
     }

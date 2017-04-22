@@ -137,15 +137,16 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     private byte[] getHighest(ArrayList<Message> listOfMessages) {
-        byte[] highestPassword = listOfMessages.get(0).userData.password;
-        byte[] highestTimestamp = listOfMessages.get(0).userData.rid;
-        for (Message m : listOfMessages) {
-            if (Crypto.byteArrayToInt(m.userData.rid) > Crypto.byteArrayToInt(highestTimestamp)) {
-                highestTimestamp = m.userData.rid;
-                highestPassword = m.userData.password;
-            }
-        }
-        return highestPassword;
+//        byte[] highestPassword = listOfMessages.get(0).userData.password;
+//        byte[] highestTimestamp = listOfMessages.get(0).userData.rid;
+//        for (Message m : listOfMessages) {
+//            if (Crypto.byteArrayToInt(m.userData.rid) > Crypto.byteArrayToInt(highestTimestamp)) {
+//                highestTimestamp = m.userData.rid;
+//                highestPassword = m.userData.password;
+//            }
+//        }
+//        return highestPassword;
+        return listOfMessages.get(0).userData.password;
     }
 
 //

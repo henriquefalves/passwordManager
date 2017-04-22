@@ -53,11 +53,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
 
-        Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
-        checkChallenge(result.publicKeySender, result.challenge);
 
-        UserData dataTransfer = result.userData;
-        dataTransfer.hashCommunicationData = result.currentCommunicationData; // save communication data of received message
+        UserData dataTransfer = decipheredMessage.userData;
+        dataTransfer.hashCommunicationData = decipheredMessage.currentCommunicationData; // save communication data of received message
         byte[] wts = server.put(message.publicKeySender, dataTransfer);
         UserData userDataToSend = new UserData();
         userDataToSend.wts = wts;
@@ -78,8 +76,6 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         //get all user data associated with domain/user
         UserData userData = server.newGet(message.publicKeySender, decipheredMessage.userData.hashDomainUser);
 
-//        Message insecureMessage = new Message(challenge, null, userData.password, null, decipheredMessage.rid, userData);
-//        Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         userData.rid = decipheredMessage.userData.rid;
         Message insecureMessage = new Message(challenge, userData);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);

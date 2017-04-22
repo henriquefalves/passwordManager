@@ -36,16 +36,7 @@ public class Server implements ServerAPI, Serializable {
     public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
 
         throw new RuntimeException();
-//        if (publicKey == null || hashKey == null ) {
-//            throw new InvalidArgumentsException();
-//
-//        }
-//        if (users.containsKey(publicKey)) {
-//            users.get(publicKey).updateInfo(hashKey, password);
-//            return;
-//
-//        }
-//        throw new InvalidArgumentsException();
+
     }
 
     public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
@@ -87,21 +78,6 @@ public class Server implements ServerAPI, Serializable {
         }
         throw new InvalidArgumentsException();
     }
-
-//    public byte[] newPut(Key publicKeySender, byte[] hashKey, UserData transferData) {
-//
-//        if (publicKeySender == null || hashKey == null) {
-//            throw new InvalidArgumentsException();
-//        }
-//        if (users.containsKey(publicKeySender)) {
-//
-//            users.get(publicKeySender).updateInfo(hashKey, transferData);
-//            return transferData.wts;
-//
-//        }
-//        throw new InvalidArgumentsException();
-//    }
-
 
 
 

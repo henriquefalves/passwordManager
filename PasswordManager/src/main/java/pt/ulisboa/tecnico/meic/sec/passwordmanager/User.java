@@ -33,25 +33,6 @@ public class User implements Serializable {
     }
 
 
-//    /**
-//     * This method should be eliminated since the signature is stored
-//     */
-//    @Deprecated
-//    public void updateInfo(byte[]  hashKey, byte[] password){
-//
-//        String key = Base64.getEncoder().encodeToString(hashKey);
-//
-//        UserData newUserData = new UserData(null, null, null, null, null, password, null, null);
-//
-//        // unknown domain
-//        if (mapPasswords.containsKey(key)) {
-//            LinkedList<UserData> history = mapPasswords.get(key);
-//            history.add(newUserData);
-//        } else {
-//            LinkedList<UserData> newHistory = new LinkedList<>();
-//            newHistory.add(newUserData);
-//            mapPasswords.put(key, newHistory);        }
-//    }
 
     public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
