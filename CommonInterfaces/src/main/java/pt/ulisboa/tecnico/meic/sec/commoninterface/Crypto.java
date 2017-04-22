@@ -64,6 +64,43 @@ public class Crypto {
         }
     }
 
+
+    //    public byte[] signature;
+//    public byte[] hashDomainUser;
+//    public byte[] password;
+//    public byte[] rid;
+//    public byte[] wts;
+//    public byte[] hashCommunicationData;
+
+    private static UserData addContentOfUserDataToSign(UserData insecureUserData, byte[] hashCommunicationData, ArrayList<byte[]> argsToSign, byte[] secretKey, byte[] randomIv) {
+        UserData cipheredUserData = new UserData();
+
+        cipheredUserData.hashCommunicationData = Crypto.cipherSymmetric(secretKey, randomIv, hashCommunicationData);
+        argsToSign.add(hashCommunicationData);
+
+        if (insecureUserData.signature != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredUserData.signature = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.signature);
+            argsToSign.add(insecureUserData.signature);
+        }
+        if (insecureUserData.hashDomainUser != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredUserData.hashDomainUser = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.hashDomainUser);
+            argsToSign.add(insecureUserData.hashDomainUser);
+        }
+        if (insecureUserData.password != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredUserData.password = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.password);
+            argsToSign.add(insecureUserData.password);
+        }
+        if (insecureUserData.rid != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredUserData.rid = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.rid);
+            argsToSign.add(insecureUserData.rid);
+        }
+        if (insecureUserData.wts != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredUserData.wts = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.wts);
+            argsToSign.add(insecureUserData.wts);
+        }
+        return cipheredUserData;
+    }
+
     /**
      * @param insecureMessage Message in plain text
      * @return cryptographically secure Message
@@ -71,39 +108,25 @@ public class Crypto {
     public static Message getSecureMessage(Message insecureMessage, byte[] secretKey, Key senderPrivKey, Key senderPubKey, Key receiverPubKey) {
         byte[] randomIv = Crypto.generateIV();
 
-        // argsToSign contains parameters what will be signed with senderPrivKey
-        ArrayList<byte[]> argsToSign = new ArrayList<>();        // order of elements is important
-        argsToSign.add(randomIv);
-        argsToSign.add(senderPubKey.getEncoded());
-        argsToSign.add(receiverPubKey.getEncoded());
+        ArrayList<byte[]> communicationDataToHash = new ArrayList<>();        // order of elements is important
+        communicationDataToHash.add(randomIv);
+        communicationDataToHash.add(senderPubKey.getEncoded());
+        communicationDataToHash.add(receiverPubKey.getEncoded());
 
         byte[] cipheredChallenge = null;
         if (insecureMessage.challenge != null) {        // if Message in plain text contains this element, it will be ciphered and signed
             cipheredChallenge = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.challenge);
-            argsToSign.add(insecureMessage.challenge);
+            communicationDataToHash.add(insecureMessage.challenge);
         }
 
-        byte[] cipheredHashKey = null;
-        if (insecureMessage.hashDomainUser != null) {        // if Message in plain text contains this element, it will be ciphered and signed
-            cipheredHashKey = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.hashDomainUser);
-            argsToSign.add(insecureMessage.hashDomainUser);
-        }
+        byte[][] arrayToHash = communicationDataToHash.toArray(new byte[0][]);    // transform array to byte array
+        byte[] commDataToHash = Crypto.concatenateData(arrayToHash);            // merge all data that will be hashed
+        byte [] hashedCommunicationData = Crypto.hashData(commDataToHash);
 
-        byte[] cipheredPassword = null;
-        if (insecureMessage.password != null) {    // if Message in plain text contains this element, it will be ciphered and signed
-            cipheredPassword = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.password);
-            argsToSign.add(insecureMessage.password);
-        }
-        byte[] cipheredRid = null;
-        if (insecureMessage.rid != null) {    // if Message in plain text contains this element, it will be ciphered and signed
-            cipheredRid = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.rid);
-            argsToSign.add(insecureMessage.rid);
-        }
-        byte[] cipheredWts = null;
-        if (insecureMessage.wts != null) {    // if Message in plain text contains this element, it will be ciphered and signed
-            cipheredWts = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.wts);
-            argsToSign.add(insecureMessage.wts);
-        }
+        // argsToSign contains parameters what will be signed with senderPrivKey
+        ArrayList<byte[]> argsToSign = new ArrayList<>();        // order of elements is important
+        UserData cipheredUserData = addContentOfUserDataToSign(insecureMessage.userData, hashedCommunicationData, argsToSign, secretKey, randomIv);
+        System.out.println("crypto-getSecureMessage: len of argsToSign (!= 0 ?) = " + argsToSign.size());
 
         byte[][] arrayToSign = argsToSign.toArray(new byte[0][]);    // transform array to byte array
         byte[] dataToSign = Crypto.concatenateData(arrayToSign);            // merge all data that will be sign
@@ -113,9 +136,10 @@ public class Crypto {
         byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
 
         // create cryptographically secure Message
-        Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredHashKey, cipheredPassword, cipheredSecretKey, randomIv, cipheredWts, cipheredRid, insecureMessage.userData);
+        Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredSecretKey, randomIv, cipheredUserData);
         return secureMessage;
     }
+
 
     // receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
     public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub) {

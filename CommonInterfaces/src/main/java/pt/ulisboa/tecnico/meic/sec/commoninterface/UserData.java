@@ -27,7 +27,7 @@ public class UserData implements Serializable {
 	}
 
 	public UserData(byte[] hashDomainUser, byte[] password, byte[] wts) {
-		super();
+	//	super();
 		this.signature = this.rid = this.hashCommunicationData = null;
 		this.hashDomainUser = hashDomainUser;
 		this.password = password;
@@ -35,11 +35,16 @@ public class UserData implements Serializable {
 	}
 
 	public UserData(byte[] hashDomainUser, byte[] rid) {
-		super();
 		this.signature = this.hashCommunicationData = null;
 		this.hashDomainUser = hashDomainUser;
 		this.password = null;
 		this.wts = null;
 		this.rid = rid;
+	}
+
+	public UserData() {
+		this.signature = this.hashCommunicationData = null;
+		this.hashDomainUser = this.password = null;
+		this.wts = this.rid = null;
 	}
 }
