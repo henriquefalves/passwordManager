@@ -13,7 +13,7 @@ public class UserData implements Serializable {
     public byte[] password;
     public byte[] rid;
 	public byte[] wts;
-	public byte[] hashCommunicationData;
+	public byte[] hashCommunicationData;		// additional (from communication) data to check signature
 
     public UserData(byte[] hashDomainUser, byte[] password, byte[] signature,
 					byte[] rid, byte[] wts, byte[] hashCommunicationData) {

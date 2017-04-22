@@ -19,8 +19,9 @@ public class ClientFrontEnd implements ServerAPI {
     //TODO: CHANGE ALL INVOCATIONS ON SERVER (ONLY CALLING 1 RIGHT NOW)
 
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
-    private int acks;
     private int wts;
+
+    private List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
 
     public ClientFrontEnd(ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
         for (String i : remoteServerNames) {
@@ -66,7 +67,7 @@ public class ClientFrontEnd implements ServerAPI {
         for (int i = 0; i < listReplicas.size(); i++) {
 //            Message insecureMessage = new Message(null, hashKey, password, Crypto.intToByteArray(wts), null, null);
             UserData userDataToSend = new UserData(hashDomainUsername, password, Crypto.intToByteArray(wts));
-            Message insecureMessage = new Message(userDataToSend);
+            Message insecureMessage = new Message(null, userDataToSend);
             putLink.initializePut(listReplicas.get(i), insecureMessage, count);
             Thread thread = new Thread(putLink);
             thread.start();
@@ -90,14 +91,14 @@ public class ClientFrontEnd implements ServerAPI {
         //Regular Register Read Version (1,N)
         rid++;
 
-        List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
+
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Get getLink = new CommunicationLink.Get();
         for (int i = 0; i < listReplicas.size(); i++) {
 
 //            Message insecureMessage = new Message(null, hashKey, null, null,Crypto.intToByteArray(rid) , null);
             UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid));
-            Message insecureMessage = new Message(userDataToSend);
+            Message insecureMessage = new Message(null, userDataToSend);
             getLink.initializeGet(listReplicas.get(i), insecureMessage, rid, count, readList);
             Thread thread = new Thread(getLink);
             thread.start();

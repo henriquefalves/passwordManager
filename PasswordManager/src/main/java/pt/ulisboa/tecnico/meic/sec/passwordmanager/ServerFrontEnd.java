@@ -53,22 +53,26 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
-        UserData dataTransfer = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.hashDomainUser,result.password, result.signature,result.wts);
-        server.put(message.publicKeySender, result.hashDomainUser, result.password , dataTransfer);
+
+        UserData dataTransfer = result.userData;
+        dataTransfer.hashCommunicationData = result.currentCommunicationData; // save communication data of received message
+        server.put(message.publicKeySender, dataTransfer);
     }
 
     public Message get(Message message) throws RemoteException {
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
-
         Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
 
         //get all user data associated with domain/user
-        UserData userData = server.newGet(message.publicKeySender, decipheredMessage.hashDomainUser);
+        UserData userData = server.newGet(message.publicKeySender, decipheredMessage.userData.hashDomainUser);
 
-        Message insecureMessage = new Message(challenge, null, userData.password, null, decipheredMessage.rid, userData);
+//        Message insecureMessage = new Message(challenge, null, userData.password, null, decipheredMessage.rid, userData);
+//        Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
+        userData.rid = decipheredMessage.userData.rid;
+        Message insecureMessage = new Message(challenge, userData);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
@@ -95,7 +99,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             challengesMap.put(pubKeyStr, challenges);
         }
 
-        Message insecureMessage = new Message(challenge);
+        Message insecureMessage = new Message(challenge, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }

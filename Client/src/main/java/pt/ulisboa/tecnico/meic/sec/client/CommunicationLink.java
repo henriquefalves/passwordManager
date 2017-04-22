@@ -51,7 +51,7 @@ public class CommunicationLink {
 
             try {
                 byte[] challenge = CommunicationLink.getChallenge(this.server);
-                Message message = new Message(challenge);
+                Message message = new Message(challenge, null);
                 Message secureMessage = Crypto.getSecureMessage(message, sessionKey, myPrivateKey, myPublicKey, serverPublicKey);
                 this.server.register(secureMessage);
                 this.countDown.countDown();

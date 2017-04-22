@@ -73,14 +73,14 @@ public class Server implements ServerAPI, Serializable {
         throw new InvalidArgumentsException();
     }
 
-    public void put(Key publicKeySender, byte[] hashKey, byte[] password, UserData transferData) {
+    public void put(Key publicKeySender, UserData transferData) {
 
-        if (publicKeySender == null || hashKey == null) {
+        if (publicKeySender == null || transferData.hashDomainUser == null) {
             throw new InvalidArgumentsException();
         }
         if (users.containsKey(publicKeySender)) {
 
-            users.get(publicKeySender).updateInfo(hashKey, password, transferData);
+            users.get(publicKeySender).updateInfo(transferData.hashDomainUser, transferData.password, transferData);
             return;
 
         }
@@ -88,39 +88,44 @@ public class Server implements ServerAPI, Serializable {
     }
 
 
-    public void importObjects() {
-        String folder = System.getProperty("user.dir");
-        FileInputStream fi = null;
-        int counter = 0;
-        boolean exitsFiles = true;
-        while (exitsFiles) {
-            try {
-                fi = new FileInputStream(new File(folder + File.separator + "DataUser" + counter + ".txt"
-                ));
-                ObjectInputStream oi = new ObjectInputStream(fi);
-                UserData data = (UserData) oi.readObject();
-                oi.close();
-                fi.close();
-                if (users.containsKey(data.publicKeySender))
-                    users.get(data.publicKeySender).updateInfo(data.hashDomainUser, data.password, data);
-                else {
-                    users.put(data.publicKeySender, new User(data.publicKeySender));
-                    users.get(data.publicKeySender).updateInfo(data.hashDomainUser, data.password, data);
-                }
-                counter++;
-            } catch (FileNotFoundException e) {
-                exitsFiles = false;
-            } catch (IOException e) {
-                exitsFiles = false;
-            } catch (ClassNotFoundException e) {
-                exitsFiles = false;
 
-            }
-        }
-        System.out.println("LOADED " + counter + " Passwords");
+//       we need this?
 
-    }
+//    public void importObjects() {
+//        String folder = System.getProperty("user.dir");
+//        FileInputStream fi = null;
+//        int counter = 0;
+//        boolean exitsFiles = true;
+//        while (exitsFiles) {
+//            try {
+//                fi = new FileInputStream(new File(folder + File.separator + "DataUser" + counter + ".txt"
+//                ));
+//                ObjectInputStream oi = new ObjectInputStream(fi);
+//                UserData data = (UserData) oi.readObject();
+//                oi.close();
+//                fi.close();
+//                if (users.containsKey(data.publicKeySender))
+//                    users.get(data.publicKeySender).updateInfo(data.hashDomainUser, data.password, data);
+//                else {
+//                    users.put(data.publicKeySender, new User(data.publicKeySender));
+//                    users.get(data.publicKeySender).updateInfo(data.hashDomainUser, data.password, data);
+//                }
+//                counter++;
+//            } catch (FileNotFoundException e) {
+//                exitsFiles = false;
+//            } catch (IOException e) {
+//                exitsFiles = false;
+//            } catch (ClassNotFoundException e) {
+//                exitsFiles = false;
+//
+//            }
+//        }
+//        System.out.println("LOADED " + counter + " Passwords");
+//
+//    }
 
+
+    //       we need this?
 
     public void numberOfUsers() {
         int count = 0;
@@ -129,6 +134,8 @@ public class Server implements ServerAPI, Serializable {
         }
         System.out.println("NumberOfUsers=" + count);
     }
+
+    //       we need this?
 
     public void numberOfPasswords() {
         Iterator it = users.entrySet().iterator();
