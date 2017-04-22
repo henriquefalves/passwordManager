@@ -54,32 +54,32 @@ public class ServerTest {
         server.put(key, VALID_HASHKEY, PASSWORD);
     }
 
-    @Test
-    public void GetCorrectExecution() {
-        byte[] pass;
-        try {
-            pass = server.get(key, VALID_HASHKEY);
-            assertTrue(new String(pass, StandardCharsets.UTF_8).equals(new String(PASSWORD, StandardCharsets.UTF_8)));
-        } catch (Exception e) {
-            fail();
-            e.printStackTrace();
-        }
-    }
-
-    @Test(expected = InvalidArgumentsException.class)
-    public void GetInvalidPublicKey() throws RemoteException {
-        server.get(null, VALID_HASHKEY);
-    }
-
-    @Test(expected = InvalidArgumentsException.class)
-    public void GetInvalidHashKey() throws RemoteException {
-        server.get(key, null);
-    }
-
-    @Test(expected = InvalidArgumentsException.class)
-    public void GetInexistentHashKey() throws RemoteException {
-        server.get(key, INEXISTENT_HASHKEY);
-    }
+//    @Test
+//    public void GetCorrectExecution() {
+//        byte[] pass;
+//        try {
+//            pass = server.get(key, VALID_HASHKEY);
+//            assertTrue(new String(pass, StandardCharsets.UTF_8).equals(new String(PASSWORD, StandardCharsets.UTF_8)));
+//        } catch (Exception e) {
+//            fail();
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    @Test(expected = InvalidArgumentsException.class)
+//    public void GetInvalidPublicKey() throws RemoteException {
+//        server.get(null, VALID_HASHKEY);
+//    }
+//
+//    @Test(expected = InvalidArgumentsException.class)
+//    public void GetInvalidHashKey() throws RemoteException {
+//        server.get(key, null);
+//    }
+//
+//    @Test(expected = InvalidArgumentsException.class)
+//    public void GetInexistentHashKey() throws RemoteException {
+//        server.get(key, INEXISTENT_HASHKEY);
+//    }
 
     @Test
     public void RegisterCorrectExecution() {
@@ -102,22 +102,22 @@ public class ServerTest {
         server.register(key);
     }
 
-    @Test
-    public void PutCorrectExecutionUpdate() {
-        byte[] serverPass;
-        try {
-            String insertedPassword = "password2";
-            byte[] newPass = insertedPassword.getBytes(StandardCharsets.UTF_8);
-
-            server.put(key,VALID_HASHKEY, newPass);
-            serverPass = server.get(key, VALID_HASHKEY);
-            String fromServer = new String(serverPass, StandardCharsets.UTF_8);
-            assertTrue(fromServer.equals(new String(newPass, StandardCharsets.UTF_8)));
-        } catch (Exception e) {
-            fail();
-            e.printStackTrace();
-        }
-    }
+//    @Test
+//    public void PutCorrectExecutionUpdate() {
+//        byte[] serverPass;
+//        try {
+//            String insertedPassword = "password2";
+//            byte[] newPass = insertedPassword.getBytes(StandardCharsets.UTF_8);
+//
+//            server.put(key,VALID_HASHKEY, newPass);
+//            serverPass = server.get(key, VALID_HASHKEY);
+//            String fromServer = new String(serverPass, StandardCharsets.UTF_8);
+//            assertTrue(fromServer.equals(new String(newPass, StandardCharsets.UTF_8)));
+//        } catch (Exception e) {
+//            fail();
+//            e.printStackTrace();
+//        }
+//    }
 
     @Test(expected = InvalidArgumentsException.class)
     public void PutInvalidPublicKey() throws RemoteException {

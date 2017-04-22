@@ -8,6 +8,7 @@ import java.io.*;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Hashtable;
+import java.util.LinkedList;
 
 
 public class User implements Serializable {
@@ -15,7 +16,11 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Key publicKey;
-    private Hashtable<String, UserData> mapPasswords;
+    /**
+     * Key - [domain,username]
+     * Value - History passwords
+     */
+    private Hashtable<String, LinkedList<UserData>> mapPasswords;
     private int counter;
 
     public User(Key publicKey){
@@ -36,33 +41,35 @@ public class User implements Serializable {
 
         String key = Base64.getEncoder().encodeToString(hashKey);
 
+        UserData newUserData = new UserData(null, null, null, null, null, password, null, null);
 
         // unknown domain
         if (mapPasswords.containsKey(key)) {
-            mapPasswords.replace(key, new UserData(null,null, null,null,null,password,null, null));
-
+            LinkedList<UserData> history = mapPasswords.get(key);
+            history.add(newUserData);
         } else {
-            mapPasswords.put(key, new UserData(null,null, null,null,null,password,null, null));
-        }
+            LinkedList<UserData> newHistory = new LinkedList<>();
+            newHistory.add(newUserData);
+            mapPasswords.put(key, newHistory);        }
     }
 
     public byte[] getPassword(byte[] hashKey) {
 
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-        UserData signatureAuthentication = mapPasswords.get(key);
+        UserData signatureAuthentication = mapPasswords.get(key).getLast();
         if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
         return signatureAuthentication.password;
     }
 
-    public UserData getFullInfo(byte[] hashKey) {
+    public UserData getUserData(byte[] hashKey) {
 
 
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-        UserData signatureAuthentication = mapPasswords.get(key);
+        UserData signatureAuthentication = mapPasswords.get(key).getLast();
         if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
@@ -74,14 +81,16 @@ public class User implements Serializable {
         String key = Base64.getEncoder().encodeToString(hashKey);
 
         if (mapPasswords.containsKey(key)) {                    // unknown domain
-            int ts = Crypto.byteArrayToInt(mapPasswords.get(key).timestamp);
+            int ts = Crypto.byteArrayToInt(mapPasswords.get(key).getLast().timestamp);
             Integer wts = Crypto.byteArrayToInt(dataTransfer.timestamp);
-            if (wts > ts)
-                mapPasswords.replace(key, dataTransfer);
-                 mapPasswords.replace(key, dataTransfer);
-
+            if (wts > ts) {
+                LinkedList<UserData> history = mapPasswords.get(key);
+                history.add(dataTransfer);
+            }
         } else {
-            mapPasswords.put(key, dataTransfer);
+            LinkedList<UserData> newHistory = new LinkedList<>();
+            newHistory.add(dataTransfer);
+            mapPasswords.put(key, newHistory);
 
         }
         saveOperation(dataTransfer);
@@ -101,22 +110,5 @@ public class User implements Serializable {
             System.out.println("Error writing state to file");
         }
     }
-    public int numberOfPasswords(){
-        int count=0;
-        for (UserData userX : mapPasswords.values()) {
-            count++;
-        }
-        return count;
-    }
 
-    public  byte[] getTimestamp(byte[] hashKey) {
-
-        String key = Base64.getEncoder().encodeToString(hashKey);
-
-        UserData signatureAuthentication = mapPasswords.get(key);
-        if(signatureAuthentication == null) {
-            throw new InvalidArgumentsException();
-        }
-        return signatureAuthentication.timestamp;
-    }
 }

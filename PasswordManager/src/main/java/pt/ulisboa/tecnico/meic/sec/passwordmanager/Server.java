@@ -68,7 +68,7 @@ public class Server implements ServerAPI, Serializable {
             }
         }
         if (users.containsKey(publicKey)) {
-            return users.get(publicKey).getFullInfo(hashKey);
+            return users.get(publicKey).getUserData(hashKey);
         }
         throw new InvalidArgumentsException();
     }
@@ -86,6 +86,21 @@ public class Server implements ServerAPI, Serializable {
         }
         throw new InvalidArgumentsException();
     }
+    public byte[] newPut(Key publicKeySender, byte[] hashKey, UserData transferData) {
+
+        if (publicKeySender == null || hashKey == null) {
+            throw new InvalidArgumentsException();
+        }
+        if (users.containsKey(publicKeySender)) {
+
+            users.get(publicKeySender).updateInfo(hashKey, null, transferData);
+            return transferData.timestamp;
+
+        }
+        throw new InvalidArgumentsException();
+    }
+
+
 
 
     public void importObjects() {
@@ -122,20 +137,5 @@ public class Server implements ServerAPI, Serializable {
     }
 
 
-    public void numberOfUsers() {
-        int count = 0;
-        for (User value : users.values()) {
-            count++;
-        }
-        System.out.println("NumberOfUsers=" + count);
-    }
 
-    public void numberOfPasswords() {
-        Iterator it = users.entrySet().iterator();
-        int count = 0;
-        for (User userX : users.values()) {
-            count = count + userX.numberOfPasswords();
-        }
-        System.out.println("NumberOfPasswords=" + count);
-    }
 }

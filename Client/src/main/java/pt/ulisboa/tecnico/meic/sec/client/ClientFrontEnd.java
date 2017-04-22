@@ -70,7 +70,7 @@ public class ClientFrontEnd implements ServerAPI {
         CommunicationLink.Put putLink = new CommunicationLink.Put();
         for (int i = 0; i < listReplicas.size(); i++) {
             Message insecureMessage = new Message(null, hashKey, password, Crypto.intToByteArray(wts), null, null);
-            putLink.initializePut(listReplicas.get(i), insecureMessage, count);
+            putLink.initializePut(listReplicas.get(i),insecureMessage,wts, count);
             Thread thread = new Thread(putLink);
             thread.start();
         }
