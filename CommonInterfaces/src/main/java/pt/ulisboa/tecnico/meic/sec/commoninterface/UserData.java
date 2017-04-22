@@ -12,22 +12,22 @@ public class UserData implements Serializable {
 	public PublicKey publicKeyReceiver;
 	public byte[] signature;
     public byte[] challenge;
-    public byte[] hashKey;
+    public byte[] hashDomainUser;
     public byte[] password;
     public byte[] randomIv;
-    public byte[] wts;
+    public byte[] timestamp;
 
     public UserData(byte[] randomIv, Key publicKeySender, PublicKey publicKeyReceiver, byte[] challenge,
-								   byte[] hashKey, byte[] password,
-									byte[] signature, byte[] wts) {
+					byte[] hashDomainUser, byte[] password,
+					byte[] signature, byte[] timestamp) {
 		super();
 		this.publicKeySender = publicKeySender;
 		this.publicKeyReceiver = publicKeyReceiver;
 		this.signature = signature;
 		this.challenge = challenge;
-		this.hashKey = hashKey;
+		this.hashDomainUser = hashDomainUser;
 		this.password = password;
 		this.randomIv = randomIv;
-		this.wts = wts;
+		this.timestamp = timestamp;
 	}
 }

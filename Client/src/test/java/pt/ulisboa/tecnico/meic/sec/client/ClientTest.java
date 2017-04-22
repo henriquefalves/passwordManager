@@ -103,8 +103,8 @@ public class ClientTest {
 		client.retrieve_password(VALID_DOMAIN, null);
 	}
 
-	@Test(expected = InvalidArgumentsException.class)
+	/*@Test(expected = InvalidArgumentsException.class)
 	public void RetrievePasswordInvalidTuple() throws RemoteException {
 		client.retrieve_password(VALID_DOMAIN, VALID_USERNAME);
-	}
+	}*/
 }

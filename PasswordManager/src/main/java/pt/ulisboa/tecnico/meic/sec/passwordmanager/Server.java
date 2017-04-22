@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
-import javafx.util.Pair;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
@@ -62,17 +61,14 @@ public class Server implements ServerAPI, Serializable {
         throw new InvalidArgumentsException();
     }
 
-    //TODO: rename function
-    public Pair<byte[], byte[]> newGet(Key publicKey, byte[] hashKey) throws RemoteException {
+    public UserData newGet(Key publicKey, byte[] hashKey) throws RemoteException {
         if (publicKey == null || hashKey == null ) {
             {
                 throw new InvalidArgumentsException();
             }
         }
         if (users.containsKey(publicKey)) {
-            byte[] password = users.get(publicKey).getPassword(hashKey);
-            byte[] ts = users.get(publicKey).getTimestamp(hashKey);
-            return new Pair<>(password, ts);
+            return users.get(publicKey).getFullInfo(hashKey);
         }
         throw new InvalidArgumentsException();
     }
@@ -106,10 +102,10 @@ public class Server implements ServerAPI, Serializable {
                 oi.close();
                 fi.close();
                 if (users.containsKey(data.publicKeySender))
-                    users.get(data.publicKeySender).updateInfo(data.hashKey, data.password, data);
+                    users.get(data.publicKeySender).updateInfo(data.hashDomainUser, data.password, data);
                 else {
                     users.put(data.publicKeySender, new User(data.publicKeySender));
-                    users.get(data.publicKeySender).updateInfo(data.hashKey, data.password, data);
+                    users.get(data.publicKeySender).updateInfo(data.hashDomainUser, data.password, data);
                 }
                 counter++;
             } catch (FileNotFoundException e) {

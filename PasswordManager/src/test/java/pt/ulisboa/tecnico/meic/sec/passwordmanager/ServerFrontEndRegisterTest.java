@@ -95,7 +95,7 @@ public class ServerFrontEndRegisterTest extends ServerFrontEndTest {
     public void registerWrongHashKeyNotBlockSizeTest() throws RemoteException {
         Message insecureMessage = new Message(challenge,  null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.hashKey = "wrongDomain".getBytes();        // size = 11 != AES block size
+        secureMessage.hashDomainUser = "wrongDomain".getBytes();        // size = 11 != AES block size
         serverFE.register(secureMessage);
     }
 
@@ -103,7 +103,7 @@ public class ServerFrontEndRegisterTest extends ServerFrontEndTest {
     public void registerWrongHashKeyBlockSizeTest() throws RemoteException {
         Message insecureMessage = new Message(challenge,  null, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.hashKey = "$T6ash/9012=?s56".getBytes();       // size = 16 == AES block size
+        secureMessage.hashDomainUser = "$T6ash/9012=?s56".getBytes();       // size = 16 == AES block size
         serverFE.register(secureMessage);
     }
 
@@ -114,7 +114,7 @@ public class ServerFrontEndRegisterTest extends ServerFrontEndTest {
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
         byte[] wrongSecretKey = Crypto.generateSessionKey();
         byte[] cipheredWrongDomain = Crypto.cipherSymmetric(wrongSecretKey, secureMessage.randomIv, "somehasKeysas=?3gd".getBytes());
-        secureMessage.hashKey = cipheredWrongDomain;
+        secureMessage.hashDomainUser = cipheredWrongDomain;
         serverFE.register(secureMessage);
     }
 

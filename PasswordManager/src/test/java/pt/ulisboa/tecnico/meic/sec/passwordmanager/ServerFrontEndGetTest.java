@@ -164,7 +164,7 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
     public void getWrongHashkeyNotBlockSizeTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, HASHKEY, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.hashKey = "wrongDomain".getBytes();    // size = 11 != AES block size
+        secureMessage.hashDomainUser = "wrongDomain".getBytes();    // size = 11 != AES block size
         serverFE.get(secureMessage);
     }
 
@@ -173,7 +173,7 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
     public void getWrongHashkeyBlockSizeTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, HASHKEY, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.hashKey = "1234567890123456".getBytes();       // size = 16 == AES block size
+        secureMessage.hashDomainUser = "1234567890123456".getBytes();       // size = 16 == AES block size
         serverFE.get(secureMessage);
     }
 
@@ -184,7 +184,7 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
         byte[] wrongSecretKey = Crypto.generateSessionKey();
         byte[] cipheredWrongDomain = Crypto.cipherSymmetric(wrongSecretKey, secureMessage.randomIv, "someDomain".getBytes());
-        secureMessage.hashKey = cipheredWrongDomain;
+        secureMessage.hashDomainUser = cipheredWrongDomain;
         serverFE.get(secureMessage);
     }
 
@@ -192,7 +192,7 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
     public void getNullHashkeyTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, HASHKEY, null);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.hashKey = null;
+        secureMessage.hashDomainUser = null;
         serverFE.get(secureMessage);
     }
 

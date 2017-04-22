@@ -57,13 +57,25 @@ public class User implements Serializable {
         return signatureAuthentication.password;
     }
 
+    public UserData getFullInfo(byte[] hashKey) {
+
+
+        String key = Base64.getEncoder().encodeToString(hashKey);
+
+        UserData signatureAuthentication = mapPasswords.get(key);
+        if(signatureAuthentication == null) {
+            throw new InvalidArgumentsException();
+        }
+        return signatureAuthentication;
+    }
+
 	public void updateInfo(byte[]hashKey, byte[] password, UserData dataTransfer) {
 
         String key = Base64.getEncoder().encodeToString(hashKey);
 
         if (mapPasswords.containsKey(key)) {                    // unknown domain
-            int ts = Crypto.byteArrayToLeInt(mapPasswords.get(key).wts);
-            Integer wts = Crypto.byteArrayToLeInt(dataTransfer.wts);
+            int ts = Crypto.byteArrayToInt(mapPasswords.get(key).timestamp);
+            Integer wts = Crypto.byteArrayToInt(dataTransfer.timestamp);
             if (wts > ts)
                 mapPasswords.replace(key, dataTransfer);
                  mapPasswords.replace(key, dataTransfer);
@@ -105,6 +117,6 @@ public class User implements Serializable {
         if(signatureAuthentication == null) {
             throw new InvalidArgumentsException();
         }
-        return signatureAuthentication.wts;
+        return signatureAuthentication.timestamp;
     }
 }

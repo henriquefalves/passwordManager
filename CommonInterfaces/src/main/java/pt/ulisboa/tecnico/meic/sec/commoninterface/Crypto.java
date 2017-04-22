@@ -84,9 +84,9 @@ public class Crypto {
         }
 
         byte[] cipheredHashKey = null;
-        if (insecureMessage.hashKey != null) {        // if Message in plain text contains this element, it will be ciphered and signed
-            cipheredHashKey = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.hashKey);
-            argsToSign.add(insecureMessage.hashKey);
+        if (insecureMessage.hashDomainUser != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredHashKey = Crypto.cipherSymmetric(secretKey, randomIv, insecureMessage.hashDomainUser);
+            argsToSign.add(insecureMessage.hashDomainUser);
         }
 
         byte[] cipheredPassword = null;
@@ -147,10 +147,10 @@ public class Crypto {
         }
 
         // if existent, add hashKey to signature verification
-        if (receivedMessage.hashKey != null) {
-            byte[] decipheredHashKey = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.hashKey);
+        if (receivedMessage.hashDomainUser != null) {
+            byte[] decipheredHashKey = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.hashDomainUser);
             argsToCheckSign.add(decipheredHashKey);
-            messageInPlainText.hashKey = decipheredHashKey;
+            messageInPlainText.hashDomainUser = decipheredHashKey;
         }
 
 
@@ -170,6 +170,9 @@ public class Crypto {
             argsToCheckSign.add(decipheredWts);
             messageInPlainText.wts = decipheredWts;
         }
+
+        //TODO: cypher
+        messageInPlainText.userData = receivedMessage.userData;
 
         // transform Array to byte array
         byte[][] arrayToCheckSign = argsToCheckSign.toArray(new byte[0][]);
@@ -366,7 +369,7 @@ public class Crypto {
      * @param encodedValue
      * @return
      */
-    public static int byteArrayToLeInt(byte[] encodedValue) {
+    public static int byteArrayToInt(byte[] encodedValue) {
         int value = (encodedValue[3] << (Byte.SIZE * 3));
         value |= (encodedValue[2] & 0xFF) << (Byte.SIZE * 2);
         value |= (encodedValue[1] & 0xFF) << (Byte.SIZE * 1);
@@ -378,7 +381,7 @@ public class Crypto {
      * @param value
      * @return
      */
-    public static byte[] leIntToByteArray(int value) {
+    public static byte[] intToByteArray(int value) {
         byte[] encodedValue = new byte[Integer.SIZE / Byte.SIZE];
         encodedValue[3] = (byte) (value >> Byte.SIZE * 3);
         encodedValue[2] = (byte) (value >> Byte.SIZE * 2);

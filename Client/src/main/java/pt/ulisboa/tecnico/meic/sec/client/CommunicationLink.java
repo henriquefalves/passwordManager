@@ -120,7 +120,7 @@ public class CommunicationLink {
                 Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
                 CommunicationLink.checkChallenge(challenge, result.challenge);
                 // TODO check password signature
-                if (Crypto.byteArrayToLeInt(result.rid) == expectedRid){
+                if (Crypto.byteArrayToInt(result.rid) == expectedRid){
                     sincronizedList.add(result);
                     this.countDown.countDown();
                 }

@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 
 
-import javafx.util.Pair;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
@@ -54,8 +53,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message result = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         checkChallenge(result.publicKeySender, result.challenge);
-        UserData dataTransfer = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.hashKey,result.password, result.signature,result.wts);
-        server.put(message.publicKeySender, result.hashKey, result.password , dataTransfer);
+        UserData dataTransfer = new UserData(result.randomIv, result.publicKeySender, myPublicKey, result.challenge, result.hashDomainUser,result.password, result.signature,result.wts);
+        server.put(message.publicKeySender, result.hashDomainUser, result.password , dataTransfer);
     }
 
     public Message get(Message message) throws RemoteException {
@@ -65,14 +64,11 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
-        Pair<byte[], byte[]> pair = server.newGet(message.publicKeySender, decipheredMessage.hashKey);
-        byte[] password = pair.getKey();
-        byte[] ts = pair.getValue();
-        //TODO BY MATEUS: NAO ME LEMBRO PARA QUE NECESSITAMOS DO TIMESTAMP
-        //TODO BY MATEUS: POR ISSO NAO ESTOU A FAZER NADA COM ELE. ELUCIDEM-ME PLS
-        //Comment because of tests
-        // System.out.println(Crypto.byteArrayToLeInt(decipheredMessage.rid));
-        Message insecureMessage = new Message(challenge, null, password, null, decipheredMessage.rid, null);
+
+        //get all user data associated with domain/user
+        UserData userData = server.newGet(message.publicKeySender, decipheredMessage.hashDomainUser);
+
+        Message insecureMessage = new Message(challenge, null, userData.password, null, decipheredMessage.rid, userData);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
