@@ -13,9 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientFrontEnd implements ServerAPI {
     public static final int TIMEOUT = 5;
-    private Key myPrivateKey;
-    private Key myPublicKey;
-    private Key serverPublicKey;
     private byte[] sessionKey;
     private int rid;
 
@@ -34,9 +31,6 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey) {
-        this.myPrivateKey = myPrivateKey;
-        this.myPublicKey = myPublicKey;
-        this.serverPublicKey = serverPublicKey;
         sessionKey = Crypto.generateSessionKey();
         CommunicationLink.initCommunicationLink(myPrivateKey, myPublicKey, serverPublicKey, sessionKey);
     }
@@ -45,8 +39,9 @@ public class ClientFrontEnd implements ServerAPI {
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Register registerLink = new CommunicationLink.Register();
         for (int i = 0; i < listReplicas.size(); i++) {
-            Message insecureMessage = new Message(null, null,  null, null, null, null);
-            registerLink.initializeRegister(listReplicas.get(i), insecureMessage, count);
+
+           // Message insecureMessage = new Message(null, null,  null, null, null, null);
+            registerLink.initializeRegister(listReplicas.get(i), count);
             Thread thread = new Thread(registerLink);
             thread.start();
         }
@@ -64,12 +59,14 @@ public class ClientFrontEnd implements ServerAPI {
 
     }
 
-    public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
+    public void put(Key publicKey, byte[] hashDomainUsername, byte[] password) throws RemoteException {
         wts++;
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Put putLink = new CommunicationLink.Put();
         for (int i = 0; i < listReplicas.size(); i++) {
-            Message insecureMessage = new Message(null, hashKey, password, Crypto.intToByteArray(wts), null, null);
+//            Message insecureMessage = new Message(null, hashKey, password, Crypto.intToByteArray(wts), null, null);
+            UserData userDataToSend = new UserData(hashDomainUsername, password, Crypto.intToByteArray(wts));
+            Message insecureMessage = new Message(userDataToSend);
             putLink.initializePut(listReplicas.get(i), insecureMessage, count);
             Thread thread = new Thread(putLink);
             thread.start();
@@ -89,7 +86,7 @@ public class ClientFrontEnd implements ServerAPI {
 
     }
 
-    public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
+    public byte[] get(Key publicKey, byte[] hashDomainUsername) throws RemoteException {
         //Regular Register Read Version (1,N)
         rid++;
 
@@ -98,7 +95,9 @@ public class ClientFrontEnd implements ServerAPI {
         CommunicationLink.Get getLink = new CommunicationLink.Get();
         for (int i = 0; i < listReplicas.size(); i++) {
 
-            Message insecureMessage = new Message(null, hashKey, null, null,Crypto.intToByteArray(rid) , null);
+//            Message insecureMessage = new Message(null, hashKey, null, null,Crypto.intToByteArray(rid) , null);
+            UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid));
+            Message insecureMessage = new Message(userDataToSend);
             getLink.initializeGet(listReplicas.get(i), insecureMessage, rid, count, readList);
             Thread thread = new Thread(getLink);
             thread.start();
@@ -136,34 +135,35 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     private byte[] getHighest(ArrayList<Message> listOfMessages) {
-        byte[] highestPassword = listOfMessages.get(0).password;
-        byte[] highestTimestamp = listOfMessages.get(0).userData.timestamp;
+        byte[] highestPassword = listOfMessages.get(0).userData.password;
+        byte[] highestTimestamp = listOfMessages.get(0).userData.rid;
         for (Message m : listOfMessages) {
-            if (Crypto.byteArrayToInt(m.userData.timestamp) > Crypto.byteArrayToInt(highestTimestamp)) {
-                highestTimestamp = m.userData.timestamp;
+            if (Crypto.byteArrayToInt(m.userData.rid) > Crypto.byteArrayToInt(highestTimestamp)) {
+                highestTimestamp = m.userData.rid;
                 highestPassword = m.userData.password;
             }
         }
         return highestPassword;
     }
 
+//
+//    /**
+//     * @param listOfMessages received by the Thread
+//     * @return most common password in messages
+//     */
+//    private byte[] getCommonPasswordValue(ArrayList<Message> listOfMessages) {
+//        HashMap<byte[], Integer> map = new HashMap<>();
+//        for (Message m : listOfMessages) {
+//            Integer val = map.get(m.password);
+//            if (val != null) {
+//                map.put(m.password, val + 1);
+//            } else {
+//                map.put(m.password, 1);
+//            }
+//        }
+//        byte[] password = Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
+//        System.out.println("Pass from most common values: " + password);
+//        return password;
+//    }
 
-    /**
-     * @param listOfMessages received by the Thread
-     * @return most common password in messages
-     */
-    private byte[] getCommonPasswordValue(ArrayList<Message> listOfMessages) {
-        HashMap<byte[], Integer> map = new HashMap<>();
-        for (Message m : listOfMessages) {
-            Integer val = map.get(m.password);
-            if (val != null) {
-                map.put(m.password, val + 1);
-            } else {
-                map.put(m.password, 1);
-            }
-        }
-        byte[] password = Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
-        System.out.println("Pass from most common values: " + password);
-        return password;
-    }
 }

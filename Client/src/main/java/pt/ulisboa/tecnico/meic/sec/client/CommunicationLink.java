@@ -39,12 +39,10 @@ public class CommunicationLink {
 
     public static class Register implements Runnable{
         private CommunicationAPI server;
-        Message message;
         CountDownLatch countDown;
 
-        public void initializeRegister(CommunicationAPI server, Message m, CountDownLatch count){
+        public void initializeRegister(CommunicationAPI server, CountDownLatch count){
             this.server = server;
-            this.message = m;
             this.countDown = count;
         }
 
@@ -53,7 +51,7 @@ public class CommunicationLink {
 
             try {
                 byte[] challenge = CommunicationLink.getChallenge(this.server);
-                message.challenge = challenge;
+                Message message = new Message(challenge);
                 Message secureMessage = Crypto.getSecureMessage(message, sessionKey, myPrivateKey, myPublicKey, serverPublicKey);
                 this.server.register(secureMessage);
                 this.countDown.countDown();
@@ -120,7 +118,7 @@ public class CommunicationLink {
                 Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
                 CommunicationLink.checkChallenge(challenge, result.challenge);
                 // TODO check password signature
-                if (Crypto.byteArrayToInt(result.rid) == expectedRid){
+                if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){
                     sincronizedList.add(result);
                     this.countDown.countDown();
                 }

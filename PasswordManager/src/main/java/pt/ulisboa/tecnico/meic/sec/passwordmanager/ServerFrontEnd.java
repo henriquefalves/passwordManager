@@ -95,7 +95,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             challengesMap.put(pubKeyStr, challenges);
         }
 
-        Message insecureMessage = new Message(challenge, null, null, null, null, null);
+        Message insecureMessage = new Message(challenge);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, result.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
         return secureMessage;
     }
