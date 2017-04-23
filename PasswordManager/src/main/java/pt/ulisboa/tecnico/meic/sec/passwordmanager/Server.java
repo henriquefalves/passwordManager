@@ -11,7 +11,7 @@ import java.security.Key;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Server implements ServerAPI, Serializable {
+public class Server implements Serializable {
 
     private ConcurrentHashMap<Key, User> users;
 
@@ -32,28 +32,28 @@ public class Server implements ServerAPI, Serializable {
         users.put(publicKey, newUser);
     }
 
-    @Deprecated
-    public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
+//    @Deprecated
+//    public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
+//
+//        throw new RuntimeException();
+//
+//    }
 
-        throw new RuntimeException();
+//    public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
+//
+//        if (publicKey == null || hashKey == null ) {
+//            {
+//                throw new InvalidArgumentsException();
+//            }
+//        }
+//        if (users.containsKey(publicKey)) {
+//            byte[] password = users.get(publicKey).getPassword(hashKey);
+//            return password;
+//        }
+//        throw new InvalidArgumentsException();
+//    }
 
-    }
-
-    public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
-
-        if (publicKey == null || hashKey == null ) {
-            {
-                throw new InvalidArgumentsException();
-            }
-        }
-        if (users.containsKey(publicKey)) {
-            byte[] password = users.get(publicKey).getPassword(hashKey);
-            return password;
-        }
-        throw new InvalidArgumentsException();
-    }
-
-    public UserData newGet(Key publicKey, byte[] hashKey) throws RemoteException {
+    public UserData get(Key publicKey, byte[] hashKey) throws RemoteException {
         if (publicKey == null || hashKey == null ) {
             {
                 throw new InvalidArgumentsException();

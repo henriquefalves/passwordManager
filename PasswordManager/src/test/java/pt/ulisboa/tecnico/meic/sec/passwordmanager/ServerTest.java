@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.meic.sec.passwordmanager;
 import org.junit.Before;
 import org.junit.Test;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
@@ -18,8 +19,8 @@ import javax.crypto.KeyGenerator;
 
 public class ServerTest {
 
-    public static byte[] VALID_HASHKEY;
-    public static byte[] INEXISTENT_HASHKEY;
+    public static byte[] VALID_HASH_DOMAIN_USERNAME;
+    public static byte[] INEXISTENT_HASH_DOMAIN_USERNAME;
     public static byte[] PASSWORD = "password".getBytes(StandardCharsets.UTF_8);
 
     public Server server = null;
@@ -30,15 +31,12 @@ public class ServerTest {
         byte[] VALID_DOMAIN = "a.b".getBytes(StandardCharsets.UTF_8);
         byte[] VALID_USERNAME = "name".getBytes(StandardCharsets.UTF_8);
         byte[] hashPreKey = Crypto.concatenateData(new byte[][]{VALID_DOMAIN, VALID_USERNAME});
-        VALID_HASHKEY = Crypto.hashData(hashPreKey);
+        VALID_HASH_DOMAIN_USERNAME = Crypto.hashData(hashPreKey);
 
-       byte[] INEXISTENT_DOMAIN = "d.e".getBytes(StandardCharsets.UTF_8);
-         byte[] INEXISTENT_USERNAME = "eman".getBytes(StandardCharsets.UTF_8);
+        byte[] INEXISTENT_DOMAIN = "d.e".getBytes(StandardCharsets.UTF_8);
+        byte[] INEXISTENT_USERNAME = "eman".getBytes(StandardCharsets.UTF_8);
         byte[] invalidHashPreKey = Crypto.concatenateData(new byte[][]{INEXISTENT_DOMAIN, INEXISTENT_USERNAME});
-        INEXISTENT_HASHKEY = Crypto.hashData(invalidHashPreKey);
-
-
-
+        INEXISTENT_HASH_DOMAIN_USERNAME = Crypto.hashData(invalidHashPreKey);
 
         SecureRandom random = new SecureRandom();
         KeyGenerator keygen = KeyGenerator.getInstance("AES");
@@ -51,35 +49,38 @@ public class ServerTest {
     public void setup() throws RemoteException {
         server = new Server();
         server.register(key);
-        server.put(key, VALID_HASHKEY, PASSWORD);
+        UserData userData = new UserData();     // TODO userData in Put method must pass hashCommunicationData, signatura and wts
+        userData.hashDomainUser = VALID_HASH_DOMAIN_USERNAME;
+        userData.password = PASSWORD;
+        userData.wts = Crypto.intToByteArray(1);
+        server.put(key, userData);
     }
 
-//    @Test
-//    public void GetCorrectExecution() {
-//        byte[] pass;
-//        try {
-//            pass = server.get(key, VALID_HASHKEY);
-//            assertTrue(new String(pass, StandardCharsets.UTF_8).equals(new String(PASSWORD, StandardCharsets.UTF_8)));
-//        } catch (Exception e) {
-//            fail();
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    @Test(expected = InvalidArgumentsException.class)
-//    public void GetInvalidPublicKey() throws RemoteException {
-//        server.get(null, VALID_HASHKEY);
-//    }
-//
-//    @Test(expected = InvalidArgumentsException.class)
-//    public void GetInvalidHashKey() throws RemoteException {
-//        server.get(key, null);
-//    }
-//
-//    @Test(expected = InvalidArgumentsException.class)
-//    public void GetInexistentHashKey() throws RemoteException {
-//        server.get(key, INEXISTENT_HASHKEY);
-//    }
+    @Test
+    public void GetCorrectExecution() {
+        try {
+            UserData userData = server.get(key, VALID_HASH_DOMAIN_USERNAME);
+            assertTrue(new String(userData.password, StandardCharsets.UTF_8).equals(new String(PASSWORD, StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            fail();
+            e.printStackTrace();
+        }
+    }
+
+    @Test(expected = InvalidArgumentsException.class)
+    public void GetInvalidPublicKey() throws RemoteException {
+        server.get(null, VALID_HASH_DOMAIN_USERNAME);
+    }
+
+    @Test(expected = InvalidArgumentsException.class)
+    public void GetInvalidHashKey() throws RemoteException {
+        server.get(key, null);
+    }
+
+    @Test(expected = InvalidArgumentsException.class)
+    public void GetInexistentHashKey() throws RemoteException {
+        server.get(key, INEXISTENT_HASH_DOMAIN_USERNAME);
+    }
 
     @Test
     public void RegisterCorrectExecution() {
@@ -102,31 +103,42 @@ public class ServerTest {
         server.register(key);
     }
 
-//    @Test
-//    public void PutCorrectExecutionUpdate() {
-//        byte[] serverPass;
-//        try {
-//            String insertedPassword = "password2";
-//            byte[] newPass = insertedPassword.getBytes(StandardCharsets.UTF_8);
-//
-//            server.put(key,VALID_HASHKEY, newPass);
-//            serverPass = server.get(key, VALID_HASHKEY);
-//            String fromServer = new String(serverPass, StandardCharsets.UTF_8);
-//            assertTrue(fromServer.equals(new String(newPass, StandardCharsets.UTF_8)));
-//        } catch (Exception e) {
-//            fail();
-//            e.printStackTrace();
-//        }
-//    }
+    @Test
+    public void PutCorrectExecutionUpdate() {
+        try {
+            String insertedPassword = "password2";
+            byte[] newPass = insertedPassword.getBytes(StandardCharsets.UTF_8);
+
+            UserData userDataToPut = new UserData();     // TODO userData in Put method must pass hashCommunicationData, signatura and wts
+            userDataToPut.hashDomainUser = VALID_HASH_DOMAIN_USERNAME;
+            userDataToPut.password = newPass;
+            userDataToPut.wts = Crypto.intToByteArray(15);
+
+            server.put(key,userDataToPut);
+            UserData userDataFromGet = server.get(key, VALID_HASH_DOMAIN_USERNAME);
+            String receivedPasword = new String(userDataFromGet.password, StandardCharsets.UTF_8);
+            String passedPassword = new String(newPass, StandardCharsets.UTF_8);
+            assertTrue(receivedPasword.equals(passedPassword));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
 
     @Test(expected = InvalidArgumentsException.class)
     public void PutInvalidPublicKey() throws RemoteException {
-        server.put(null, VALID_HASHKEY, PASSWORD);
+        UserData userData = new UserData();
+        userData.hashDomainUser = VALID_HASH_DOMAIN_USERNAME;
+        userData.password = PASSWORD;
+        server.put(null, userData);
     }
 
     @Test(expected = InvalidArgumentsException.class)
     public void PutInvalidHashKey() throws RemoteException {
-        server.put(key, null, PASSWORD);
+        UserData userData = new UserData();
+        userData.hashDomainUser = null;
+        userData.password = PASSWORD;
+        server.put(key, userData);
     }
 
 

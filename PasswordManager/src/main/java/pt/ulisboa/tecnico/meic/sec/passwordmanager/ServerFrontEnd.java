@@ -74,7 +74,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
 
         //get all user data associated with domain/user
-        UserData userData = server.newGet(message.publicKeySender, decipheredMessage.userData.hashDomainUser);
+        UserData userData = server.get(message.publicKeySender, decipheredMessage.userData.hashDomainUser);
 
         userData.rid = decipheredMessage.userData.rid;
         Message insecureMessage = new Message(challenge, userData);

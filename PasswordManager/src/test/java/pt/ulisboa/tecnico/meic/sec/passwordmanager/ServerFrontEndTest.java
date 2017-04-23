@@ -19,7 +19,6 @@ public abstract class ServerFrontEndTest  {
     protected static ServerFrontEnd serverFE;
     protected byte[] challenge;
 
-
     @BeforeClass
     public static void setUpClass() throws RemoteException {
     KeyPair clientKeyPair = ServerApplication.loadKeys("test.jks", "test", "ClientKeys", "12345");

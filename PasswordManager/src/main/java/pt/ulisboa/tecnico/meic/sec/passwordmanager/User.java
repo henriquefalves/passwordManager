@@ -52,27 +52,26 @@ public class User implements Serializable {
         counter++;
     }
 
-    public byte[] getPassword(byte[] hashKey) {
-
-        String key = Base64.getEncoder().encodeToString(hashKey);
-
-        UserData signatureAuthentication = mapPasswords.get(key).getLast();
-        if(signatureAuthentication == null) {
-            throw new InvalidArgumentsException();
-        }
-        return signatureAuthentication.password;
-    }
+//    public byte[] getPassword(byte[] hashKey) {
+//
+//        String key = Base64.getEncoder().encodeToString(hashKey);
+//
+//        UserData signatureAuthentication = mapPasswords.get(key).getLast();
+//        if(signatureAuthentication == null) {
+//            throw new InvalidArgumentsException();
+//        }
+//        return signatureAuthentication.password;
+//    }
 
     public UserData getUserData(byte[] hashKey) {
 
-
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-        UserData signatureAuthentication = mapPasswords.get(key).getLast();
-        if(signatureAuthentication == null) {
+        LinkedList signatureAuthentication = mapPasswords.get(key);
+        if(signatureAuthentication == null || signatureAuthentication.getLast() == null) {
             throw new InvalidArgumentsException();
         }
-        return signatureAuthentication;
+        return (UserData)signatureAuthentication.getLast();
     }
 
 
