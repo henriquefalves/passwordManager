@@ -5,11 +5,16 @@ import pt.ulisboa.tecnico.meic.sec.client.exceptions.WrongChallengeException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
 
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.security.Key;
+import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -87,6 +92,8 @@ public class CommunicationLink {
                 Message secureMessage = Crypto.getSecureMessage(message, sessionKey, myPrivateKey, myPublicKey, serverPublicKey);
                 this.server.put(secureMessage);
 
+                this.countDown.countDown();
+
 //                Message response = this.server.put(secureMessage);
 //                Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
 //                CommunicationLink.checkChallenge(challenge, result.challenge);
@@ -127,7 +134,11 @@ public class CommunicationLink {
                 Message response = this.server.get(secureMessage);
                 Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
                 CommunicationLink.checkChallenge(challenge, result.challenge);
-                // TODO check password signature
+
+                if(!validatePassword(result.userData)){
+                    // TODO ??
+                    return;
+                }
                 if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){
                     sincronizedList.add(result);
                     this.countDown.countDown();
@@ -139,7 +150,25 @@ public class CommunicationLink {
         }
     }
 
+    private static boolean validatePassword(UserData userData) {
+        ArrayList<byte[]> dataToCheckSign = new ArrayList<>();
+        dataToCheckSign.add(userData.hashCommunicationData);
+        dataToCheckSign.add(userData.hashDomainUser);
+        dataToCheckSign.add(userData.password);
+        dataToCheckSign.add(userData.wts);
 
+        byte[][] arrayToCheckSign = dataToCheckSign.toArray(new byte[0][]);
+        byte[] dataToCheckSignature = Crypto.concatenateData(arrayToCheckSign);
+
+        // check validity of signature
+        boolean integrity = Crypto.verifySign((PublicKey)myPublicKey, dataToCheckSignature, userData.signature);
+        if (!integrity) {
+            System.out.println("validatePassword: Wrong password received");
+            return false;
+        }
+        System.out.println("validatePassword: Valid password received");
+        return true;
+    }
 
     private static void checkChallenge(byte[] expectedChallenge, byte[] receivedChallenge) {
         if (receivedChallenge == null || !Arrays.equals(expectedChallenge, receivedChallenge)) {

@@ -1,5 +1,8 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.*;
 
 import java.io.IOException;
@@ -18,7 +21,7 @@ public interface ClientAPI {
 
     public void save_password(byte[] domain, byte[] username, byte[] password) throws RemoteException, InvalidDomainException, InvalidUsernameException, InvalidPasswordException;
 
-    public byte[] retrieve_password(byte[] domain, byte[] username) throws RemoteException, InvalidDomainException, InvalidUsernameException, InexistentTupleException;
+    public byte[] retrieve_password(byte[] domain, byte[] username) throws RemoteException, InvalidDomainException, InvalidUsernameException;
 
     public void close();
 }

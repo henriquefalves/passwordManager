@@ -1,9 +1,8 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InexistentTupleException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
@@ -241,8 +240,6 @@ public class ClientApplication {
 						System.out.print("Invalid Username");
 						if(!presentationmode)
 							iu.printStackTrace();
-					} catch (InexistentTupleException it) {
-						System.out.println("Incorrect username/domain.");
 					} catch(Exception e) {
 						System.out.println("Unidentified error");
 						if(!presentationmode)

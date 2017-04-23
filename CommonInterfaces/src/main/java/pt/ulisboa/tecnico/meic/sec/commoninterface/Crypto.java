@@ -141,7 +141,7 @@ public class Crypto {
 
 
 
-    
+
     // receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
     public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub) {
         if (receivedMessage.randomIv == null || receivedMessage.signature == null || receivedMessage.secretKey == null) {
@@ -161,11 +161,9 @@ public class Crypto {
         messageInPlainText.publicKeySender = receivedMessage.publicKeySender;
         messageInPlainText.randomIv = receivedMessage.randomIv;
 
-        byte[] decipheredChallenge = null;
-
         // if existent, add challenge to signature verification
         if (receivedMessage.challenge != null) {
-            decipheredChallenge = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.challenge);
+            byte[] decipheredChallenge = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.challenge);
             hashedCommDataToCheckSign.add(decipheredChallenge);
             messageInPlainText.challenge = decipheredChallenge;
         }
@@ -174,6 +172,8 @@ public class Crypto {
         byte[] commDataToCheckSign = Crypto.concatenateData(arrayToHash);            // merge all data that will be hashed
         byte [] hashedCommunicationDataToCheckSign = Crypto.hashData(commDataToCheckSign);
 
+        messageInPlainText.currentCommunicationData = hashedCommunicationDataToCheckSign;
+
         // argsToCheckSign contains parameters what will be used to check the validity of signature
         ArrayList<byte[]> argsToCheckSign = new ArrayList<>();
         argsToCheckSign.add(hashedCommunicationDataToCheckSign);
@@ -181,16 +181,17 @@ public class Crypto {
             messageInPlainText.userData = getContentOfUserDataCheckToSign(receivedMessage.userData,
                     argsToCheckSign, secretKeyToDecipher, receivedMessage.randomIv);
         }
-        messageInPlainText.currentCommunicationData = hashedCommunicationDataToCheckSign;
+
 
         // transform Array to byte array
         byte[][] arrayToCheckSign = argsToCheckSign.toArray(new byte[0][]);
         byte[] dataToCheckSignature = Crypto.concatenateData(arrayToCheckSign);
 
-        byte[] signedData = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.signature);
+        byte[] decipheredSignature = Crypto.decipherSymmetric(secretKeyToDecipher, receivedMessage.randomIv, receivedMessage.signature);
+        messageInPlainText.signature = decipheredSignature;
 
         // check validity of signature
-        boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKeySender, dataToCheckSignature, signedData);
+        boolean integrity = Crypto.verifySign((PublicKey) receivedMessage.publicKeySender, dataToCheckSignature, decipheredSignature);
         if (!integrity) {
             throw new CorruptedMessageException();
         }
@@ -311,23 +312,21 @@ public class Crypto {
             rsaSignature = Signature.getInstance(DEFAULT_SIGN_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Invalid Algorithm to validated Signature");
-
+            throw new RuntimeException();
         }
         try {
             rsaSignature.initVerify(publicKey);
         } catch (InvalidKeyException e) {
             System.out.println("Invalid public Key to verify digital signature ");
-
+            throw new RuntimeException();
         }
         try {
             rsaSignature.update(data);
             return rsaSignature.verify(signature);
         } catch (SignatureException e) {
             System.out.println("Invalid digital signature ");
-
+            throw new RuntimeException();
         }
-
-        return false;
     }
 
     public static byte[] encryptAsymmetric(byte[] data, Key key, String algorithm) {

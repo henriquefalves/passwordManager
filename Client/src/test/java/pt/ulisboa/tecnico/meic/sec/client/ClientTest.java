@@ -3,7 +3,9 @@ package pt.ulisboa.tecnico.meic.sec.client;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.*;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;

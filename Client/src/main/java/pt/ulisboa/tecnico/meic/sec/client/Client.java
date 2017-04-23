@@ -1,15 +1,13 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InexistentTupleException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidPasswordException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidUsernameException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.ServerAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
@@ -101,7 +99,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 	/* 
 	 * Before retrived the password is decrypted with privateKey
 	 */
-	public byte[] retrieve_password(byte[] domain, byte[] username) throws RemoteException, InvalidDomainException, InvalidUsernameException, InexistentTupleException {
+	public byte[] retrieve_password(byte[] domain, byte[] username) throws RemoteException, InvalidDomainException, InvalidUsernameException {
 		if(domain==null) throw new InvalidDomainException();
 		if(username==null) throw new InvalidUsernameException();
 

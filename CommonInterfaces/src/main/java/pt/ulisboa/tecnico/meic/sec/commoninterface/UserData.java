@@ -13,11 +13,10 @@ public class UserData implements Serializable {
     public byte[] password;
     public byte[] rid;
 	public byte[] wts;
-	public byte[] hashCommunicationData;		// additional (from communication) data to check signature
+	public byte[] hashCommunicationData;		// additional data to check signature
 
     public UserData(byte[] hashDomainUser, byte[] password, byte[] signature,
 					byte[] rid, byte[] wts, byte[] hashCommunicationData) {
-//		super();
 		this.signature = signature;
 		this.hashDomainUser = hashDomainUser;
 		this.password = password;
@@ -27,7 +26,6 @@ public class UserData implements Serializable {
 	}
 
 	public UserData(byte[] hashDomainUser, byte[] password, byte[] wts) {
-	//	super();
 		this.signature = this.rid = this.hashCommunicationData = null;
 		this.hashDomainUser = hashDomainUser;
 		this.password = password;

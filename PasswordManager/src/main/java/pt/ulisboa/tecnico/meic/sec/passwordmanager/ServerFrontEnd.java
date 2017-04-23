@@ -56,12 +56,13 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
 
         UserData dataTransfer = decipheredMessage.userData;
         dataTransfer.hashCommunicationData = decipheredMessage.currentCommunicationData; // save communication data of received message
+        dataTransfer.signature = decipheredMessage.signature;     // save received signature to confirm password in future
+
         byte[] wts = server.put(message.publicKeySender, dataTransfer);
         UserData userDataToSend = new UserData();
         userDataToSend.wts = wts;
         Message insecureMessage = new Message(challenge, userDataToSend);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
-
         //TODO Return secure message com o WTS
         //return secureMessage;
     }
@@ -129,5 +130,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
             throw new InvalidChallengeException();
         }
     }
+
+
 }
 

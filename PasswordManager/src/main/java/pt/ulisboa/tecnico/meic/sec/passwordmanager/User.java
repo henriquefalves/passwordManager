@@ -36,8 +36,7 @@ public class User implements Serializable {
 
     public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
-
-        if (mapPasswords.containsKey(key)) {                    // unknown domain
+        if (mapPasswords.containsKey(key)) {
             LinkedList<UserData> history = mapPasswords.get(key);
             int lastWts = Crypto.byteArrayToInt(history.getLast().wts);
             Integer wts = Crypto.byteArrayToInt(dataTransfer.wts);

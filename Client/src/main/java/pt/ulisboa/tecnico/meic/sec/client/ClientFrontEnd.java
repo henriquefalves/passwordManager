@@ -40,8 +40,6 @@ public class ClientFrontEnd implements ServerAPI {
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Register registerLink = new CommunicationLink.Register();
         for (int i = 0; i < listReplicas.size(); i++) {
-
-           // Message insecureMessage = new Message(null, null,  null, null, null, null);
             registerLink.initializeRegister(listReplicas.get(i), count);
             Thread thread = new Thread(registerLink);
             thread.start();
@@ -51,6 +49,7 @@ public class ClientFrontEnd implements ServerAPI {
                 System.out.println("register: success");
             }
             else {
+                System.out.println("register: TIMEOUT");
                 // TODO
             }
         } catch (InterruptedException e) {
@@ -65,7 +64,6 @@ public class ClientFrontEnd implements ServerAPI {
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Put putLink = new CommunicationLink.Put();
         for (int i = 0; i < listReplicas.size(); i++) {
-//            Message insecureMessage = new Message(null, hashKey, password, Crypto.intToByteArray(wts), null, null);
             UserData userDataToSend = new UserData(hashDomainUsername, password, Crypto.intToByteArray(wts));
             Message insecureMessage = new Message(null, userDataToSend);
             putLink.initializePut(listReplicas.get(i), insecureMessage, wts, count);
@@ -79,6 +77,7 @@ public class ClientFrontEnd implements ServerAPI {
                 System.out.println("put: success");
             }
             else {
+                System.out.println("put: TIMEOUT");
                 // TODO
             }
         } catch (InterruptedException e) {
@@ -92,12 +91,12 @@ public class ClientFrontEnd implements ServerAPI {
         //Regular Register Read Version (1,N)
         rid++;
 
+        readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
 
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Get getLink = new CommunicationLink.Get();
         for (int i = 0; i < listReplicas.size(); i++) {
 
-//            Message insecureMessage = new Message(null, hashKey, null, null,Crypto.intToByteArray(rid) , null);
             UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid));
             Message insecureMessage = new Message(null, userDataToSend);
             getLink.initializeGet(listReplicas.get(i), insecureMessage, rid, count, readList);
@@ -106,7 +105,6 @@ public class ClientFrontEnd implements ServerAPI {
         }
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
-                System.out.println("get: success");
                 // transform to ArrayList
                 ArrayList<Message> resultList = new ArrayList<>();
 
@@ -118,9 +116,11 @@ public class ClientFrontEnd implements ServerAPI {
                 }
 
                 byte[] highestValue = getHighest(resultList);
+                System.out.println("get: success");
                 return highestValue;
             }
             else {
+                System.out.println("get: TIMEOUT");
                 // TODO
             }
         } catch (InterruptedException e) {
@@ -131,22 +131,17 @@ public class ClientFrontEnd implements ServerAPI {
         return null;
     }
 
-    private boolean verifyPasswordValidity(UserData userData) {
-        //TODO
-        return false;
-    }
 
     private byte[] getHighest(ArrayList<Message> listOfMessages) {
-//        byte[] highestPassword = listOfMessages.get(0).userData.password;
-//        byte[] highestTimestamp = listOfMessages.get(0).userData.rid;
-//        for (Message m : listOfMessages) {
-//            if (Crypto.byteArrayToInt(m.userData.rid) > Crypto.byteArrayToInt(highestTimestamp)) {
-//                highestTimestamp = m.userData.rid;
-//                highestPassword = m.userData.password;
-//            }
-//        }
-//        return highestPassword;
-        return listOfMessages.get(0).userData.password;
+        byte[] highestPassword = listOfMessages.get(0).userData.password;
+        byte[] highestTimestamp = listOfMessages.get(0).userData.wts;
+        for (Message m : listOfMessages) {
+            if (Crypto.byteArrayToInt(m.userData.wts) > Crypto.byteArrayToInt(highestTimestamp)) {
+                highestTimestamp = m.userData.wts;
+                highestPassword = m.userData.password;
+            }
+        }
+        return highestPassword;
     }
 
 //
