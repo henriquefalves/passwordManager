@@ -90,17 +90,12 @@ public class CommunicationLink {
                 byte[] challenge = CommunicationLink.getChallenge(this.server);
                 message.challenge = challenge;
                 Message secureMessage = Crypto.getSecureMessage(message, sessionKey, myPrivateKey, myPublicKey, serverPublicKey);
-                this.server.put(secureMessage);
-
-                this.countDown.countDown();
-
-//                Message response = this.server.put(secureMessage);
-//                Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
-//                CommunicationLink.checkChallenge(challenge, result.challenge);
-//                // TODO check password signature
-//                if (Crypto.byteArrayToInt(result.wts) == expectedWts){
-//                    this.countDown.countDown();
-//                }
+                Message response = this.server.put(secureMessage);
+                Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
+                CommunicationLink.checkChallenge(challenge, result.challenge);
+                if (Crypto.byteArrayToInt(result.userData.wts) == expectedWts){
+                    this.countDown.countDown();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 // TODO listener to catch exceptions in main thread

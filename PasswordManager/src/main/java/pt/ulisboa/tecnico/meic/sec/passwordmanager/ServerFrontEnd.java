@@ -46,7 +46,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         server.register(message.publicKeySender);
     }
 
-    public void put(Message message) throws RemoteException {
+    public Message put(Message message) throws RemoteException {
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
@@ -63,8 +63,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         userDataToSend.wts = wts;
         Message insecureMessage = new Message(challenge, userDataToSend);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
-        //TODO Return secure message com o WTS
-        //return secureMessage;
+        return secureMessage;
     }
 
     public Message get(Message message) throws RemoteException {

@@ -11,7 +11,7 @@ public interface CommunicationAPI extends Remote{
 
     public void register(Message message) throws RemoteException, DuplicatePublicKeyException, InvalidArgumentsException;
 
-    public void put(Message message) throws RemoteException;
+    public Message put(Message message) throws RemoteException;
 
     public Message get(Message message) throws RemoteException, InvalidArgumentsException;
 
