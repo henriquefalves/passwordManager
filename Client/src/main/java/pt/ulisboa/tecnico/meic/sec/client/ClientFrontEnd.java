@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
+import javafx.util.Pair;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.*;
 
 import java.net.MalformedURLException;
@@ -15,6 +16,7 @@ public class ClientFrontEnd implements ServerAPI {
     public static final int TIMEOUT = 5;
     private byte[] sessionKey;
     private int rid;
+    private boolean reading;
 
     //TODO: CHANGE ALL INVOCATIONS ON SERVER (ONLY CALLING 1 RIGHT NOW)
 
@@ -61,12 +63,13 @@ public class ClientFrontEnd implements ServerAPI {
 
     public void put(Key publicKey, byte[] hashDomainUsername, byte[] password) throws RemoteException {
         wts++;
+        rid++;
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Put putLink = new CommunicationLink.Put();
         for (int i = 0; i < listReplicas.size(); i++) {
-            UserData userDataToSend = new UserData(hashDomainUsername, password, Crypto.intToByteArray(wts));
+            UserData userDataToSend = new UserData(hashDomainUsername, password, Crypto.intToByteArray(wts), Crypto.intToByteArray(rid));
             Message insecureMessage = new Message(null, userDataToSend);
-            putLink.initializePut(listReplicas.get(i), insecureMessage, wts, count);
+            putLink.initializePut(listReplicas.get(i), insecureMessage, rid, count);
 
             Thread thread = new Thread(putLink);
             thread.start();
@@ -74,6 +77,9 @@ public class ClientFrontEnd implements ServerAPI {
 
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
+                if (reading) {
+                    reading = false;
+                }
                 System.out.println("put: success");
             }
             else {
@@ -84,15 +90,13 @@ public class ClientFrontEnd implements ServerAPI {
             e.printStackTrace();
             // TODO
         }
-
     }
 
     public byte[] get(Key publicKey, byte[] hashDomainUsername) throws RemoteException {
         //Regular Register Read Version (1,N)
         rid++;
-
+        reading = true;
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
-
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         CommunicationLink.Get getLink = new CommunicationLink.Get();
         for (int i = 0; i < listReplicas.size(); i++) {
@@ -115,8 +119,14 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                 }
 
-                byte[] highestValue = getHighest(resultList);
+                byte[] highestTimestamp = getHighest(resultList).getKey();
+                byte[] highestValue = getHighest(resultList).getValue();
                 System.out.println("get: success");
+
+                rid--;
+                wts--;
+                put(publicKey, hashDomainUsername, highestValue);
+
                 return highestValue;
             }
             else {
@@ -131,8 +141,7 @@ public class ClientFrontEnd implements ServerAPI {
         return null;
     }
 
-
-    private byte[] getHighest(ArrayList<Message> listOfMessages) {
+    private Pair<byte[], byte[]> getHighest(ArrayList<Message> listOfMessages) {
         byte[] highestPassword = listOfMessages.get(0).userData.password;
         byte[] highestTimestamp = listOfMessages.get(0).userData.wts;
         for (Message m : listOfMessages) {
@@ -141,7 +150,7 @@ public class ClientFrontEnd implements ServerAPI {
                 highestPassword = m.userData.password;
             }
         }
-        return highestPassword;
+        return new Pair<byte[], byte[]>(highestTimestamp, highestPassword);
     }
 
 //

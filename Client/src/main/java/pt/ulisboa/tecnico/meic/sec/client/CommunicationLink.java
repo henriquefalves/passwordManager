@@ -73,13 +73,13 @@ public class CommunicationLink {
     public static class Put implements Runnable{
         private CommunicationAPI server;
         Message message;
-        private int expectedWts;
+        private int expectedRid;
         CountDownLatch countDown;
 
-        public void initializePut(CommunicationAPI server, Message m, int expectedWts, CountDownLatch count){
+        public void initializePut(CommunicationAPI server, Message m, int expectedRid, CountDownLatch count){
             this.server = server;
             this.message = m;
-            this.expectedWts = expectedWts;
+            this.expectedRid = expectedRid;
             this.countDown = count;
         }
 
@@ -93,7 +93,7 @@ public class CommunicationLink {
                 Message response = this.server.put(secureMessage);
                 Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
                 CommunicationLink.checkChallenge(challenge, result.challenge);
-                if (Crypto.byteArrayToInt(result.userData.wts) == expectedWts){
+                if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){
                     this.countDown.countDown();
                 }
             } catch (Exception e) {

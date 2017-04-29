@@ -32,6 +32,14 @@ public class UserData implements Serializable {
 		this.wts = wts;
 	}
 
+	public UserData(byte[] hashDomainUser, byte[] password, byte[] wts, byte[] rid) {
+		this.signature = this.rid = this.hashCommunicationData = null;
+		this.hashDomainUser = hashDomainUser;
+		this.password = password;
+		this.wts = wts;
+		this.rid = rid;
+	}
+
 	public UserData(byte[] hashDomainUser, byte[] rid) {
 		this.signature = this.hashCommunicationData = null;
 		this.hashDomainUser = hashDomainUser;
