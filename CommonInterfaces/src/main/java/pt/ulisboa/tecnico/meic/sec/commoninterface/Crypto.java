@@ -84,6 +84,10 @@ public class Crypto {
             cipheredUserData.rid = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.rid);
             argsToSign.add(insecureUserData.rid);
         }
+        if (insecureUserData.ridToCheckSign != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredUserData.ridToCheckSign = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.ridToCheckSign);
+            argsToSign.add(insecureUserData.ridToCheckSign);
+        }
         if (insecureUserData.wts != null) {        // if Message in plain text contains this element, it will be ciphered and signed
             cipheredUserData.wts = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.wts);
             argsToSign.add(insecureUserData.wts);
@@ -221,6 +225,11 @@ public class Crypto {
             byte[] decipheredRid = Crypto.decipherSymmetric(secretKeyToDecipher, randomIv, cipheredUserData.rid);
             argsToCheckSign.add(decipheredRid);
             decipheredUserData.rid = decipheredRid;
+        }
+        if (cipheredUserData.ridToCheckSign != null) {
+            byte[] decipheredRidToCheckSign = Crypto.decipherSymmetric(secretKeyToDecipher, randomIv, cipheredUserData.ridToCheckSign);
+            argsToCheckSign.add(decipheredRidToCheckSign);
+            decipheredUserData.ridToCheckSign = decipheredRidToCheckSign;
         }
         if (cipheredUserData.wts != null) {
             byte[] decipheredWts = Crypto.decipherSymmetric(secretKeyToDecipher, randomIv, cipheredUserData.wts);

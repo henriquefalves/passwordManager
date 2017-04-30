@@ -150,6 +150,7 @@ public class CommunicationLink {
         dataToCheckSign.add(userData.hashCommunicationData);
         dataToCheckSign.add(userData.hashDomainUser);
         dataToCheckSign.add(userData.password);
+        dataToCheckSign.add(userData.ridToCheckSign);
         dataToCheckSign.add(userData.wts);
 
         byte[][] arrayToCheckSign = dataToCheckSign.toArray(new byte[0][]);

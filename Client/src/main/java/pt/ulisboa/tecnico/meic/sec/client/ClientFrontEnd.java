@@ -124,7 +124,8 @@ public class ClientFrontEnd implements ServerAPI {
                 System.out.println("get: success");
 
                 rid--;
-                wts--;
+                // wts--;
+                wts = Crypto.byteArrayToInt(highestTimestamp) - 1;
                 put(publicKey, hashDomainUsername, highestValue);
 
                 return highestValue;
