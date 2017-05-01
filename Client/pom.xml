@@ -43,6 +43,7 @@
                     <killAfter>-1</killAfter>
                     <mainClass>${mainclass}</mainClass>
                     <arguments>
+                        <argument>1</argument>
                         <argument>localhost</argument>
                         <argument>password-manager</argument>
                         <argument>8006</argument>

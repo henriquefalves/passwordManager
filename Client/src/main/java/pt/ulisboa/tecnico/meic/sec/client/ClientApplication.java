@@ -33,12 +33,13 @@ public class ClientApplication {
 
 		try {
 			ArrayList<String> serverNames = new ArrayList<>();
-			String address = args[0];
-			String objectName = args[1];
-			for(int i = 2; i < args.length; i++) {
+			String rank = args[0];
+			String address = args[1];
+			String objectName = args[2];
+			for(int i = 3; i < args.length; i++) {
 				serverNames.add("rmi://"+address+":"+args[i]+"/"+objectName);
 			}
-			Client client = new Client(serverNames);
+			Client client = new Client(rank, serverNames);
 
 			KeyStore ks = null;
 			try {

@@ -15,19 +15,20 @@ public class ClientFrontEnd implements ServerAPI {
     public static final int TIMEOUT = 5;
     private byte[] sessionKey;
     private int rid;
-    private byte[] rank = Crypto.intToByteArray(12345);     // TODO argument from terminal
+    private byte[] rank;
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
     private int wts;
     private List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
 
 
-    public ClientFrontEnd(ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
+    public ClientFrontEnd(String rank, ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
         for (String i : remoteServerNames) {
             CommunicationAPI lookup = (CommunicationAPI) Naming.lookup(i);
             listReplicas.add(lookup);
         }
         rid = 0;
         wts = 0;
+        this.rank = Crypto.intToByteArray(Integer.parseInt(rank));
     }
 
     public void init(Key myPrivateKey, Key myPublicKey, Key serverPublicKey) {
