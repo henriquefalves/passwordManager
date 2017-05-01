@@ -156,6 +156,7 @@ public class CommunicationLink {
         dataToCheckSign.add(userData.password);
         dataToCheckSign.add(userData.ridToCheckSign);
         dataToCheckSign.add(userData.wts);
+        dataToCheckSign.add(userData.rank);
 
         byte[][] arrayToCheckSign = dataToCheckSign.toArray(new byte[0][]);
         byte[] dataToCheckSignature = Crypto.concatenateData(arrayToCheckSign);

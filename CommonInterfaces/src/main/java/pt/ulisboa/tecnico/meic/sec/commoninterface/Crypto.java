@@ -92,12 +92,14 @@ public class Crypto {
             cipheredUserData.wts = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.wts);
             argsToSign.add(insecureUserData.wts);
         }
+        if (insecureUserData.rank != null) {        // if Message in plain text contains this element, it will be ciphered and signed
+            cipheredUserData.rank = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.rank);
+            argsToSign.add(insecureUserData.rank);
+        }
         if (insecureUserData.hashCommunicationData != null) {        // if Message in plain text contains this element, it will be ciphered and signed
             cipheredUserData.hashCommunicationData = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.hashCommunicationData);
             argsToSign.add(insecureUserData.hashCommunicationData);
         }
-        // TODO cipher rank
-        cipheredUserData.rank = insecureUserData.rank;
         return cipheredUserData;
     }
 
@@ -238,13 +240,16 @@ public class Crypto {
             argsToCheckSign.add(decipheredWts);
             decipheredUserData.wts = decipheredWts;
         }
+        if (cipheredUserData.rank != null) {
+            byte[] decipheredRank = Crypto.decipherSymmetric(secretKeyToDecipher, randomIv, cipheredUserData.rank);
+            argsToCheckSign.add(decipheredRank);
+            decipheredUserData.rank = decipheredRank;
+        }
         if (cipheredUserData.hashCommunicationData != null) {
             byte[] decipheredHashCommunicationData = Crypto.decipherSymmetric(secretKeyToDecipher, randomIv, cipheredUserData.hashCommunicationData);
             argsToCheckSign.add(decipheredHashCommunicationData);
             decipheredUserData.hashCommunicationData = decipheredHashCommunicationData;
         }
-        // TODO decipher rank
-        decipheredUserData.rank = cipheredUserData.rank;
         return decipheredUserData;
     }
 

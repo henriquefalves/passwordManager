@@ -29,12 +29,6 @@ public class UserData implements Serializable {
 		this.hashCommunicationData = hashCommunicationData;
 	}
 
-//	public UserData(byte[] hashDomainUser, byte[] password, byte[] wts) {
-//		this.signature = this.rid = this.hashCommunicationData = null;
-//		this.hashDomainUser = hashDomainUser;
-//		this.password = password;
-//		this.wts = wts;
-//	}
 
 	public UserData(byte[] hashDomainUser, byte[] password, byte[] wts, byte[] rid, byte[] rank) {
 		this.signature = this.rid = this.hashCommunicationData = null;
@@ -46,13 +40,13 @@ public class UserData implements Serializable {
 		this.ridToCheckSign = null;
 	}
 
-	public UserData(byte[] hashDomainUser, byte[] rid, byte[] rank) {
+	public UserData(byte[] hashDomainUser, byte[] rid) {
 		this.signature = this.hashCommunicationData = null;
 		this.hashDomainUser = hashDomainUser;
 		this.password = null;
 		this.wts = null;
 		this.rid = rid;
-		this.rank = rank;
+		this.rank = null;
 		this.ridToCheckSign = null;
 	}
 

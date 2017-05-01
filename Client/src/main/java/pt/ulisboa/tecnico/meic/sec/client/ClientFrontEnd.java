@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
-import javafx.util.Pair;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.*;
 
 import java.net.MalformedURLException;
@@ -16,7 +15,7 @@ public class ClientFrontEnd implements ServerAPI {
     public static final int TIMEOUT = 5;
     private byte[] sessionKey;
     private int rid;
-    private byte[] rank = Crypto.intToByteArray(12345);     // TODO argument
+    private byte[] rank = Crypto.intToByteArray(12345);     // TODO argument from terminal
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
     private int wts;
     private List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
@@ -62,18 +61,9 @@ public class ClientFrontEnd implements ServerAPI {
     public void put(Key publicKey, byte[] hashDomainUsername, byte[] password) throws RemoteException {
         rid++;
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
+
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
-
-        CommunicationLink.Read readLink = new CommunicationLink.Read();
-        for (int i = 0; i < listReplicas.size(); i++) {
-            UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid), rank);
-            Message insecureMessage = new Message(null, userDataToSend);
-            readLink.initializeRead(listReplicas.get(i), insecureMessage, rid, count, readList);
-
-            Thread thread = new Thread(readLink);
-            thread.start();
-        }
-
+        readBroadcast(count, hashDomainUsername);
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
                 System.out.println("put-read-step(1): success");
@@ -89,16 +79,8 @@ public class ClientFrontEnd implements ServerAPI {
                 wts = Crypto.byteArrayToInt(highest.highestTimestamp) + 1;
 
                 count = new CountDownLatch(listReplicas.size()/2 + 1);
-                CommunicationLink.Write writeLink = new CommunicationLink.Write();
-                for (int i = 0; i < listReplicas.size(); i++) {
-                    UserData userDataToSend = new UserData(hashDomainUsername, password,
-                                                Crypto.intToByteArray(wts), Crypto.intToByteArray(rid), rank);
-                    Message insecureMessage = new Message(null, userDataToSend);
-                    writeLink.initializeWrite(listReplicas.get(i), insecureMessage, rid, count);
-
-                    Thread thread = new Thread(writeLink);
-                    thread.start();
-                }
+                writeBroadcast(count, hashDomainUsername, password,
+                                    Crypto.intToByteArray(wts), Crypto.intToByteArray(rid), rank);
 
                 try {
                     if(count.await(TIMEOUT, TimeUnit.SECONDS)){
@@ -127,17 +109,9 @@ public class ClientFrontEnd implements ServerAPI {
     public byte[] get(Key publicKey, byte[] hashDomainUsername) throws RemoteException {
         rid++;
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
+
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
-
-        CommunicationLink.Read getLink = new CommunicationLink.Read();
-        for (int i = 0; i < listReplicas.size(); i++) {
-
-            UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid), rank);
-            Message insecureMessage = new Message(null, userDataToSend);
-            getLink.initializeRead(listReplicas.get(i), insecureMessage, rid, count, readList);
-            Thread thread = new Thread(getLink);
-            thread.start();
-        }
+        readBroadcast(count, hashDomainUsername);
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
                 System.out.println("get-read-step(1): success");
@@ -154,16 +128,8 @@ public class ClientFrontEnd implements ServerAPI {
                 HighestInfo highest = getHighest(resultList);
 
                 count = new CountDownLatch(listReplicas.size()/2 + 1);
-                CommunicationLink.Write writeLink = new CommunicationLink.Write();
-                for (int i = 0; i < listReplicas.size(); i++) {
-                    UserData userDataToSend = new UserData(hashDomainUsername, highest.highestPassword,
-                                            highest.highestTimestamp, Crypto.intToByteArray(rid), highest.highestRank);
-                    Message insecureMessage = new Message(null, userDataToSend);
-                    writeLink.initializeWrite(listReplicas.get(i), insecureMessage, rid, count);
-
-                    Thread thread = new Thread(writeLink);
-                    thread.start();
-                }
+                writeBroadcast(count, hashDomainUsername, highest.highestPassword, highest.highestTimestamp,
+                        Crypto.intToByteArray(rid), highest.highestRank);
 
                 try {
                     if(count.await(TIMEOUT, TimeUnit.SECONDS)){
@@ -189,6 +155,30 @@ public class ClientFrontEnd implements ServerAPI {
         }
 
         return null;
+    }
+
+    private void readBroadcast(CountDownLatch count, byte[] hashDomainUsername){
+        CommunicationLink.Read readLink = new CommunicationLink.Read();
+        for (int i = 0; i < listReplicas.size(); i++) {
+            UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid));
+            Message insecureMessage = new Message(null, userDataToSend);
+            readLink.initializeRead(listReplicas.get(i), insecureMessage, rid, count, readList);
+
+            Thread thread = new Thread(readLink);
+            thread.start();
+        }
+    }
+
+    private void writeBroadcast(CountDownLatch count, byte[] hashDomainUsername, byte[] password, byte[] wts, byte[] rid, byte[] rank){
+        CommunicationLink.Write writeLink = new CommunicationLink.Write();
+        for (int i = 0; i < listReplicas.size(); i++) {
+            UserData userDataToSend = new UserData(hashDomainUsername, password, wts, rid, rank);
+            Message insecureMessage = new Message(null, userDataToSend);
+            writeLink.initializeWrite(listReplicas.get(i), insecureMessage, Crypto.byteArrayToInt(rid), count);
+
+            Thread thread = new Thread(writeLink);
+            thread.start();
+        }
     }
 
     private HighestInfo getHighest(ArrayList<Message> listOfMessages) {

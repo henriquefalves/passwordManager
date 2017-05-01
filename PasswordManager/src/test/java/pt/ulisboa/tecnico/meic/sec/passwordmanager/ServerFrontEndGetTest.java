@@ -28,7 +28,7 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
 
     final UserData userDataToPut = new UserData(HASH_DOMAIN_USERNAME, PASSWORD, wts, rid, rank);
 
-    final UserData userDataToGet = new UserData(HASH_DOMAIN_USERNAME, rid, rank);
+    final UserData userDataToGet = new UserData(HASH_DOMAIN_USERNAME, rid);
 
 
     @Test
