@@ -170,6 +170,57 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
 
 
     @Test(expected = CorruptedMessageException.class)
+    public void getWrongSignatureTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        Message secureMessageWrong = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.signature = secureMessageWrong.signature;
+        serverFE.get(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void getNullSignatureTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.signature = null;
+        serverFE.get(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void getWrongSessionKeyTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        byte[] badSessionKey = new byte[256];
+        secureMessage.secretKey = badSessionKey;
+        serverFE.get(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void getNullSessionKeyTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.secretKey = null;
+        serverFE.get(secureMessage);
+    }
+
+
+    @Test(expected = CorruptedMessageException.class)
+    public void getNullUserDataTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.userData = null;
+        serverFE.get(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void getUserDataWrongSignatureTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.userData.signature = "wrongData".getBytes();
+        serverFE.get(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
     public void getWrongHashDomainUsernameNotBlockSizeTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, userDataToGet);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
@@ -233,51 +284,56 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
         serverFE.get(secureMessage);
     }
 
-
     @Test(expected = CorruptedMessageException.class)
-    public void getWrongSignatureTest() throws RemoteException {
+    public void getUserDataWrongRidTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, userDataToGet);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-        Message secureMessageWrong = Crypto.getSecureMessage(insecureMessage, this.sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.signature = secureMessageWrong.signature;
+        secureMessage.userData.rid = "wrongData".getBytes();
         serverFE.get(secureMessage);
     }
 
     @Test(expected = CorruptedMessageException.class)
-    public void getNullSignatureTest() throws RemoteException {
+    public void getUserDataNullRidTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, userDataToGet);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.signature = null;
+        secureMessage.userData.rid = null;
         serverFE.get(secureMessage);
     }
 
     @Test(expected = CorruptedMessageException.class)
-    public void getWrongSessionKeyTest() throws RemoteException {
+    public void getUserDataWrongRidToCheckSignTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, userDataToGet);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-        byte[] badSessionKey = new byte[256];
-        secureMessage.secretKey = badSessionKey;
+        secureMessage.userData.ridToCheckSign = "wrongData".getBytes();
         serverFE.get(secureMessage);
     }
 
     @Test(expected = CorruptedMessageException.class)
-    public void getNullSessionKeyTest() throws RemoteException {
+    public void getUserDataWrongWtsTest() throws RemoteException {
         Message insecureMessage = new Message(challenge, userDataToGet);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-        secureMessage.secretKey = null;
+        secureMessage.userData.wts = "wrongData".getBytes();
+        serverFE.get(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void getUserDataWrongRankTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.userData.rank = "wrongData".getBytes();
+        serverFE.get(secureMessage);
+    }
+
+    @Test(expected = CorruptedMessageException.class)
+    public void getUserDataWrongHashCommunDataTest() throws RemoteException {
+        Message insecureMessage = new Message(challenge, userDataToGet);
+        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
+        secureMessage.userData.hashCommunicationData = "wrongData".getBytes();
         serverFE.get(secureMessage);
     }
 
 
-    // TODO fix Crypto to pass test
-//    @Test(expected = CorruptedMessageException.class)
-//    public void getSwapAttributesTest() throws RemoteException {
-//        Message insecureMessage = new Message(challenge, userDataToGet);
-//        Message secureMessage = Crypto.getSecureMessage(insecureMessage, sessionKey, clientPrivate, clientPublic, serverPublic);
-//        byte[] temp = secureMessage.userData.hashDomainUser;
-//        secureMessage.userData.hashDomainUser = secureMessage.userData.password;
-//        secureMessage.userData.password = temp;
-//        serverFE.get(secureMessage);
-//    }
+
+
 
 }
