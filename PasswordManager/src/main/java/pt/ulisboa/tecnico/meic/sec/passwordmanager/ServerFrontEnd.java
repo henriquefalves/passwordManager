@@ -59,7 +59,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         dataTransfer.signature = decipheredMessage.signature;     // save received signature to confirm password in future
         dataTransfer.ridToCheckSign = dataTransfer.rid;
 
-        byte[] wts = server.put(message.publicKeySender, dataTransfer);
+        server.put(message.publicKeySender, dataTransfer);
         byte[] rid = dataTransfer.rid;
         UserData userDataToSend = new UserData();
         userDataToSend.rid = rid;

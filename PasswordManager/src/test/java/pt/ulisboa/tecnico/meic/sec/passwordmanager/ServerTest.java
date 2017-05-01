@@ -77,9 +77,17 @@ public class ServerTest {
         server.get(key, null);
     }
 
-    @Test(expected = InvalidArgumentsException.class)
+    @Test
     public void GetInexistentHashKey() throws RemoteException {
-        server.get(key, INEXISTENT_HASH_DOMAIN_USERNAME);
+        UserData userData = server.get(key, INEXISTENT_HASH_DOMAIN_USERNAME);
+        assertEquals("Expected null signature", null, userData.signature);
+        assertEquals("Expected null hashDomainUser", null, userData.hashDomainUser);
+        assertEquals("Expected null password", null, userData.password);
+        assertEquals("Expected null rid", null, userData.rid);
+        assertEquals("Expected null ridToCheckSign", null, userData.ridToCheckSign);
+        assertArrayEquals("Expected 0 as wts", Crypto.intToByteArray(0), userData.wts);
+        assertArrayEquals("Expected 0 as rank", Crypto.intToByteArray(0), userData.rank);
+        assertEquals("Expected null hashCommunicationData", null, userData.hashCommunicationData);
     }
 
     @Test

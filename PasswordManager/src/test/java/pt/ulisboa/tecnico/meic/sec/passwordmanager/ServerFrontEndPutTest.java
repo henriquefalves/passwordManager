@@ -19,7 +19,8 @@ public class ServerFrontEndPutTest extends ServerFrontEndTest {
 
     final byte[] wts = Crypto.intToByteArray(12);
     final byte[] rid = Crypto.intToByteArray(13);
-    final UserData userDataToPut = new UserData(HASH_DOMAIN_USERNAME, PASSWORD, wts, rid);
+    final byte[] rank = Crypto.intToByteArray(1);
+    final UserData userDataToPut = new UserData(HASH_DOMAIN_USERNAME, PASSWORD, wts, rid, rank);
 
     @Test
     public void putSuccessTest() throws RemoteException {

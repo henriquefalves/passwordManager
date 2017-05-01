@@ -96,6 +96,8 @@ public class Crypto {
             cipheredUserData.hashCommunicationData = Crypto.cipherSymmetric(secretKey, randomIv, insecureUserData.hashCommunicationData);
             argsToSign.add(insecureUserData.hashCommunicationData);
         }
+        // TODO cipher rank
+        cipheredUserData.rank = insecureUserData.rank;
         return cipheredUserData;
     }
 
@@ -241,6 +243,8 @@ public class Crypto {
             argsToCheckSign.add(decipheredHashCommunicationData);
             decipheredUserData.hashCommunicationData = decipheredHashCommunicationData;
         }
+        // TODO decipher rank
+        decipheredUserData.rank = cipheredUserData.rank;
         return decipheredUserData;
     }
 

@@ -70,13 +70,13 @@ public class CommunicationLink {
 
 
 
-    public static class Put implements Runnable{
+    public static class Write implements Runnable{
         private CommunicationAPI server;
         Message message;
         private int expectedRid;
         CountDownLatch countDown;
 
-        public void initializePut(CommunicationAPI server, Message m, int expectedRid, CountDownLatch count){
+        public void initializeWrite(CommunicationAPI server, Message m, int expectedRid, CountDownLatch count){
             this.server = server;
             this.message = m;
             this.expectedRid = expectedRid;
@@ -105,14 +105,14 @@ public class CommunicationLink {
 
 
 
-    public static class Get implements Runnable{
+    public static class Read implements Runnable{
         private CommunicationAPI server;
         private Message message;
         private CountDownLatch countDown;
         private List<Message> sincronizedList;
         private int expectedRid;
 
-        public void initializeGet(CommunicationAPI server, Message m, int rid, CountDownLatch count, List<Message> sincronizedList){
+        public void initializeRead(CommunicationAPI server, Message m, int rid, CountDownLatch count, List<Message> sincronizedList){
             this.server = server;
             this.message = m;
             this.expectedRid = rid;
@@ -146,6 +146,10 @@ public class CommunicationLink {
     }
 
     private static boolean validatePassword(UserData userData) {
+        if(userData.password == null && userData.signature == null && Arrays.equals(userData.wts, Crypto.intToByteArray(0))){
+            System.out.println("validatePassword: empty password received (Valid)");
+            return true;
+        }
         ArrayList<byte[]> dataToCheckSign = new ArrayList<>();
         dataToCheckSign.add(userData.hashCommunicationData);
         dataToCheckSign.add(userData.hashDomainUser);

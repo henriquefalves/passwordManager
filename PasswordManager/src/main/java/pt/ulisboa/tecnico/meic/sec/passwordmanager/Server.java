@@ -65,7 +65,7 @@ public class Server implements Serializable {
         throw new InvalidArgumentsException();
     }
 
-    public byte[] put(Key publicKeySender, UserData transferData) {
+    public void put(Key publicKeySender, UserData transferData) {
 
         if (publicKeySender == null || transferData.hashDomainUser == null) {
             throw new InvalidArgumentsException();
@@ -73,7 +73,7 @@ public class Server implements Serializable {
         if (users.containsKey(publicKeySender)) {
 
             users.get(publicKeySender).updateInfo(transferData.hashDomainUser, transferData);
-            return transferData.wts;
+            return;
 
         }
         throw new InvalidArgumentsException();

@@ -24,10 +24,11 @@ public class ServerFrontEndGetTest extends ServerFrontEndTest {
 
     final byte[] wts = Crypto.intToByteArray(12);
     final byte[] rid = Crypto.intToByteArray(15);
+    final byte[] rank = Crypto.intToByteArray(1);
 
-    final UserData userDataToPut = new UserData(HASH_DOMAIN_USERNAME, PASSWORD, wts, rid);
+    final UserData userDataToPut = new UserData(HASH_DOMAIN_USERNAME, PASSWORD, wts, rid, rank);
 
-    final UserData userDataToGet = new UserData(HASH_DOMAIN_USERNAME, rid);
+    final UserData userDataToGet = new UserData(HASH_DOMAIN_USERNAME, rid, rank);
 
 
     @Test
