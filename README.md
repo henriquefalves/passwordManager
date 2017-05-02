@@ -16,7 +16,7 @@ Made when runnin on local machine
 #### Client
 IPServer=localhost
 ServerObjectName=password-manager
-`mvn exec:java -Dexec.args="<IP-SERVER> <ServerObjectName> <port-1> <port-2> <port-3>"`
+`mvn exec:java -Dexec.args="<UserRank> <IP-SERVER> <ServerObjectName> <port-1> <port-2> <port-3>"`
 
 #### Server
 
