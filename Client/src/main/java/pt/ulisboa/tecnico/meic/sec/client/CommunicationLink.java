@@ -66,7 +66,7 @@ public class CommunicationLink {
                 if(!ClientApplication.presentationMode){
                     e.printStackTrace();
                 }
-                this.countDown.countDown();
+                 return;
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -139,8 +139,7 @@ public class CommunicationLink {
                 CommunicationLink.checkChallenge(challenge, result.challenge);
 
                 if(!validatePassword(result.userData)){
-                    // TODO ??
-                    //HENRIQUE: Penso que deve ser ignorado e continua em frente
+                   //In this case the server is Byzantine
                     return;
                 }
                 if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){

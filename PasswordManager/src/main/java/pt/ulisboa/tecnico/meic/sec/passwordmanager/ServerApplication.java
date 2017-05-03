@@ -13,12 +13,18 @@ import java.util.Scanner;
 
 public class ServerApplication {
 
-    private static final int timeAliveByzantineServer= 5000;
-
+    private static final int timeAliveByzantineServer= 10000;
+    /**
+     * 0 - Nada
+     * 1 - Crash
+     * 2 - Random Writing
+     *
+     */
+    static int BYZANTINE_CODE;
     public static void main(String[] args) {
 
         int registryPort = Integer.parseInt(args[0]);
-        boolean isByzantine =  Boolean.parseBoolean(args[1]);
+        BYZANTINE_CODE =  Integer.parseInt(args[1]);
 
         try {
             KeyPair keyPair = loadKeys("server.jks", "server123", "server", "123456");
@@ -29,7 +35,7 @@ public class ServerApplication {
             Registry reg = LocateRegistry.createRegistry(registryPort);
             reg.rebind("password-manager", passwordManager);
             System.out.println("Server Running on Port:" +registryPort);
-            if(isByzantine) {
+            if(BYZANTINE_CODE==1) {
                 Thread threadKiller = new Thread() {
                     public void run() {
                         try {
@@ -37,7 +43,6 @@ public class ServerApplication {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        System.out.println("Going to Kill mainThread");
                         System.exit(0);
                     }
 

@@ -37,27 +37,6 @@ public class Server implements Serializable {
         User newUser = new User(publicKey);
         users.put(publicKey, newUser);
     }
-//TODO ERASE?
-//    @Deprecated
-//    public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
-//
-//        throw new RuntimeException();
-//
-//    }
-//TODO ERASE?
-//    public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
-//
-//        if (publicKey == null || hashKey == null ) {
-//            {
-//                throw new InvalidArgumentsException();
-//            }
-//        }
-//        if (users.containsKey(publicKey)) {
-//            byte[] password = users.get(publicKey).getPassword(hashKey);
-//            return password;
-//        }
-//        throw new InvalidArgumentsException();
-//    }
 
     public UserData get(Key publicKey, byte[] hashKey) throws RemoteException {
         if (publicKey == null || hashKey == null ) {
@@ -87,6 +66,9 @@ public class Server implements Serializable {
         throw new InvalidArgumentsException();
     }
 
+    /**
+     * Used for saving persistent data
+     */
     public void setPort(int registryPort) {
         this.registryPort=registryPort;
         path=path+ registryPort + File.separator;

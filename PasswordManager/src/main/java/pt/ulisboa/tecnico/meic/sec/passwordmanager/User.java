@@ -20,8 +20,7 @@ public class User implements Serializable {
      * Key - [domain,username]
      * Value - History passwords
      */
-    private Hashtable<String, LinkedList<UserData>> mapPasswords;
-    private int registryPort;
+    protected Hashtable<String, LinkedList<UserData>> mapPasswords;
 
     public User(Key publicKey){
         this.publicKey = publicKey;
@@ -54,6 +53,9 @@ public class User implements Serializable {
 
     public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
+        if(ServerApplication.BYZANTINE_CODE==2){
+            dataTransfer.password="invalidaPassword".getBytes();
+        }
         if (mapPasswords.containsKey(key)) {
             LinkedList<UserData> history = mapPasswords.get(key);
             int lastWts = Crypto.byteArrayToInt(history.getLast().wts);

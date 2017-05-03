@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.TimeOutException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.*;
 
 import java.net.MalformedURLException;
@@ -40,7 +41,6 @@ public class ClientFrontEnd implements ServerAPI {
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         for (int i = 0; i < listReplicas.size(); i++) {
             CommunicationLink.Register registerLink = new CommunicationLink.Register(listReplicas.get(i), count);
-            System.out.println("register:"+listReplicas.get(i));
             Thread thread = new Thread(registerLink);
             thread.start();
 
@@ -51,7 +51,7 @@ public class ClientFrontEnd implements ServerAPI {
             }
             else {
                 System.out.println("register: TIMEOUT - Unable to Register.");
-                // TODO
+                throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -91,7 +91,7 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                     else {
                         System.out.println("put-write-step(2): TIMEOUT");
-                        // TODO
+                        throw new TimeOutException();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -100,7 +100,7 @@ public class ClientFrontEnd implements ServerAPI {
             }
             else {
                 System.out.println("put-read-step(1): TIMEOUT");
-                // TODO
+                throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -140,16 +140,16 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                     else {
                         System.out.println("get-write-step(2): TIMEOUT");
-                        // TODO
+                        throw new TimeOutException();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    // TODO
+                    //
                 }
             }
             else {
                 System.out.println("get-read-step(1): TIMEOUT");
-                // TODO
+                throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
