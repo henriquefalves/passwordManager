@@ -21,7 +21,7 @@ public class User implements Serializable {
      * Value - History passwords
      */
     private Hashtable<String, LinkedList<UserData>> mapPasswords;
-    private int counter;
+    private int registryPort;
 
     public User(Key publicKey){
         this.publicKey = publicKey;
@@ -73,8 +73,6 @@ public class User implements Serializable {
             newHistory.add(dataTransfer);
             mapPasswords.put(key, newHistory);
         }
-        saveOperation(dataTransfer);
-        counter++;
     }
 
 
@@ -109,18 +107,5 @@ public class User implements Serializable {
 //    }
 
 
-    public void saveOperation( UserData sign){
-        String folder = System.getProperty("user.dir");
-
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(folder + File.separator + "DataUser"+ counter+".txt" );
-            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-            outputStream.writeObject(sign);
-            outputStream.close();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            System.out.println("Error writing state to file");
-        }
-    }
 
 }

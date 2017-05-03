@@ -28,7 +28,7 @@ public class ClientApplication {
 	/**
 	 * Defines if the program should printStackTrace of Execeptions
 	 */
-	private static boolean presentationmode = false;
+	public static boolean presentationMode = true;
 	public static void main(String[] args) {
 
 		try {
@@ -54,15 +54,15 @@ public class ClientApplication {
 
 		} catch (RemoteException e) {
 			System.out.println(e.getMessage());
-			if(!presentationmode)
+			if(!presentationMode)
 				e.printStackTrace();
 		} catch (NotBoundException e) {
 			System.out.println(e.getMessage());
-			if(!presentationmode)
+			if(!presentationMode)
 				e.printStackTrace();
 		} catch (MalformedURLException e) {
 			System.out.println(e.getMessage());
-			if(!presentationmode)
+			if(!presentationMode)
 				e.printStackTrace();
 		}
 	}
@@ -127,23 +127,23 @@ public class ClientApplication {
 
             } catch (UnrecoverableKeyException uke) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					uke.printStackTrace();
 			} catch (KeyStoreException kse) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					kse.printStackTrace();
 			} catch (NoSuchAlgorithmException nsae) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					nsae.printStackTrace();
 			} catch (CertificateException ce) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					ce.printStackTrace();
 			} catch (IOException e) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					e.printStackTrace();
 			}
         }
@@ -164,18 +164,17 @@ public class ClientApplication {
 				case 1:
 					try {
 						client.register_user();
-						System.out.println("You have been registered");
 					} catch(RemoteException r) {
 						System.out.println("There was an issue with the remote connection");
-						if(!presentationmode)
+						if(!presentationMode)
 							r.printStackTrace();
 					} catch(DuplicatePublicKeyException d) {
 						System.out.println("You are already registered in the password manager");
-						if(!presentationmode)
+						if(!presentationMode)
 							d.printStackTrace();
 					} catch(Exception e) {
 						System.out.println("Unidentified error");
-						if(!presentationmode)
+						if(!presentationMode)
 							e.printStackTrace();
 					}
 					break;
@@ -194,27 +193,27 @@ public class ClientApplication {
 						System.out.println("Password Inserted/Updated Successfully");
 					} catch(RemoteException r) {
 						System.out.println("There was an issue with the remote connection");
-						if(!presentationmode)
+						if(!presentationMode)
 							r.printStackTrace();
 					} catch (InvalidDomainException id) {
 						System.out.print("Invalid Domain");
-						if(!presentationmode)
+						if(!presentationMode)
 							id.printStackTrace();
 					} catch (InvalidUsernameException iu) {
 						System.out.print("Invalid Username");
-						if(!presentationmode)
+						if(!presentationMode)
 							iu.printStackTrace();
 					} catch (InvalidPasswordException ip) {
 						System.out.print("Invalid Password");
-						if(!presentationmode)
+						if(!presentationMode)
 							ip.printStackTrace();
 					} catch (InvalidArgumentsException ia) {
 						System.out.print("Invalid Password and/or Username");
-						if(!presentationmode)
+						if(!presentationMode)
 							ia.printStackTrace();
 					} catch(Exception e) {
 						System.out.println("Unidentified error");
-						if(!presentationmode)
+						if(!presentationMode)
 							e.printStackTrace();
 					}
 					break;
@@ -231,19 +230,19 @@ public class ClientApplication {
 						System.out.println("Your password is " + new String(response, StandardCharsets.UTF_8)+ "\n");
 					} catch(RemoteException r) {
 						System.out.println("There was an issue with the remote connection");
-						if (!presentationmode)
+						if (!presentationMode)
 							r.printStackTrace();
 					} catch (InvalidDomainException id) {
 						System.out.print("Invalid Domain");
-						if(!presentationmode)
+						if(!presentationMode)
 							id.printStackTrace();
 					} catch (InvalidUsernameException iu) {
 						System.out.print("Invalid Username");
-						if(!presentationmode)
+						if(!presentationMode)
 							iu.printStackTrace();
 					} catch(Exception e) {
 						System.out.println("Unidentified error");
-						if(!presentationmode)
+						if(!presentationMode)
 							e.printStackTrace();
 					}
 					break;

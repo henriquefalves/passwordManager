@@ -45,6 +45,8 @@
                     <mainClass>${mainclass}</mainClass>
                     <arguments>
                         <argument>8006</argument>
+                        <argument>false</argument>
+
                     </arguments>
                     <systemProperties>
                     </systemProperties>

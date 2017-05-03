@@ -38,18 +38,19 @@ public class ClientFrontEnd implements ServerAPI {
 
     public void register(Key publicKey) throws RemoteException {
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
-        CommunicationLink.Register registerLink = new CommunicationLink.Register();
         for (int i = 0; i < listReplicas.size(); i++) {
-            registerLink.initializeRegister(listReplicas.get(i), count);
+            CommunicationLink.Register registerLink = new CommunicationLink.Register(listReplicas.get(i), count);
+            System.out.println("register:"+listReplicas.get(i));
             Thread thread = new Thread(registerLink);
             thread.start();
+
         }
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
                 System.out.println("register: success");
             }
             else {
-                System.out.println("register: TIMEOUT");
+                System.out.println("register: TIMEOUT - Unable to Register.");
                 // TODO
             }
         } catch (InterruptedException e) {
@@ -159,11 +160,11 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     private void readBroadcast(CountDownLatch count, byte[] hashDomainUsername){
-        CommunicationLink.Read readLink = new CommunicationLink.Read();
+
         for (int i = 0; i < listReplicas.size(); i++) {
             UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid));
             Message insecureMessage = new Message(null, userDataToSend);
-            readLink.initializeRead(listReplicas.get(i), insecureMessage, rid, count, readList);
+            CommunicationLink.Read readLink = new CommunicationLink.Read(listReplicas.get(i), insecureMessage, rid, count, readList);
 
             Thread thread = new Thread(readLink);
             thread.start();
@@ -171,11 +172,10 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     private void writeBroadcast(CountDownLatch count, byte[] hashDomainUsername, byte[] password, byte[] wts, byte[] rid, byte[] rank){
-        CommunicationLink.Write writeLink = new CommunicationLink.Write();
         for (int i = 0; i < listReplicas.size(); i++) {
             UserData userDataToSend = new UserData(hashDomainUsername, password, wts, rid, rank);
             Message insecureMessage = new Message(null, userDataToSend);
-            writeLink.initializeWrite(listReplicas.get(i), insecureMessage, Crypto.byteArrayToInt(rid), count);
+            CommunicationLink.Write writeLink = new CommunicationLink.Write(listReplicas.get(i), insecureMessage, Crypto.byteArrayToInt(rid), count);
 
             Thread thread = new Thread(writeLink);
             thread.start();

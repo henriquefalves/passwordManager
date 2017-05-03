@@ -13,7 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Server implements Serializable {
 
+    /**
+     * List users in the system
+     */
     private ConcurrentHashMap<Key, User> users;
+    private int registryPort;
+    private int counter;
+    private String path = System.getProperty("user.dir") + File.separator;
 
 
     public Server() throws RemoteException {
@@ -31,14 +37,14 @@ public class Server implements Serializable {
         User newUser = new User(publicKey);
         users.put(publicKey, newUser);
     }
-
+//TODO ERASE?
 //    @Deprecated
 //    public void put(Key publicKey, byte[] hashKey, byte[] password) throws RemoteException {
 //
 //        throw new RuntimeException();
 //
 //    }
-
+//TODO ERASE?
 //    public byte[] get(Key publicKey, byte[] hashKey) throws RemoteException {
 //
 //        if (publicKey == null || hashKey == null ) {
@@ -73,17 +79,53 @@ public class Server implements Serializable {
         if (users.containsKey(publicKeySender)) {
 
             users.get(publicKeySender).updateInfo(transferData.hashDomainUser, transferData);
+            saveOperation(transferData);
+            counter++;
             return;
 
         }
         throw new InvalidArgumentsException();
     }
 
+    public void setPort(int registryPort) {
+        this.registryPort=registryPort;
+        path=path+ registryPort + File.separator;
+        File dir = new File(path);
+        deleteDir(dir);
+        dir.mkdirs();
+    }
 
+    public void saveOperation( UserData sign){
 
+        try {
 
-//       we need this?
+            String filename = path + "DataUser" + counter + ".txt";
+            File file = new File(filename);
 
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+            outputStream.writeObject(sign);
+            outputStream.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            System.out.println("Error writing state to file");
+        }
+    }
+    private  boolean deleteDir(File dir) {
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i=0; i<children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
+    }
+
+//TODO Retirar isto mas falar do problema de caso seja feito o import de
+// ficheiro o UserData não tem qualquer conrrespondência a quem pertence
 //    public void importObjects() {
 //        String folder = System.getProperty("user.dir");
 //        FileInputStream fi = null;
@@ -114,8 +156,7 @@ public class Server implements Serializable {
 //            }
 //        }
 //        System.out.println("LOADED " + counter + " Passwords");
-//
 //    }
-
+//
 
 }

@@ -6,15 +6,14 @@ import pt.ulisboa.tecnico.meic.sec.commoninterface.CommunicationAPI;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Crypto;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.Message;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.UserData;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.CorruptedMessageException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.security.Key;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -47,10 +46,11 @@ public class CommunicationLink {
         private CommunicationAPI server;
         CountDownLatch countDown;
 
-        public void initializeRegister(CommunicationAPI server, CountDownLatch count){
+        public Register(CommunicationAPI server, CountDownLatch count){
             this.server = server;
             this.countDown = count;
         }
+
 
         @Override
         public void run() {
@@ -61,7 +61,14 @@ public class CommunicationLink {
                 Message secureMessage = Crypto.getSecureMessage(message, sessionKey, myPrivateKey, myPublicKey, serverPublicKey);
                 this.server.register(secureMessage);
                 this.countDown.countDown();
-            } catch (Exception e) {
+            }catch (DuplicatePublicKeyException e){
+                System.out.println("Already Registered");
+                if(!ClientApplication.presentationMode){
+                    e.printStackTrace();
+                }
+                this.countDown.countDown();
+            }
+            catch (Exception e) {
                 e.printStackTrace();
                 // TODO listener to catch exceptions in main thread
             }
@@ -75,8 +82,7 @@ public class CommunicationLink {
         Message message;
         private int expectedRid;
         CountDownLatch countDown;
-
-        public void initializeWrite(CommunicationAPI server, Message m, int expectedRid, CountDownLatch count){
+        public Write(CommunicationAPI server, Message m, int expectedRid, CountDownLatch count){
             this.server = server;
             this.message = m;
             this.expectedRid = expectedRid;
@@ -112,13 +118,15 @@ public class CommunicationLink {
         private List<Message> sincronizedList;
         private int expectedRid;
 
-        public void initializeRead(CommunicationAPI server, Message m, int rid, CountDownLatch count, List<Message> sincronizedList){
+        public Read(CommunicationAPI server, Message m, int rid, CountDownLatch count, List<Message> sincronizedList){
             this.server = server;
             this.message = m;
             this.expectedRid = rid;
             this.countDown = count;
             this.sincronizedList = sincronizedList;
         }
+
+
 
         @Override
         public void run() {
@@ -132,11 +140,17 @@ public class CommunicationLink {
 
                 if(!validatePassword(result.userData)){
                     // TODO ??
+                    //HENRIQUE: Penso que deve ser ignorado e continua em frente
                     return;
                 }
                 if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){
                     sincronizedList.add(result);
                     this.countDown.countDown();
+                }
+            }catch (InvalidArgumentsException e){
+                System.out.println("InvalidArgumentsException");
+                if(!ClientApplication.presentationMode){
+                    e.printStackTrace();
                 }
             } catch (Exception e) {
                 e.printStackTrace();

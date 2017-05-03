@@ -2,7 +2,6 @@ package pt.ulisboa.tecnico.meic.sec.client;
 
 import static org.junit.Assert.*;
 
-import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -55,20 +54,20 @@ public class CryptoTest {
 */
 	@Test
 	public void testPaddingAssymetricKey() {
-		 byte[] encryptedPass = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		 byte[] encryptedPass = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
 
-		 byte[] encryptedPass2 = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		 byte[] encryptedPass2 = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
 
 		 assertFalse(Arrays.equals(encryptedPass, encryptedPass2));
 	}
 
     @Test
     public void testPaddingAssymetricKeyTwice() {
-        byte[] encryptedPass = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-        byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, private1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+        byte[] encryptedPass = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
+        byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, private1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
 
-        byte[] encryptedPass2 = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-        byte[] decryptedPass2 = crypto.decryptAsymmetric(encryptedPass2, private1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+        byte[] encryptedPass2 = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
+        byte[] decryptedPass2 = crypto.decryptAsymmetric(encryptedPass2, private1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
 
         assertArrayEquals(decryptedPass, decryptedPass2);
     }
@@ -76,8 +75,8 @@ public class CryptoTest {
 	@Test
 	public void testNormalFunctionalityAsymmetricKey() {
 		 byte[] beforeEncryption = "PASSWORD".getBytes(StandardCharsets.UTF_8);
-		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, public1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
-		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, private1,Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, public1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
+		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, private1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
 		 
 		 assertArrayEquals(beforeEncryption, decryptedPass);  
 	}

@@ -22,7 +22,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     private PrivateKey myPrivateKey;
     private PublicKey myPublicKey;
 
-    // contains the list of valid challenges for each PubKey
+    /**
+     * contains the list of valid challenges for each PubKey
+     */
     private Map<String, ArrayList<byte[]>> challengesMap;
     public Server server;
 
@@ -133,5 +135,8 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     }
 
 
+    public  void setPort(int registryPort) {
+        server.setPort(registryPort);
+    }
 }
 
