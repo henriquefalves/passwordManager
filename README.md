@@ -20,7 +20,7 @@ ServerObjectName=password-manager
 
 #### Server
 
-`mvn exec:java -Dexec.args="<port-1> <port-2> <port-n>"`
+`mvn exec:java -Dexec.args="<port> <isByzantine>"`
 
 ###Install
 cd to folder of the project (CommonInterfaces)
