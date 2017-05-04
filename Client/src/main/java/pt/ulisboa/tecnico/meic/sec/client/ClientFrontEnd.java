@@ -20,6 +20,7 @@ public class ClientFrontEnd implements ServerAPI {
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
     private int wts;
     private List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
+    private List<RuntimeException> exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
 
     public ClientFrontEnd(String rank, ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
@@ -38,9 +39,11 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     public void register(Key publicKey) throws RemoteException {
+        exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
+
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         for (int i = 0; i < listReplicas.size(); i++) {
-            CommunicationLink.Register registerLink = new CommunicationLink.Register(listReplicas.get(i), count);
+            CommunicationLink.Register registerLink = new CommunicationLink.Register(listReplicas.get(i), count, exceptionList);
             Thread thread = new Thread(registerLink);
             thread.start();
 
@@ -50,6 +53,9 @@ public class ClientFrontEnd implements ServerAPI {
                 System.out.println("register: success");
             }
             else {
+                if(!exceptionList.isEmpty()){
+                    throw exceptionList.get(0);
+                }
                 System.out.println("register: TIMEOUT - Unable to Register.");
                 throw new TimeOutException();
             }
@@ -63,6 +69,7 @@ public class ClientFrontEnd implements ServerAPI {
     public void put(Key publicKey, byte[] hashDomainUsername, byte[] password) throws RemoteException {
         rid++;
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
+        exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         readBroadcast(count, hashDomainUsername);
@@ -111,6 +118,7 @@ public class ClientFrontEnd implements ServerAPI {
     public byte[] get(Key publicKey, byte[] hashDomainUsername) throws RemoteException {
         rid++;
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
+        exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         readBroadcast(count, hashDomainUsername);
@@ -164,7 +172,7 @@ public class ClientFrontEnd implements ServerAPI {
         for (int i = 0; i < listReplicas.size(); i++) {
             UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid));
             Message insecureMessage = new Message(null, userDataToSend);
-            CommunicationLink.Read readLink = new CommunicationLink.Read(listReplicas.get(i), insecureMessage, rid, count, readList);
+            CommunicationLink.Read readLink = new CommunicationLink.Read(listReplicas.get(i), insecureMessage, rid, count, readList, exceptionList);
 
             Thread thread = new Thread(readLink);
             thread.start();
@@ -175,7 +183,7 @@ public class ClientFrontEnd implements ServerAPI {
         for (int i = 0; i < listReplicas.size(); i++) {
             UserData userDataToSend = new UserData(hashDomainUsername, password, wts, rid, rank);
             Message insecureMessage = new Message(null, userDataToSend);
-            CommunicationLink.Write writeLink = new CommunicationLink.Write(listReplicas.get(i), insecureMessage, Crypto.byteArrayToInt(rid), count);
+            CommunicationLink.Write writeLink = new CommunicationLink.Write(listReplicas.get(i), insecureMessage, Crypto.byteArrayToInt(rid), count, exceptionList);
 
             Thread thread = new Thread(writeLink);
             thread.start();
