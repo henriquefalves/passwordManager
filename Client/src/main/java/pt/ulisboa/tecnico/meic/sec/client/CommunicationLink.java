@@ -142,14 +142,21 @@ public class CommunicationLink {
                 Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
                 CommunicationLink.checkChallenge(challenge, result.challenge);
 
-                if(!validatePassword(result.userData)){
-                   //In this case the server is Byzantine
-                    return;
-                }
                 if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){
-                    sincronizedList.add(result);
+                    result.userData.rid = null;
+                    if(result.userData.isNull()){
+                        sincronizedList.add(null);
+                    } else {
+                        if(!validatePassword(result.userData)){
+                            //In this case the server is Byzantine
+                            return;
+                        }
+                        sincronizedList.add(result);
+                    }
+
                     this.countDown.countDown();
                 }
+
             } catch (RuntimeException re){
                 this.exceptionToThrow.add(re);
                 return;
@@ -160,10 +167,10 @@ public class CommunicationLink {
     }
 
     private static boolean validatePassword(UserData userData) {
-        if(userData.password == null && userData.signature == null && Arrays.equals(userData.wts, Crypto.intToByteArray(0))){
-            System.out.println("validatePassword: empty password received (Valid)");
-            return true;
-        }
+//        if(userData.password == null && userData.signature == null && Arrays.equals(userData.wts, Crypto.intToByteArray(0))){
+//            System.out.println("validatePassword: empty password received (Valid)");
+//            return true;
+//        }
         ArrayList<byte[]> dataToCheckSign = new ArrayList<>();
         dataToCheckSign.add(userData.hashCommunicationData);
         dataToCheckSign.add(userData.hashDomainUser);

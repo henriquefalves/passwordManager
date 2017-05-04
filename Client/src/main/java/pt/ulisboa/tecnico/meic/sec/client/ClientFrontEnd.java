@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.meic.sec.client;
 
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.TimeOutException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.*;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -85,7 +86,12 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                 }
                 HighestInfo highest = getHighest(resultList);
-                wts = Crypto.byteArrayToInt(highest.highestTimestamp) + 1;
+                if(highest.highestTimestamp == null && highest.highestPassword == null
+                        && highest.highestRank == null){
+                    wts = 1;
+                } else{
+                    wts = Crypto.byteArrayToInt(highest.highestTimestamp) + 1;
+                }
 
                 count = new CountDownLatch(listReplicas.size()/2 + 1);
                 writeBroadcast(count, hashDomainUsername, password,
@@ -136,6 +142,11 @@ public class ClientFrontEnd implements ServerAPI {
                 }
 
                 HighestInfo highest = getHighest(resultList);
+                if(highest.highestTimestamp == null && highest.highestPassword == null
+                                                    && highest.highestRank == null){
+                    // serer doesn't know this domain + username
+                    throw new InvalidArgumentsException();
+                }
 
                 count = new CountDownLatch(listReplicas.size()/2 + 1);
                 writeBroadcast(count, hashDomainUsername, highest.highestPassword, highest.highestTimestamp,
@@ -192,16 +203,28 @@ public class ClientFrontEnd implements ServerAPI {
 
     private HighestInfo getHighest(ArrayList<Message> listOfMessages) {
         HighestInfo highest = new HighestInfo();
-        highest.highestPassword = listOfMessages.get(0).userData.password;
-        highest.highestTimestamp = listOfMessages.get(0).userData.wts;
-        highest.highestRank = listOfMessages.get(0).userData.rank;
+//        highest.highestPassword = listOfMessages.get(0).userData.password;
+//        highest.highestTimestamp = listOfMessages.get(0).userData.wts;
+//        highest.highestRank = listOfMessages.get(0).userData.rank;
+        highest.highestPassword = null;
+        highest.highestTimestamp = null;
+        highest.highestRank = null;
         for (Message m : listOfMessages) {
-            if (Crypto.byteArrayToInt(m.userData.wts) > Crypto.byteArrayToInt(highest.highestTimestamp)) {
+            if(m == null && highest.highestTimestamp == null){
+                continue;
+            }
+            if(m != null && highest.highestTimestamp == null){
+                highest.highestPassword = m.userData.password;
+                highest.highestTimestamp = m.userData.wts;
+                highest.highestRank = m.userData.rank;
+                continue;
+            }
+            if (m != null && Crypto.byteArrayToInt(m.userData.wts) > Crypto.byteArrayToInt(highest.highestTimestamp)) {
                 highest.highestTimestamp = m.userData.wts;
                 highest.highestPassword = m.userData.password;
                 highest.highestRank = m.userData.rank;
             }
-            if (Crypto.byteArrayToInt(m.userData.wts) == Crypto.byteArrayToInt(highest.highestTimestamp)) {
+            if ( m != null && Crypto.byteArrayToInt(m.userData.wts) == Crypto.byteArrayToInt(highest.highestTimestamp)) {
                 if(Crypto.byteArrayToInt(m.userData.rank) > Crypto.byteArrayToInt(highest.highestRank)){
                     highest.highestPassword = m.userData.password;
                     highest.highestRank = m.userData.rank;

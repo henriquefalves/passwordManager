@@ -28,7 +28,7 @@ public class ClientApplication {
 	/**
 	 * Defines if the program should printStackTrace of Execeptions
 	 */
-	public static boolean presentationMode = false;
+	public static boolean presentationMode = true;
 	public static void main(String[] args) {
 
 		try {
@@ -251,19 +251,19 @@ public class ClientApplication {
 			client.save_password(domain.getBytes(StandardCharsets.UTF_8), username.getBytes(StandardCharsets.UTF_8), password.getBytes(StandardCharsets.UTF_8));
 			return true;
 		} catch (InvalidDomainException id) {
-			System.out.print("Error: Invalid Domain");
+			System.out.println("Error: Invalid Domain");
 			if(!presentationMode)
 				id.printStackTrace();
 		} catch (InvalidUsernameException iu) {
-			System.out.print("Error: Invalid Username");
+			System.out.println("Error: Invalid Username");
 			if(!presentationMode)
 				iu.printStackTrace();
 		} catch (InvalidPasswordException ip) {
-			System.out.print("Error: Invalid Password");
+			System.out.println("Error: Invalid Password");
 			if(!presentationMode)
 				ip.printStackTrace();
 		} catch (InvalidArgumentsException ia) {
-			System.out.print("Error: Invalid Domain and/or Username");
+			System.out.println("Error: Invalid Domain and/or Username");
 			if(!presentationMode)
 				ia.printStackTrace();
 		} catch(CorruptedMessageException d) {
@@ -295,13 +295,17 @@ public class ClientApplication {
 			byte[] response = client.retrieve_password(domain.getBytes(StandardCharsets.UTF_8), username.getBytes(StandardCharsets.UTF_8));
 			return response;
 		} catch (InvalidDomainException id) {
-			System.out.print("Error: Invalid Domain");
+			System.out.println("Error: Invalid Domain");
 			if(!presentationMode)
 				id.printStackTrace();
 		} catch (InvalidUsernameException iu) {
-			System.out.print("Error: Invalid Username");
+			System.out.println("Error: Invalid Username");
 			if(!presentationMode)
 				iu.printStackTrace();
+		} catch (InvalidArgumentsException ia) {
+			System.out.println("Error: Invalid Domain and/or Username");
+			if(!presentationMode)
+				ia.printStackTrace();
 		} catch(CorruptedMessageException d) {
 			System.out.println("Error: Your message was corrupted on network");
 			if(!presentationMode)
