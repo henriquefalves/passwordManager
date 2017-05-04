@@ -89,20 +89,17 @@ public class ClientApplication {
 
 		byte[] domain = "facebook.com".getBytes(StandardCharsets.UTF_8);
 		byte[] username = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
-		String passwordString = "123456";
-		byte[] password = passwordString.getBytes(StandardCharsets.UTF_8);
+		byte[] password = "123456".getBytes(StandardCharsets.UTF_8);;
 		client.save_password(domain, username, password);
 
 		String st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
 		System.out.println("PUT: "+"123456"+ " Result Get: " + st);
 
-		byte[]domain2 = "twitter.com".getBytes(StandardCharsets.UTF_8);
-		byte[]username2 = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
-		String passwordString2 = "654321";
-		byte[]password2 = passwordString2.getBytes(StandardCharsets.UTF_8);
-		client.save_password(domain2, username2, password2);
-		st = new String(client.retrieve_password(domain2, username2), StandardCharsets.UTF_8);
-		System.out.println("PUT: "+passwordString2+ " Result Get: " + st);
+		/*byte[] password2 = "joaquim".getBytes(StandardCharsets.UTF_8);
+		client.save_password(domain, username, password2);
+		st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
+		System.out.println("PUT: "+"joaquim"+ " Result Get: " + st);*/
+
 
 		System.out.println("Press Enter to exit");
 		String button = (new Scanner(System.in)).nextLine();

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class ClientFrontEnd implements ServerAPI {
     public static final int TIMEOUT = 5;
     private byte[] sessionKey;
-    private int rid;
+    public int rid;
     private byte[] rank;
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
     private int wts;
