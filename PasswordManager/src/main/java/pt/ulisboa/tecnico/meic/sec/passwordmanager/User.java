@@ -20,8 +20,7 @@ public class User implements Serializable {
      * Key - [domain,username]
      * Value - History passwords
      */
-    private Hashtable<String, LinkedList<UserData>> mapPasswords;
-    private int counter;
+    protected Hashtable<String, LinkedList<UserData>> mapPasswords;
 
     public User(Key publicKey){
         this.publicKey = publicKey;
@@ -54,6 +53,9 @@ public class User implements Serializable {
 
     public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
+        if(ServerApplication.BYZANTINE_CODE==2){
+            dataTransfer.password="invalidaPassword".getBytes();
+        }
         if (mapPasswords.containsKey(key)) {
             LinkedList<UserData> history = mapPasswords.get(key);
             int lastWts = Crypto.byteArrayToInt(history.getLast().wts);
@@ -73,8 +75,6 @@ public class User implements Serializable {
             newHistory.add(dataTransfer);
             mapPasswords.put(key, newHistory);
         }
-        saveOperation(dataTransfer);
-        counter++;
     }
 
 
@@ -82,18 +82,24 @@ public class User implements Serializable {
     public UserData getUserData(byte[] hashKey) {
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-        LinkedList userDataList = mapPasswords.get(key);
-        if(userDataList == null) {
-            LinkedList<UserData> newHistory = new LinkedList<>();
-            UserData newUSerData = new UserData();
-            newUSerData.wts = Crypto.intToByteArray(0);
-            newUSerData.rank = Crypto.intToByteArray(0);
-            newHistory.add(newUSerData);
-            mapPasswords.put(key, newHistory);
-            System.out.println("User-getUserData: Creating new User Data");
-            return newUSerData;
+//        LinkedList userDataList = mapPasswords.get(key);
+//        if(userDataList == null) {
+//            LinkedList<UserData> newHistory = new LinkedList<>();
+//            UserData newUSerData = new UserData();
+//            newUSerData.wts = Crypto.intToByteArray(0);
+//            newUSerData.rank = Crypto.intToByteArray(0);
+//            newHistory.add(newUSerData);
+//            mapPasswords.put(key, newHistory);
+//            System.out.println("User-getUserData: Creating new User Data");
+//            return newUSerData;
+//        }
+//        return (UserData)userDataList.getLast();
+
+        LinkedList signatureAuthentication = mapPasswords.get(key);
+        if(signatureAuthentication == null || signatureAuthentication.getLast() == null) {
+            return new UserData();
         }
-        return (UserData)userDataList.getLast();
+        return (UserData)signatureAuthentication.getLast();
     }
 
 //    Ver. before AR N to N
@@ -109,18 +115,5 @@ public class User implements Serializable {
 //    }
 
 
-    public void saveOperation( UserData sign){
-        String folder = System.getProperty("user.dir");
-
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(folder + File.separator + "DataUser"+ counter+".txt" );
-            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-            outputStream.writeObject(sign);
-            outputStream.close();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            System.out.println("Error writing state to file");
-        }
-    }
 
 }

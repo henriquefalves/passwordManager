@@ -22,7 +22,9 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
     private PrivateKey myPrivateKey;
     private PublicKey myPublicKey;
 
-    // contains the list of valid challenges for each PubKey
+    /**
+     * contains the list of valid challenges for each PubKey
+     */
     private Map<String, ArrayList<byte[]>> challengesMap;
     public Server server;
 
@@ -81,6 +83,13 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         userData.rid = decipheredMessage.userData.rid;
         Message insecureMessage = new Message(challenge, userData);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
+        if(ServerApplication.BYZANTINE_CODE==2){
+            try {
+                Thread.sleep(6000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         return secureMessage;
     }
 
@@ -132,6 +141,11 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         }
     }
 
-
+    /**
+     * Used for saving persistent data
+     */
+    public  void setPort(int registryPort) {
+        server.setPort(registryPort);
+    }
 }
 

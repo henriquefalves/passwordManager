@@ -56,4 +56,12 @@ public class UserData implements Serializable {
 		this.wts = this.rid = this.rank = null;
 		this.ridToCheckSign = null;
 	}
+
+	public boolean isNull(){
+    	if (signature == null && hashCommunicationData == null && hashDomainUser == null && password == null &&
+				wts == null && rid == null && rank == null && ridToCheckSign == null){
+    		return true;
+		}
+		return false;
+	}
 }

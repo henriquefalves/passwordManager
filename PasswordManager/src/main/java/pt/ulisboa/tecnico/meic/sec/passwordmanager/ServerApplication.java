@@ -12,23 +12,49 @@ import java.security.cert.CertificateException;
 import java.util.Scanner;
 
 public class ServerApplication {
+
+    private static final int timeAliveByzantineServer= 10000;
+    /**
+     * 0 - Nada
+     * 1 - Crash
+     * 2 - Random Writing
+     *
+     */
+    static int BYZANTINE_CODE;
     public static void main(String[] args) {
 
         int registryPort = Integer.parseInt(args[0]);
+        BYZANTINE_CODE =  Integer.parseInt(args[1]);
+
         try {
             KeyPair keyPair = loadKeys("server.jks", "server123", "server", "123456");
             PrivateKey myPrivateKey = keyPair.getPrivate();
             PublicKey myPublicKey = keyPair.getPublic();
             ServerFrontEnd passwordManager = new ServerFrontEnd(myPrivateKey, myPublicKey);
+            passwordManager.setPort(registryPort);
             Registry reg = LocateRegistry.createRegistry(registryPort);
             reg.rebind("password-manager", passwordManager);
             System.out.println("Server Running on Port:" +registryPort);
+            if(BYZANTINE_CODE==1) {
+                Thread threadKiller = new Thread() {
+                    public void run() {
+                        try {
+                            Thread.sleep(timeAliveByzantineServer);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        System.exit(0);
+                    }
+
+                };
+                threadKiller.start();
+            }
 
             Scanner reader = new Scanner(System.in);
             boolean on=true;
             while(on) {
                 System.out.println("Execute command:");
-                System.out.println("exit or saveState");
+                System.out.println("exit");
                 String choice = reader.nextLine();
 
                 switch (choice) {

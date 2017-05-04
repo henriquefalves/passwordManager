@@ -19,7 +19,7 @@ public class Crypto {
 
     public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
     public static final String DEFAULT_SIGN_ALGORITHM = "SHA256withRSA";
-    public static final String ASYMETRIC_CIPHER_ALGORITHM1 = "RSA/ECB/PKCS1Padding";
+    public static final String ASYMMETRIC_CIPHER_ALGORITHM1 = "RSA/ECB/PKCS1Padding";
 
     private static SecureRandom secureRandom = new SecureRandom();
 
@@ -139,7 +139,7 @@ public class Crypto {
         byte[] signedData = Crypto.signData((PrivateKey) senderPrivKey, dataToSign);
 
         byte[] cipheredSignedData = Crypto.cipherSymmetric(secretKey, randomIv, signedData);
-        byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMETRIC_CIPHER_ALGORITHM1);
+        byte[] cipheredSecretKey = Crypto.encryptAsymmetric(secretKey, receiverPubKey, ASYMMETRIC_CIPHER_ALGORITHM1);
 
         // create cryptographically secure Message
         Message secureMessage = new Message(senderPubKey, cipheredSignedData, cipheredChallenge, cipheredSecretKey, randomIv, cipheredUserData);
@@ -147,10 +147,9 @@ public class Crypto {
     }
 
 
-
-
-
-    // receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
+    /**
+     *    receives cryptographically secure Message, perform cryptographic operations, and return the Message in plain text
+     */
     public static Message checkMessage(Message receivedMessage, Key receiverPriv, Key receiverPub) {
         if (receivedMessage.randomIv == null || receivedMessage.signature == null || receivedMessage.secretKey == null) {
             throw new CorruptedMessageException();
@@ -158,7 +157,7 @@ public class Crypto {
 
         Message messageInPlainText = new Message();
 
-        byte[] secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+        byte[] secretKeyToDecipher = Crypto.decryptAsymmetric(receivedMessage.secretKey, receiverPriv, Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
         messageInPlainText.secretKey = secretKeyToDecipher;
 
         ArrayList<byte[]> hashedCommDataToCheckSign = new ArrayList<>();

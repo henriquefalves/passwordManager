@@ -3,8 +3,8 @@ package pt.ulisboa.tecnico.meic.sec.client;
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
 import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.DuplicatePublicKeyException;
-import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.WrongChallengeException;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.*;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,7 +28,7 @@ public class ClientApplication {
 	/**
 	 * Defines if the program should printStackTrace of Execeptions
 	 */
-	private static boolean presentationmode = false;
+	public static boolean presentationMode = true;
 	public static void main(String[] args) {
 
 		try {
@@ -54,15 +54,15 @@ public class ClientApplication {
 
 		} catch (RemoteException e) {
 			System.out.println(e.getMessage());
-			if(!presentationmode)
+			if(!presentationMode)
 				e.printStackTrace();
 		} catch (NotBoundException e) {
 			System.out.println(e.getMessage());
-			if(!presentationmode)
+			if(!presentationMode)
 				e.printStackTrace();
 		} catch (MalformedURLException e) {
 			System.out.println(e.getMessage());
-			if(!presentationmode)
+			if(!presentationMode)
 				e.printStackTrace();
 		}
 	}
@@ -84,22 +84,23 @@ public class ClientApplication {
         } catch (IOException e) {
             System.out.println("Unable get KeyPair");
         }
+		byte[] receivedPassword;
 
-        client.register_user();
+		registerClient(client);
 
 		byte[] domain = "facebook.com".getBytes(StandardCharsets.UTF_8);
 		byte[] username = "henrique@hotmail.com".getBytes(StandardCharsets.UTF_8);
 		byte[] password = "123456".getBytes(StandardCharsets.UTF_8);;
-		client.save_password(domain, username, password);
 
-		String st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
-		System.out.println("PUT: "+"123456"+ " Result Get: " + st);
+		client.save_password(domain, username, password);
+		savePassword(client, "facebook.com", "henrique@hotmail.com", "123456");
+		receivedPassword = retrievePassword(client, "facebook.com", "henrique@hotmail.com");
+		System.out.println("(expected=123456) Result Get: " + new String(receivedPassword, StandardCharsets.UTF_8));
 
 		/*byte[] password2 = "joaquim".getBytes(StandardCharsets.UTF_8);
 		client.save_password(domain, username, password2);
 		st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
 		System.out.println("PUT: "+"joaquim"+ " Result Get: " + st);*/
-
 
 		System.out.println("Press Enter to exit");
 		String button = (new Scanner(System.in)).nextLine();
@@ -124,28 +125,29 @@ public class ClientApplication {
 
             } catch (UnrecoverableKeyException uke) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					uke.printStackTrace();
 			} catch (KeyStoreException kse) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					kse.printStackTrace();
 			} catch (NoSuchAlgorithmException nsae) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					nsae.printStackTrace();
 			} catch (CertificateException ce) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					ce.printStackTrace();
 			} catch (IOException e) {
                 System.out.println("Unable get KeyPair");
-				if(!presentationmode)
+				if(!presentationMode)
 					e.printStackTrace();
 			}
         }
 
 		String domain;
+		boolean success;
 		while(logIn){
 			System.out.println(""
 					+ "1 - Register\n"
@@ -159,21 +161,9 @@ public class ClientApplication {
 
 				switch (parseInt) {
 				case 1:
-					try {
-						client.register_user();
-						System.out.println("You have been registered");
-					} catch(RemoteException r) {
-						System.out.println("There was an issue with the remote connection");
-						if(!presentationmode)
-							r.printStackTrace();
-					} catch(DuplicatePublicKeyException d) {
-						System.out.println("You are already registered in the password manager");
-						if(!presentationmode)
-							d.printStackTrace();
-					} catch(Exception e) {
-						System.out.println("Unidentified error");
-						if(!presentationmode)
-							e.printStackTrace();
+					success = registerClient(client);
+					if(success){
+						System.out.println("You have registered successfully");
 					}
 					break;
 
@@ -186,33 +176,9 @@ public class ClientApplication {
 					System.out.println("Password: ");
 					String password = reader.nextLine();
 					System.out.println();
-					try {
-						client.save_password(domain.getBytes(StandardCharsets.UTF_8), username.getBytes(StandardCharsets.UTF_8), password.getBytes(StandardCharsets.UTF_8));
+					success = savePassword(client, domain, username, password);
+					if(success){
 						System.out.println("Password Inserted/Updated Successfully");
-					} catch(RemoteException r) {
-						System.out.println("There was an issue with the remote connection");
-						if(!presentationmode)
-							r.printStackTrace();
-					} catch (InvalidDomainException id) {
-						System.out.print("Invalid Domain");
-						if(!presentationmode)
-							id.printStackTrace();
-					} catch (InvalidUsernameException iu) {
-						System.out.print("Invalid Username");
-						if(!presentationmode)
-							iu.printStackTrace();
-					} catch (InvalidPasswordException ip) {
-						System.out.print("Invalid Password");
-						if(!presentationmode)
-							ip.printStackTrace();
-					} catch (InvalidArgumentsException ia) {
-						System.out.print("Invalid Password and/or Username");
-						if(!presentationmode)
-							ia.printStackTrace();
-					} catch(Exception e) {
-						System.out.println("Unidentified error");
-						if(!presentationmode)
-							e.printStackTrace();
 					}
 					break;
 
@@ -223,25 +189,9 @@ public class ClientApplication {
 					System.out.println("Username: ");
 					String usernameToSearch = reader.nextLine();
 					System.out.println();
-					try {
-						byte[] response = client.retrieve_password(domainToSearch.getBytes(StandardCharsets.UTF_8), usernameToSearch.getBytes(StandardCharsets.UTF_8));
+					byte[] response = retrievePassword(client, domainToSearch, usernameToSearch);
+					if(response != null){
 						System.out.println("Your password is " + new String(response, StandardCharsets.UTF_8)+ "\n");
-					} catch(RemoteException r) {
-						System.out.println("There was an issue with the remote connection");
-						if (!presentationmode)
-							r.printStackTrace();
-					} catch (InvalidDomainException id) {
-						System.out.print("Invalid Domain");
-						if(!presentationmode)
-							id.printStackTrace();
-					} catch (InvalidUsernameException iu) {
-						System.out.print("Invalid Username");
-						if(!presentationmode)
-							iu.printStackTrace();
-					} catch(Exception e) {
-						System.out.println("Unidentified error");
-						if(!presentationmode)
-							e.printStackTrace();
 					}
 					break;
 
@@ -252,15 +202,143 @@ public class ClientApplication {
 					break;
 
 				default:
-					System.out.println("No options with that command");
+					System.out.println("Error: No options with that command");
 					break;
 				}
 			}
 			catch(NumberFormatException e){
-				System.out.println("Insert a valid number");
+				System.out.println("Error: Insert a valid number");
 			}
 		}
 		reader.close();
 	}
+
+
+	private static boolean registerClient(Client client){
+		try {
+			client.register_user();
+			return true;
+		} catch(DuplicatePublicKeyException d) {
+			System.out.println("Error: You are already registered in the password manager");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(InvalidArgumentsException d) {
+			System.out.println("Error: Invalid arguments");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(CorruptedMessageException d) {
+			System.out.println("Error: Your message was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(MissingChallengeException d) {
+			System.out.println("Error: Your message was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(InvalidChallengeException d) {
+			System.out.println("Error: Your request was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(RemoteException r) {
+			System.out.println("Error: There was an issue with the remote connection");
+			if(!presentationMode)
+				r.printStackTrace();
+		} catch(Exception e) {
+			System.out.println("Error: Unidentified error");
+			if(!presentationMode)
+				e.printStackTrace();
+		}
+		return false;
+	}
+
+	private static boolean savePassword(Client client, String domain, String username, String password){
+		try {
+			client.save_password(domain.getBytes(StandardCharsets.UTF_8), username.getBytes(StandardCharsets.UTF_8), password.getBytes(StandardCharsets.UTF_8));
+			return true;
+		} catch (InvalidDomainException id) {
+			System.out.println("Error: Invalid Domain");
+			if(!presentationMode)
+				id.printStackTrace();
+		} catch (InvalidUsernameException iu) {
+			System.out.println("Error: Invalid Username");
+			if(!presentationMode)
+				iu.printStackTrace();
+		} catch (InvalidPasswordException ip) {
+			System.out.println("Error: Invalid Password");
+			if(!presentationMode)
+				ip.printStackTrace();
+		} catch (InvalidArgumentsException ia) {
+			System.out.println("Error: Invalid Domain and/or Username");
+			if(!presentationMode)
+				ia.printStackTrace();
+		} catch(CorruptedMessageException d) {
+			System.out.println("Error: Your message was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(MissingChallengeException d) {
+			System.out.println("Error: Your message was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(InvalidChallengeException d) {
+			System.out.println("Error: Your request was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(RemoteException r) {
+			System.out.println("Error: There was an issue with the remote connection");
+			if(!presentationMode)
+				r.printStackTrace();
+		} catch(Exception e) {
+			System.out.println("Error: Unidentified error");
+			if(!presentationMode)
+				e.printStackTrace();
+		}
+		return false;
+	}
+
+	private static byte[] retrievePassword(Client client, String domain, String username){
+		try {
+			byte[] response = client.retrieve_password(domain.getBytes(StandardCharsets.UTF_8), username.getBytes(StandardCharsets.UTF_8));
+			return response;
+		} catch (InvalidDomainException id) {
+			System.out.println("Error: Invalid Domain");
+			if(!presentationMode)
+				id.printStackTrace();
+		} catch (InvalidUsernameException iu) {
+			System.out.println("Error: Invalid Username");
+			if(!presentationMode)
+				iu.printStackTrace();
+		} catch (InvalidArgumentsException ia) {
+			System.out.println("Error: Invalid Domain and/or Username");
+			if(!presentationMode)
+				ia.printStackTrace();
+		} catch(CorruptedMessageException d) {
+			System.out.println("Error: Your message was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(MissingChallengeException d) {
+			System.out.println("Error: Your message was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch(InvalidChallengeException d) {
+			System.out.println("Error: Your request was corrupted on network");
+			if(!presentationMode)
+				d.printStackTrace();
+		} catch (WrongChallengeException d){
+			System.out.println("Error: The server message was corrupted on network");
+			if (!presentationMode)
+				d.printStackTrace();
+		} catch(RemoteException r) {
+			System.out.println("Error: There was an issue with the remote connection");
+			if (!presentationMode)
+				r.printStackTrace();
+		} catch(Exception e) {
+			System.out.println("Error: Unidentified error");
+			if(!presentationMode)
+				e.printStackTrace();
+		}
+		return null;
+	}
+
+
+
 }
 

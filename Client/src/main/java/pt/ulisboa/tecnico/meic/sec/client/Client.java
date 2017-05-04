@@ -91,7 +91,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 
 		byte[] hashPreKey = Crypto.concatenateData(new byte[][]{domain, username});
 		byte[] hashKey = Crypto.hashData(hashPreKey);
-		byte[] encryptedPassword = Crypto.encryptAsymmetric(password, myPublicKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		byte[] encryptedPassword = Crypto.encryptAsymmetric(password, myPublicKey, Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
 		
 		passwordManager.put(myPublicKey, hashKey, encryptedPassword);
 	}
@@ -106,8 +106,7 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 		byte[] hashPreKey = Crypto.concatenateData(new byte[][]{domain, username});
 		byte[] hashKey = Crypto.hashData(hashPreKey);
 		byte[] encryptedPassword = passwordManager.get(myPublicKey, hashKey);
-		System.out.println(encryptedPassword);
-		byte[] decryptedPassword = Crypto.decryptAsymmetric(encryptedPassword, myPrivateKey, Crypto.ASYMETRIC_CIPHER_ALGORITHM1);
+		byte[] decryptedPassword = Crypto.decryptAsymmetric(encryptedPassword, myPrivateKey, Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
 
 		return decryptedPassword;
 	}

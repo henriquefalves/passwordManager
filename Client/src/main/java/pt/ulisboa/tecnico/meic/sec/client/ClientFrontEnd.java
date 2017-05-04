@@ -1,6 +1,8 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.TimeOutException;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.*;
+import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.InvalidArgumentsException;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -19,6 +21,7 @@ public class ClientFrontEnd implements ServerAPI {
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
     private int wts;
     private List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
+    private List<RuntimeException> exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
 
     public ClientFrontEnd(String rank, ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
@@ -37,20 +40,25 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     public void register(Key publicKey) throws RemoteException {
+        exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
+
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
-        CommunicationLink.Register registerLink = new CommunicationLink.Register();
         for (int i = 0; i < listReplicas.size(); i++) {
-            registerLink.initializeRegister(listReplicas.get(i), count);
+            CommunicationLink.Register registerLink = new CommunicationLink.Register(listReplicas.get(i), count, exceptionList);
             Thread thread = new Thread(registerLink);
             thread.start();
+
         }
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
                 System.out.println("register: success");
             }
             else {
-                System.out.println("register: TIMEOUT");
-                // TODO
+                if(!exceptionList.isEmpty()){
+                    throw exceptionList.get(0);
+                }
+                System.out.println("register: TIMEOUT - Unable to Register.");
+                throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -62,6 +70,7 @@ public class ClientFrontEnd implements ServerAPI {
     public void put(Key publicKey, byte[] hashDomainUsername, byte[] password) throws RemoteException {
         rid++;
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
+        exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         readBroadcast(count, hashDomainUsername);
@@ -77,7 +86,12 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                 }
                 HighestInfo highest = getHighest(resultList);
-                wts = Crypto.byteArrayToInt(highest.highestTimestamp) + 1;
+                if(highest.highestTimestamp == null && highest.highestPassword == null
+                        && highest.highestRank == null){
+                    wts = 1;
+                } else{
+                    wts = Crypto.byteArrayToInt(highest.highestTimestamp) + 1;
+                }
 
                 count = new CountDownLatch(listReplicas.size()/2 + 1);
                 writeBroadcast(count, hashDomainUsername, password,
@@ -90,7 +104,7 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                     else {
                         System.out.println("put-write-step(2): TIMEOUT");
-                        // TODO
+                        throw new TimeOutException();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -99,7 +113,7 @@ public class ClientFrontEnd implements ServerAPI {
             }
             else {
                 System.out.println("put-read-step(1): TIMEOUT");
-                // TODO
+                throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -110,6 +124,7 @@ public class ClientFrontEnd implements ServerAPI {
     public byte[] get(Key publicKey, byte[] hashDomainUsername) throws RemoteException {
         rid++;
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
+        exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
         CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
         readBroadcast(count, hashDomainUsername);
@@ -127,6 +142,11 @@ public class ClientFrontEnd implements ServerAPI {
                 }
 
                 HighestInfo highest = getHighest(resultList);
+                if(highest.highestTimestamp == null && highest.highestPassword == null
+                                                    && highest.highestRank == null){
+                    // serer doesn't know this domain + username
+                    throw new InvalidArgumentsException();
+                }
 
                 count = new CountDownLatch(listReplicas.size()/2 + 1);
                 writeBroadcast(count, hashDomainUsername, highest.highestPassword, highest.highestTimestamp,
@@ -139,16 +159,16 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                     else {
                         System.out.println("get-write-step(2): TIMEOUT");
-                        // TODO
+                        throw new TimeOutException();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    // TODO
+                    //
                 }
             }
             else {
                 System.out.println("get-read-step(1): TIMEOUT");
-                // TODO
+                throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -159,11 +179,11 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     private void readBroadcast(CountDownLatch count, byte[] hashDomainUsername){
-        CommunicationLink.Read readLink = new CommunicationLink.Read();
+
         for (int i = 0; i < listReplicas.size(); i++) {
             UserData userDataToSend = new UserData(hashDomainUsername, Crypto.intToByteArray(rid));
             Message insecureMessage = new Message(null, userDataToSend);
-            readLink.initializeRead(listReplicas.get(i), insecureMessage, rid, count, readList);
+            CommunicationLink.Read readLink = new CommunicationLink.Read(listReplicas.get(i), insecureMessage, rid, count, readList, exceptionList);
 
             Thread thread = new Thread(readLink);
             thread.start();
@@ -171,11 +191,10 @@ public class ClientFrontEnd implements ServerAPI {
     }
 
     private void writeBroadcast(CountDownLatch count, byte[] hashDomainUsername, byte[] password, byte[] wts, byte[] rid, byte[] rank){
-        CommunicationLink.Write writeLink = new CommunicationLink.Write();
         for (int i = 0; i < listReplicas.size(); i++) {
             UserData userDataToSend = new UserData(hashDomainUsername, password, wts, rid, rank);
             Message insecureMessage = new Message(null, userDataToSend);
-            writeLink.initializeWrite(listReplicas.get(i), insecureMessage, Crypto.byteArrayToInt(rid), count);
+            CommunicationLink.Write writeLink = new CommunicationLink.Write(listReplicas.get(i), insecureMessage, Crypto.byteArrayToInt(rid), count, exceptionList);
 
             Thread thread = new Thread(writeLink);
             thread.start();
@@ -184,16 +203,28 @@ public class ClientFrontEnd implements ServerAPI {
 
     private HighestInfo getHighest(ArrayList<Message> listOfMessages) {
         HighestInfo highest = new HighestInfo();
-        highest.highestPassword = listOfMessages.get(0).userData.password;
-        highest.highestTimestamp = listOfMessages.get(0).userData.wts;
-        highest.highestRank = listOfMessages.get(0).userData.rank;
+//        highest.highestPassword = listOfMessages.get(0).userData.password;
+//        highest.highestTimestamp = listOfMessages.get(0).userData.wts;
+//        highest.highestRank = listOfMessages.get(0).userData.rank;
+        highest.highestPassword = null;
+        highest.highestTimestamp = null;
+        highest.highestRank = null;
         for (Message m : listOfMessages) {
-            if (Crypto.byteArrayToInt(m.userData.wts) > Crypto.byteArrayToInt(highest.highestTimestamp)) {
+            if(m == null && highest.highestTimestamp == null){
+                continue;
+            }
+            if(m != null && highest.highestTimestamp == null){
+                highest.highestPassword = m.userData.password;
+                highest.highestTimestamp = m.userData.wts;
+                highest.highestRank = m.userData.rank;
+                continue;
+            }
+            if (m != null && Crypto.byteArrayToInt(m.userData.wts) > Crypto.byteArrayToInt(highest.highestTimestamp)) {
                 highest.highestTimestamp = m.userData.wts;
                 highest.highestPassword = m.userData.password;
                 highest.highestRank = m.userData.rank;
             }
-            if (Crypto.byteArrayToInt(m.userData.wts) == Crypto.byteArrayToInt(highest.highestTimestamp)) {
+            if ( m != null && Crypto.byteArrayToInt(m.userData.wts) == Crypto.byteArrayToInt(highest.highestTimestamp)) {
                 if(Crypto.byteArrayToInt(m.userData.rank) > Crypto.byteArrayToInt(highest.highestRank)){
                     highest.highestPassword = m.userData.password;
                     highest.highestRank = m.userData.rank;
