@@ -44,14 +44,6 @@ public class CryptoTest {
 		assertFalse(Crypto.verifySign(public1, dataToSign1, signature2));
 	}
 
-//TODO: Cannot Test -> Henrique
-/*	@Test
-	public void testMax245() {
-		byte[] encryptedPass = null;
-		encryptedPass = crypto.encrypt("aaaaaaaaaaaaaaccccccccaaaavvvvvaavvvvvvvvvvvvvvvvvvvvvvvvaaaaaaxxxxxxxxxxxxxxxaaaaaaaaaaaaaabbnnnnnnnnnnnnnnnnnnnnnnaaaaaaaaaaaaaaaaaaasssssssssssssssssbbbbbbbbbbbbbbdddddddddddbbbbbbbbbbbbbbbbbbjjjjjjjjjjjbbbbbssmmmmmmmmmmmmmmmmmmmmmmmmmmmvvvvvvvvvvvvvvvvvvvmmmssssssssss".getBytes(StandardCharsets.UTF_8), public1);		
-		   
-	}
-*/
 	@Test
 	public void testPaddingAssymetricKey() {
 		 byte[] encryptedPass = crypto.encryptAsymmetric("PASSWORD".getBytes(StandardCharsets.UTF_8), public1,Crypto.ASYMMETRIC_CIPHER_ALGORITHM1);
@@ -102,15 +94,4 @@ public class CryptoTest {
 
 		 assertArrayEquals(encryptedPass, encryptedPass2);  
 	}
-
-//	TODO: no way to test this, because you get corrupted padding message on decryption
-//	@Test
-//	public void testIntegritySymmetricKey() {
-//		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
-//		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
-//		 encryptedPass[0]='a';
-//		 byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, secretKey,"AES");
-//		 assertFalse(Arrays.equals(beforeEncryption, decryptedPass));
-//
-//	}
 }

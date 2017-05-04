@@ -52,6 +52,11 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
+
+        if(ServerApplication.BYZANTINE_CODE==1) {
+            System.exit(0);
+        }
+
         Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
 
@@ -74,6 +79,17 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         if(message.publicKeySender == null){
             throw new CorruptedMessageException();
         }
+        if(ServerApplication.BYZANTINE_CODE==1) {
+            System.exit(0);
+        }
+        else if(ServerApplication.BYZANTINE_CODE==2) {
+            try {
+                Thread.sleep(6000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         Message decipheredMessage = Crypto.checkMessage(message, myPrivateKey, myPublicKey);
         byte[] challenge = checkChallenge(decipheredMessage.publicKeySender, decipheredMessage.challenge);
 
@@ -83,13 +99,7 @@ public class ServerFrontEnd extends UnicastRemoteObject implements Communication
         userData.rid = decipheredMessage.userData.rid;
         Message insecureMessage = new Message(challenge, userData);
         Message secureMessage = Crypto.getSecureMessage(insecureMessage, decipheredMessage.secretKey, myPrivateKey, myPublicKey, message.publicKeySender);
-        if(ServerApplication.BYZANTINE_CODE==2){
-            try {
-                Thread.sleep(6000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+
         return secureMessage;
     }
 

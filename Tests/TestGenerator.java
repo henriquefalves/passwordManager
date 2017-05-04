@@ -28,7 +28,7 @@ public class TestGenerator {
             previous_ports += port + " ";
         }
         for(int i = 0; i< number_of_bizantines; i++, port++) {
-            Files.write(Paths.get(outputFile), ("start cmd /k mvn exec:java \"-Dexec.args=" + port + " 1\"\n").getBytes(), StandardOpenOption.APPEND);
+            Files.write(Paths.get(outputFile), ("start cmd /k mvn exec:java \"-Dexec.args=" + port + " 3\"\n").getBytes(), StandardOpenOption.APPEND);
             previous_ports += port + " ";
         }
         Files.write(Paths.get(outputFile), "cd ../Client\n".getBytes(), StandardOpenOption.APPEND);

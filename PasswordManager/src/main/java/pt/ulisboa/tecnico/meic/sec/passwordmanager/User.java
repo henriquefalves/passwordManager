@@ -53,7 +53,7 @@ public class User implements Serializable {
 
     public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
-        if(ServerApplication.BYZANTINE_CODE==2){
+        if(ServerApplication.BYZANTINE_CODE==3){
             dataTransfer.password="invalidaPassword".getBytes();
         }
         if (mapPasswords.containsKey(key)) {

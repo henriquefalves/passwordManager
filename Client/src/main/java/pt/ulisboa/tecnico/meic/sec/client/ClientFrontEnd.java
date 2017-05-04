@@ -23,7 +23,6 @@ public class ClientFrontEnd implements ServerAPI {
     private List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
     private List<RuntimeException> exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
-
     public ClientFrontEnd(String rank, ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
         for (String i : remoteServerNames) {
             CommunicationAPI lookup = (CommunicationAPI) Naming.lookup(i);
@@ -64,7 +63,6 @@ public class ClientFrontEnd implements ServerAPI {
             e.printStackTrace();
             // TODO
         }
-
     }
 
     public void put(Key publicKey, byte[] hashDomainUsername, byte[] password) throws RemoteException {
@@ -174,7 +172,6 @@ public class ClientFrontEnd implements ServerAPI {
             e.printStackTrace();
             // TODO
         }
-
         return null;
     }
 
@@ -242,5 +239,4 @@ public class ClientFrontEnd implements ServerAPI {
 
         }
     }
-
 }
