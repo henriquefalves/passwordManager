@@ -17,8 +17,8 @@ public class ServerApplication {
     /**
      * 0 - Nada
      * 1 - Crash
-     * 2 - Random Writing
-     *
+     * 2 - Timeout
+     * 3 - Corruped Data
      */
     static int BYZANTINE_CODE;
     public static void main(String[] args) {
@@ -35,20 +35,6 @@ public class ServerApplication {
             Registry reg = LocateRegistry.createRegistry(registryPort);
             reg.rebind("password-manager", passwordManager);
             System.out.println("Server Running on Port:" +registryPort);
-            if(BYZANTINE_CODE==1) {
-                Thread threadKiller = new Thread() {
-                    public void run() {
-                        try {
-                            Thread.sleep(timeAliveByzantineServer);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        System.exit(0);
-                    }
-
-                };
-                threadKiller.start();
-            }
 
             Scanner reader = new Scanner(System.in);
             boolean on=true;

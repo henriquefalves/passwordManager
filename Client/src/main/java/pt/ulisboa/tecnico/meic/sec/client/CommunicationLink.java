@@ -45,10 +45,12 @@ public class CommunicationLink {
     public static class Register implements Runnable{
         private CommunicationAPI server;
         CountDownLatch countDown;
+        List<RuntimeException> exceptionToThrow;
 
-        public Register(CommunicationAPI server, CountDownLatch count){
+        public Register(CommunicationAPI server, CountDownLatch count, List<RuntimeException> exceptionToThrow){
             this.server = server;
             this.countDown = count;
+            this.exceptionToThrow = exceptionToThrow;
         }
 
 
@@ -61,16 +63,11 @@ public class CommunicationLink {
                 Message secureMessage = Crypto.getSecureMessage(message, sessionKey, myPrivateKey, myPublicKey, serverPublicKey);
                 this.server.register(secureMessage);
                 this.countDown.countDown();
-            }catch (DuplicatePublicKeyException e){
-                System.out.println("Already Registered");
-                if(!ClientApplication.presentationMode){
-                    e.printStackTrace();
-                }
-                 return;
-            }
-            catch (Exception e) {
+            } catch (RuntimeException re){
+                this.exceptionToThrow.add(re);
+                return;
+            } catch (Exception e) {
                 e.printStackTrace();
-                // TODO listener to catch exceptions in main thread
             }
         }
     }
@@ -82,11 +79,14 @@ public class CommunicationLink {
         Message message;
         private int expectedRid;
         CountDownLatch countDown;
-        public Write(CommunicationAPI server, Message m, int expectedRid, CountDownLatch count){
+        List<RuntimeException> exceptionToThrow;
+
+        public Write(CommunicationAPI server, Message m, int expectedRid, CountDownLatch count, List<RuntimeException> exceptionToThrow){
             this.server = server;
             this.message = m;
             this.expectedRid = expectedRid;
             this.countDown = count;
+            this.exceptionToThrow = exceptionToThrow;
         }
 
         @Override
@@ -102,9 +102,11 @@ public class CommunicationLink {
                 if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){
                     this.countDown.countDown();
                 }
+            } catch (RuntimeException re){
+                this.exceptionToThrow.add(re);
+                return;
             } catch (Exception e) {
                 e.printStackTrace();
-                // TODO listener to catch exceptions in main thread
             }
         }
     }
@@ -117,13 +119,15 @@ public class CommunicationLink {
         private CountDownLatch countDown;
         private List<Message> sincronizedList;
         private int expectedRid;
+        List<RuntimeException> exceptionToThrow;
 
-        public Read(CommunicationAPI server, Message m, int rid, CountDownLatch count, List<Message> sincronizedList){
+        public Read(CommunicationAPI server, Message m, int rid, CountDownLatch count, List<Message> sincronizedList, List<RuntimeException> exceptionToThrow){
             this.server = server;
             this.message = m;
             this.expectedRid = rid;
             this.countDown = count;
             this.sincronizedList = sincronizedList;
+            this.exceptionToThrow = exceptionToThrow;
         }
 
 
@@ -138,31 +142,35 @@ public class CommunicationLink {
                 Message result = Crypto.checkMessage(response, myPrivateKey, myPublicKey);
                 CommunicationLink.checkChallenge(challenge, result.challenge);
 
-                if(!validatePassword(result.userData)){
-                   //In this case the server is Byzantine
-                    return;
-                }
                 if (Crypto.byteArrayToInt(result.userData.rid) == expectedRid){
-                    sincronizedList.add(result);
+                    result.userData.rid = null;
+                    if(result.userData.isNull()){
+                        sincronizedList.add(null);
+                    } else {
+                        if(!validatePassword(result.userData)){
+                            //In this case the server is Byzantine
+                            return;
+                        }
+                        sincronizedList.add(result);
+                    }
+
                     this.countDown.countDown();
                 }
-            }catch (InvalidArgumentsException e){
-                System.out.println("InvalidArgumentsException");
-                if(!ClientApplication.presentationMode){
-                    e.printStackTrace();
-                }
+
+            } catch (RuntimeException re){
+                this.exceptionToThrow.add(re);
+                return;
             } catch (Exception e) {
                 e.printStackTrace();
-                // TODO listener to catch exceptions in main thread
             }
         }
     }
 
     private static boolean validatePassword(UserData userData) {
-        if(userData.password == null && userData.signature == null && Arrays.equals(userData.wts, Crypto.intToByteArray(0))){
-            System.out.println("validatePassword: empty password received (Valid)");
-            return true;
-        }
+//        if(userData.password == null && userData.signature == null && Arrays.equals(userData.wts, Crypto.intToByteArray(0))){
+//            System.out.println("validatePassword: empty password received (Valid)");
+//            return true;
+//        }
         ArrayList<byte[]> dataToCheckSign = new ArrayList<>();
         dataToCheckSign.add(userData.hashCommunicationData);
         dataToCheckSign.add(userData.hashDomainUser);
@@ -188,7 +196,6 @@ public class CommunicationLink {
         if (receivedChallenge == null || !Arrays.equals(expectedChallenge, receivedChallenge)) {
             System.out.println("Client-FE-checkChallenge: Invalid challenge");
             throw new WrongChallengeException();
-            //TODO handle exception
         }
     }
 

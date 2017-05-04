@@ -53,7 +53,7 @@ public class User implements Serializable {
 
     public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
-        if(ServerApplication.BYZANTINE_CODE==2){
+        if(ServerApplication.BYZANTINE_CODE==3){
             dataTransfer.password="invalidaPassword".getBytes();
         }
         if (mapPasswords.containsKey(key)) {
@@ -82,18 +82,24 @@ public class User implements Serializable {
     public UserData getUserData(byte[] hashKey) {
         String key = Base64.getEncoder().encodeToString(hashKey);
 
-        LinkedList userDataList = mapPasswords.get(key);
-        if(userDataList == null) {
-            LinkedList<UserData> newHistory = new LinkedList<>();
-            UserData newUSerData = new UserData();
-            newUSerData.wts = Crypto.intToByteArray(0);
-            newUSerData.rank = Crypto.intToByteArray(0);
-            newHistory.add(newUSerData);
-            mapPasswords.put(key, newHistory);
-            System.out.println("User-getUserData: Creating new User Data");
-            return newUSerData;
+//        LinkedList userDataList = mapPasswords.get(key);
+//        if(userDataList == null) {
+//            LinkedList<UserData> newHistory = new LinkedList<>();
+//            UserData newUSerData = new UserData();
+//            newUSerData.wts = Crypto.intToByteArray(0);
+//            newUSerData.rank = Crypto.intToByteArray(0);
+//            newHistory.add(newUSerData);
+//            mapPasswords.put(key, newHistory);
+//            System.out.println("User-getUserData: Creating new User Data");
+//            return newUSerData;
+//        }
+//        return (UserData)userDataList.getLast();
+
+        LinkedList signatureAuthentication = mapPasswords.get(key);
+        if(signatureAuthentication == null || signatureAuthentication.getLast() == null) {
+            return new UserData();
         }
-        return (UserData)userDataList.getLast();
+        return (UserData)signatureAuthentication.getLast();
     }
 
 //    Ver. before AR N to N

@@ -29,7 +29,7 @@ public class ClientTest {
     @BeforeClass
     public static void setUp() throws Exception {
     	ArrayList<String> listOfReplicas= new ArrayList<String>();
-    	listOfReplicas.add("rmi://localhost:8006/password-manager");
+    	listOfReplicas.add("rmi://localhost:8006/originalPassword-manager");
 		client = new Client("1", listOfReplicas);
 
         KeyStore ks = null;
