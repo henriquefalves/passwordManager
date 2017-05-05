@@ -16,11 +16,17 @@ Made when runnin on local machine
 #### Client
 IPServer=localhost
 ServerObjectName=password-manager
-`mvn exec:java -Dexec.args="<UserRank> <IP-SERVER> <ServerObjectName> <port-1> <port-2> <port-3>"`
+`mvn exec:java -Dexec.args="<UserRank> <IP-SERVER> <ServerObjectName> <NrFaults> <port-1-Server> <port-2-Server> <port-n-Server>"`
 
 #### Server
 
-`mvn exec:java -Dexec.args="<port> <isByzantine>"`
+Type-Of-Byzantine-Behaviour 
+0 - Normal
+1 - Crash
+2 - Timeout responses
+3 - Corruped Data(password)
+
+`mvn exec:java -Dexec.args="<port> <Type-Of-Byzantine-Behaviour>"`
 
 ###Install
 cd to folder of the project (CommonInterfaces)
