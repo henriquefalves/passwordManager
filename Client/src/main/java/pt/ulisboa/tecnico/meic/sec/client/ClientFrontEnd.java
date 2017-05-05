@@ -52,18 +52,18 @@ public class ClientFrontEnd implements ServerAPI {
         }
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
-                System.out.println("register: success");
+             //   System.out.println("register: success");
+                return;
             }
             else {
                 if(!exceptionList.isEmpty()){
                     throw exceptionList.get(0);
                 }
-                System.out.println("register: TIMEOUT - Unable to Register.");
+            //    System.out.println("register: TIMEOUT - Unable to Register.");
                 throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-            // TODO
         }
     }
 
@@ -76,7 +76,7 @@ public class ClientFrontEnd implements ServerAPI {
         readBroadcast(count, hashDomainUsername);
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
-                System.out.println("put-read-step(1): success");
+                //System.out.println("put-read-step(1): success");
                 // transform to ArrayList
                 ArrayList<Message> resultList = new ArrayList<>();
                 // must be synchronized to avoid conflicts
@@ -99,11 +99,11 @@ public class ClientFrontEnd implements ServerAPI {
 
                 try {
                     if(count.await(TIMEOUT, TimeUnit.SECONDS)){
-                        System.out.println("put-write-step(2): success");
+                        //System.out.println("put-write-step(2): success");
                         return;
                     }
                     else {
-                        System.out.println("put-write-step(2): TIMEOUT");
+                       // System.out.println("put-write-step(2): TIMEOUT");
                         throw new TimeOutException();
                     }
                 } catch (InterruptedException e) {
@@ -112,12 +112,11 @@ public class ClientFrontEnd implements ServerAPI {
                 }
             }
             else {
-                System.out.println("put-read-step(1): TIMEOUT");
+                //System.out.println("put-read-step(1): TIMEOUT");
                 throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-            // TODO
         }
     }
 
@@ -130,7 +129,7 @@ public class ClientFrontEnd implements ServerAPI {
         readBroadcast(count, hashDomainUsername);
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
-                System.out.println("get-read-step(1): success");
+               // System.out.println("get-read-step(1): success");
                 // transform to ArrayList
                 ArrayList<Message> resultList = new ArrayList<>();
 
@@ -154,25 +153,23 @@ public class ClientFrontEnd implements ServerAPI {
 
                 try {
                     if(count.await(TIMEOUT, TimeUnit.SECONDS)){
-                        System.out.println("get-write-step(2): success");
+                        //System.out.println("get-write-step(2): success");
                         return highest.highestPassword;
                     }
                     else {
-                        System.out.println("get-write-step(2): TIMEOUT");
+                        //System.out.println("get-write-step(2): TIMEOUT");
                         throw new TimeOutException();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    //
                 }
             }
             else {
-                System.out.println("get-read-step(1): TIMEOUT");
+                //System.out.println("get-read-step(1): TIMEOUT");
                 throw new TimeOutException();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-            // TODO
         }
         return null;
     }
@@ -202,9 +199,6 @@ public class ClientFrontEnd implements ServerAPI {
 
     private HighestInfo getHighest(ArrayList<Message> listOfMessages) {
         HighestInfo highest = new HighestInfo();
-//        highest.highestPassword = listOfMessages.get(0).userData.password;
-//        highest.highestTimestamp = listOfMessages.get(0).userData.wts;
-//        highest.highestRank = listOfMessages.get(0).userData.rank;
         highest.highestPassword = null;
         highest.highestTimestamp = null;
         highest.highestRank = null;

@@ -27,29 +27,6 @@ public class User implements Serializable {
         mapPasswords = new Hashtable<>();
     }
 
-    public boolean isUserKey(Key key){
-        return key.equals(this.publicKey);
-    }
-
-
-//    Ver. before AR N to N
-//    public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
-//        String key = Base64.getEncoder().encodeToString(hashKey);
-//        if (mapPasswords.containsKey(key)) {
-//            LinkedList<UserData> history = mapPasswords.get(key);
-//            int lastWts = Crypto.byteArrayToInt(history.getLast().wts);
-//            Integer wts = Crypto.byteArrayToInt(dataTransfer.wts);
-//            if (wts > lastWts) {
-//                history.add(dataTransfer);
-//            }
-//        } else {
-//            LinkedList<UserData> newHistory = new LinkedList<>();
-//            newHistory.add(dataTransfer);
-//            mapPasswords.put(key, newHistory);
-//        }
-//        saveOperation(dataTransfer);
-//        counter++;
-//    }
 
     public void updateInfo(byte[]hashKey,  UserData dataTransfer) {
         String key = Base64.getEncoder().encodeToString(hashKey);
@@ -78,42 +55,14 @@ public class User implements Serializable {
     }
 
 
-
     public UserData getUserData(byte[] hashKey) {
         String key = Base64.getEncoder().encodeToString(hashKey);
-
-//        LinkedList userDataList = mapPasswords.get(key);
-//        if(userDataList == null) {
-//            LinkedList<UserData> newHistory = new LinkedList<>();
-//            UserData newUSerData = new UserData();
-//            newUSerData.wts = Crypto.intToByteArray(0);
-//            newUSerData.rank = Crypto.intToByteArray(0);
-//            newHistory.add(newUSerData);
-//            mapPasswords.put(key, newHistory);
-//            System.out.println("User-getUserData: Creating new User Data");
-//            return newUSerData;
-//        }
-//        return (UserData)userDataList.getLast();
-
         LinkedList signatureAuthentication = mapPasswords.get(key);
         if(signatureAuthentication == null || signatureAuthentication.getLast() == null) {
             return new UserData();
         }
         return (UserData)signatureAuthentication.getLast();
     }
-
-//    Ver. before AR N to N
-//    public UserData getUserData(byte[] hashKey) {
-//
-//        String key = Base64.getEncoder().encodeToString(hashKey);
-//
-//        LinkedList signatureAuthentication = mapPasswords.get(key);
-//        if(signatureAuthentication == null || signatureAuthentication.getLast() == null) {
-//            throw new InvalidArgumentsException();
-//        }
-//        return (UserData)signatureAuthentication.getLast();
-//    }
-
 
 
 }
