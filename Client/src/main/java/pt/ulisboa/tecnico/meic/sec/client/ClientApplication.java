@@ -1,9 +1,6 @@
 package pt.ulisboa.tecnico.meic.sec.client;
 
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidDomainException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidPasswordException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.InvalidUsernameException;
-import pt.ulisboa.tecnico.meic.sec.client.exceptions.WrongChallengeException;
+import pt.ulisboa.tecnico.meic.sec.client.exceptions.*;
 import pt.ulisboa.tecnico.meic.sec.commoninterface.exceptions.*;
 
 import java.io.IOException;
@@ -97,11 +94,6 @@ public class ClientApplication {
 		savePassword(client, "facebook.com", "henrique@hotmail.com", "123456");
 		receivedPassword = retrievePassword(client, "facebook.com", "henrique@hotmail.com");
 		System.out.println("(expected=123456) Result Get: " + new String(receivedPassword, StandardCharsets.UTF_8));
-
-		/*byte[] password2 = "joaquim".getBytes(StandardCharsets.UTF_8);
-		client.save_password(domain, username, password2);
-		st = new String(client.retrieve_password(domain, username), StandardCharsets.UTF_8);
-		System.out.println("PUT: "+"joaquim"+ " Result Get: " + st);*/
 
 		System.out.println("Press Enter to exit");
 		String button = (new Scanner(System.in)).nextLine();
@@ -239,6 +231,10 @@ public class ClientApplication {
 			System.out.println("Error: Your request was corrupted on network");
 			if(!presentationMode)
 				d.printStackTrace();
+		} catch(TimeOutException r) {
+			System.out.println("Error: A time-out occurred while communicating with the server");
+			if(!presentationMode)
+				r.printStackTrace();
 		} catch(RemoteException r) {
 			System.out.println("Error: There was an issue with the remote connection");
 			if(!presentationMode)
@@ -283,6 +279,10 @@ public class ClientApplication {
 			System.out.println("Error: Your request was corrupted on network");
 			if(!presentationMode)
 				d.printStackTrace();
+		} catch(TimeOutException r) {
+			System.out.println("Error: A time-out occurred while communicating with the server");
+			if(!presentationMode)
+				r.printStackTrace();
 		} catch(RemoteException r) {
 			System.out.println("Error: There was an issue with the remote connection");
 			if(!presentationMode)
@@ -327,6 +327,10 @@ public class ClientApplication {
 			System.out.println("Error: The server message was corrupted on network");
 			if (!presentationMode)
 				d.printStackTrace();
+		} catch(TimeOutException r) {
+			System.out.println("Error: A time-out occurred while communicating with the server");
+			if(!presentationMode)
+				r.printStackTrace();
 		} catch(RemoteException r) {
 			System.out.println("Error: There was an issue with the remote connection");
 			if (!presentationMode)

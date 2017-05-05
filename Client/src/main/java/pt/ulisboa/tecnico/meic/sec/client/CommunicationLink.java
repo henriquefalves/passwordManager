@@ -167,10 +167,6 @@ public class CommunicationLink {
     }
 
     private static boolean validatePassword(UserData userData) {
-//        if(userData.password == null && userData.signature == null && Arrays.equals(userData.wts, Crypto.intToByteArray(0))){
-//            System.out.println("validatePassword: empty password received (Valid)");
-//            return true;
-//        }
         ArrayList<byte[]> dataToCheckSign = new ArrayList<>();
         dataToCheckSign.add(userData.hashCommunicationData);
         dataToCheckSign.add(userData.hashDomainUser);
@@ -185,10 +181,10 @@ public class CommunicationLink {
         // check validity of signature
         boolean integrity = Crypto.verifySign((PublicKey)myPublicKey, dataToCheckSignature, userData.signature);
         if (!integrity) {
-            System.out.println("validatePassword: Wrong password received");
+            //System.out.println("validatePassword: Wrong password received");
             return false;
         }
-        System.out.println("validatePassword: Valid password received");
+        //System.out.println("validatePassword: Valid password received");
         return true;
     }
 
