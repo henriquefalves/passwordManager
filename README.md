@@ -28,15 +28,16 @@ Type-Of-Byzantine-Behaviour
 
 `mvn exec:java -Dexec.args="<port> <Type-Of-Byzantine-Behaviour>"`
 
-###Install
+### Install
 cd to folder of the project (CommonInterfaces)
 
 `mvn install`
 
-###TESTS
+### TESTS
 Batch scripts located on the Tests folder
+<br />
 From N1 to N13 follow set up of slide 52 from the pdf https://fenix.tecnico.ulisboa.pt/downloadFile/1407993358852871/sec-1617-05-distributed-system-model.pdf. All are tested with a single client doing a write and read.
 <br />
 
- Other test follow this discription
+Tests implement can be seen on the following link
  https://docs.google.com/spreadsheets/d/1S62-LEjgt0qOoKVpU0hMaLflEOnsudiUdsZhhKHrT2g/edit#gid=1499719979
