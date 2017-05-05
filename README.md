@@ -12,7 +12,7 @@ cd to folder of the project (Client, CommonInterfaces or PasswordManager)
 
 ### Run
 cd to folder of the project (Client or PasswordManager)
-Made when runnin on local machine
+
 #### Client
 IPServer=localhost
 ServerObjectName=password-manager
@@ -33,3 +33,10 @@ cd to folder of the project (CommonInterfaces)
 
 `mvn install`
 
+###TESTS
+Batch scripts located on the Tests folder
+From N1 to N13 follow set up of slide 52 from the pdf https://fenix.tecnico.ulisboa.pt/downloadFile/1407993358852871/sec-1617-05-distributed-system-model.pdf. All are tested with a single client doing a write and read.
+<br />
+
+ Other test follow this discription
+ https://docs.google.com/spreadsheets/d/1S62-LEjgt0qOoKVpU0hMaLflEOnsudiUdsZhhKHrT2g/edit#gid=1499719979
