@@ -66,11 +66,12 @@ public class ClientIndependetTests {
             listClients.get(0).init(ks, keystoreName, keystorePassword);
             listClients.get(0).register_user();
             listClients.get(0).save_password(VALID_DOMAIN, VALID_USERNAME, VALID_PASSWORD);
-            byte[] retrievedPassword = listClients.get(1).retrieve_password(VALID_DOMAIN, VALID_USERNAME);
+            byte[] retrievedPassword = listClients.get(0).retrieve_password(VALID_DOMAIN, VALID_USERNAME);
             Assert.assertEquals(new String(VALID_PASSWORD, StandardCharsets.UTF_8),new String(retrievedPassword, StandardCharsets.UTF_8));
         } catch (Exception e) {
-            fail();
             e.printStackTrace();
+            fail();
+
         }
     }
 
