@@ -46,6 +46,8 @@
                         <argument>1</argument>
                         <argument>localhost</argument>
                         <argument>password-manager</argument>
+                        <argument>0</argument>
+
                         <argument>8006</argument>
                     </arguments>
                     <systemProperties>

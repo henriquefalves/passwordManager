@@ -36,10 +36,11 @@ public class ClientApplication {
 			String rank = args[0];
 			String address = args[1];
 			String objectName = args[2];
-			for(int i = 3; i < args.length; i++) {
+			int faults = Integer.parseInt(args[3]);
+			for(int i = 4; i < args.length; i++) {
 				serverNames.add("rmi://"+address+":"+args[i]+"/"+objectName);
 			}
-			Client client = new Client(rank, serverNames);
+			Client client = new Client(rank, serverNames,faults);
 
 			KeyStore ks = null;
 			try {

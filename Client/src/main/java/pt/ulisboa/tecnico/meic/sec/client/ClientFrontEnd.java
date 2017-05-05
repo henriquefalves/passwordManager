@@ -19,15 +19,17 @@ public class ClientFrontEnd implements ServerAPI {
     public int rid;
     private byte[] rank;
     ArrayList<CommunicationAPI> listReplicas = new ArrayList<>();
+    private int quorum ;
     private int wts;
     private List<Message> readList = Collections.synchronizedList(new ArrayList<Message>());
     private List<RuntimeException> exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
-    public ClientFrontEnd(String rank, ArrayList<String> remoteServerNames) throws RemoteException, NotBoundException, MalformedURLException {
+    public ClientFrontEnd(String rank, ArrayList<String> remoteServerNames,int faults) throws RemoteException, NotBoundException, MalformedURLException {
         for (String i : remoteServerNames) {
             CommunicationAPI lookup = (CommunicationAPI) Naming.lookup(i);
             listReplicas.add(lookup);
         }
+        quorum= (listReplicas.size() +faults)/ 2 + 1;
         rid = 0;
         wts = 0;
         this.rank = Crypto.intToByteArray(Integer.parseInt(rank));
@@ -41,7 +43,7 @@ public class ClientFrontEnd implements ServerAPI {
     public void register(Key publicKey) throws RemoteException {
         exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
-        CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
+        CountDownLatch count = new CountDownLatch(quorum);
         for (int i = 0; i < listReplicas.size(); i++) {
             CommunicationLink.Register registerLink = new CommunicationLink.Register(listReplicas.get(i), count, exceptionList);
             Thread thread = new Thread(registerLink);
@@ -70,7 +72,7 @@ public class ClientFrontEnd implements ServerAPI {
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
         exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
-        CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
+        CountDownLatch count = new CountDownLatch(quorum);
         readBroadcast(count, hashDomainUsername);
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
@@ -91,7 +93,7 @@ public class ClientFrontEnd implements ServerAPI {
                     wts = Crypto.byteArrayToInt(highest.highestTimestamp) + 1;
                 }
 
-                count = new CountDownLatch(listReplicas.size()/2 + 1);
+                count = new CountDownLatch(quorum);
                 writeBroadcast(count, hashDomainUsername, password,
                                     Crypto.intToByteArray(wts), Crypto.intToByteArray(rid), rank);
 
@@ -124,7 +126,7 @@ public class ClientFrontEnd implements ServerAPI {
         readList = Collections.synchronizedList(new ArrayList<Message>());  // clear readList
         exceptionList = Collections.synchronizedList(new ArrayList<RuntimeException>());
 
-        CountDownLatch count = new CountDownLatch(listReplicas.size()/2 + 1);
+        CountDownLatch count = new CountDownLatch(quorum);
         readBroadcast(count, hashDomainUsername);
         try {
             if(count.await(TIMEOUT, TimeUnit.SECONDS)){
@@ -146,7 +148,7 @@ public class ClientFrontEnd implements ServerAPI {
                     throw new InvalidArgumentsException();
                 }
 
-                count = new CountDownLatch(listReplicas.size()/2 + 1);
+                count = new CountDownLatch(quorum);
                 writeBroadcast(count, hashDomainUsername, highest.highestPassword, highest.highestTimestamp,
                         Crypto.intToByteArray(rid), highest.highestRank);
 

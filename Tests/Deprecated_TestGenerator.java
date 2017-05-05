@@ -4,7 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-public class TestSlidesTable {
+public class TestGenerator {
 
     public static void main(String args[]) throws IOException {
 
@@ -31,13 +31,11 @@ public class TestSlidesTable {
             Files.write(Paths.get(outputFile), ("start cmd /k mvn exec:java \"-Dexec.args=" + port + " 3\"\n").getBytes(), StandardOpenOption.APPEND);
             previous_ports += port + " ";
         }
-         Files.write(Paths.get(outputFile), "timeout /t 5\n".getBytes(), StandardOpenOption.APPEND);
-
         Files.write(Paths.get(outputFile), "cd ../Client\n".getBytes(), StandardOpenOption.APPEND);
         Files.write(Paths.get(outputFile), "call mvn clean compile\n".getBytes(),StandardOpenOption.APPEND);
 
         for(int i = 0; i< number_of_clients; i++, rank++) {
-            Files.write(Paths.get(outputFile), ("start cmd /k mvn -Dtest=ClientIndependetTests#TestN -DargLine=\"-Dfaults="+number_of_bizantines+" -DnumberClients="+number_of_clients+ " -DnumberServers="+number_of_servers+"\" "+" test"+"\n").getBytes(), StandardOpenOption.APPEND);
+            Files.write(Paths.get(outputFile), ("start cmd /k mvn exec:java \"-Dexec.args=" + rank + " localhost password-manager " + previous_ports + "\"\n").getBytes(), StandardOpenOption.APPEND);
         }
     }
 }

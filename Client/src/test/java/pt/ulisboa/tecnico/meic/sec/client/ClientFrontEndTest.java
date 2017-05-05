@@ -86,7 +86,7 @@ public class ClientFrontEndTest {
     //TODO : add remote servers
     @BeforeClass
     public void init(ArrayList<String> remoteServerNames) throws IOException, NotBoundException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException {
-        client = new ClientFrontEnd("1", remoteServerNames);
+        client = new ClientFrontEnd("1", remoteServerNames,0);
 
         KeyStore keystore = null;
         try {

@@ -32,8 +32,8 @@ public class Client extends UnicastRemoteObject implements ClientAPI {
 
 	private ServerAPI passwordManager;
 
-	public Client(String rank, ArrayList<String> remoteServerName) throws RemoteException, MalformedURLException, NotBoundException {
-		this.passwordManager = new ClientFrontEnd(rank, remoteServerName);
+	public Client(String rank, ArrayList<String> remoteServerName,int faults) throws RemoteException, MalformedURLException, NotBoundException {
+		this.passwordManager = new ClientFrontEnd(rank, remoteServerName,faults);
 	}
 
 	private KeyStore loadKeystore(KeyStore keystore, String keyStoreName, char[] passwordKeyStore) throws NoSuchAlgorithmException, CertificateException, IOException {
