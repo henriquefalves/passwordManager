@@ -10,6 +10,20 @@ cd to folder of the project (Client, CommonInterfaces or PasswordManager)
 
 `mvn compile`
 
+
+### TESTS
+#### Server
+cd to folder of the project Server
+
+`mvn test`
+
+#### Client
+run one instance of Server
+
+cd to folder of the project Client
+
+`mvn test`
+
 ### Run
 cd to folder of the project (Client or PasswordManager)
 
@@ -33,7 +47,7 @@ cd to folder of the project (CommonInterfaces)
 
 `mvn install`
 
-### TESTS
+### DEPENDABILITY TESTS
 Batch scripts located on the Tests folder
 <br />
 From N1 to N13 follow set up of slide 52 from the pdf https://fenix.tecnico.ulisboa.pt/downloadFile/1407993358852871/sec-1617-05-distributed-system-model.pdf. All are tested with a single client doing a write and read.
