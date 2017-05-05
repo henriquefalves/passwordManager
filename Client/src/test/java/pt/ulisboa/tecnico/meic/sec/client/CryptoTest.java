@@ -75,8 +75,6 @@ public class CryptoTest {
 
 	@Test
 	public void testNormalFunctionalitySymmetricKey() {
-		//TODO: falar com o Henrique para perceber se e mesmo suposto ser Asymetric encription
-		//TODO: porque o teste diz Symmetric key
 		byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
 		byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
 		byte[] decryptedPass = crypto.decryptAsymmetric(encryptedPass, secretKey,"AES");
@@ -86,8 +84,6 @@ public class CryptoTest {
 	
 	@Test
 	public void testNoIVSymmetricKey() {
-		//TODO: falar com o Henrique para perceber se e mesmo suposto ser Asymetric encription
-		//TODO: porque o teste diz Symmetric key
 		 byte[] beforeEncryption = "domain".getBytes(StandardCharsets.UTF_8);
 		 byte[] encryptedPass = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");
 		 byte[] encryptedPass2 = crypto.encryptAsymmetric(beforeEncryption, secretKey,"AES");

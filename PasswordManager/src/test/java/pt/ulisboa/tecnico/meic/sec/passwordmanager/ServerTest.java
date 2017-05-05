@@ -44,12 +44,11 @@ public class ServerTest {
         key = keygen.generateKey();
     }
 
-    // TODO REMOVE ALL 1!!!!
     @Before
     public void setup() throws RemoteException {
         server = new Server();
         server.register(key);
-        UserData userData = new UserData();     // TODO userData in Put method must pass hashCommunicationData, signatura and wts
+        UserData userData = new UserData();
         userData.hashDomainUser = VALID_HASH_DOMAIN_USERNAME;
         userData.password = PASSWORD;
         userData.wts = Crypto.intToByteArray(1);
@@ -112,7 +111,7 @@ public class ServerTest {
             String insertedPassword = "password2";
             byte[] newPass = insertedPassword.getBytes(StandardCharsets.UTF_8);
 
-            UserData userDataToPut = new UserData();     // TODO userData in Put method must pass hashCommunicationData, signatura and wts
+            UserData userDataToPut = new UserData();
             userDataToPut.hashDomainUser = VALID_HASH_DOMAIN_USERNAME;
             userDataToPut.password = newPass;
             userDataToPut.wts = Crypto.intToByteArray(15);

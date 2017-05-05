@@ -108,7 +108,6 @@ public class ClientFrontEnd implements ServerAPI {
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    // TODO
                 }
             }
             else {
